@@ -1,0 +1,45 @@
+.brand-mark {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.brand-ring {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  border: 2px solid #1f1910;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 52% 46%, rgba(228, 190, 106, 0.55) 0 9%, transparent 10%),
+    conic-gradient(
+      from -15deg,
+      #6c3f1c,
+      #d79b44,
+      #34251c,
+      #b9873c,
+      #111a20,
+      #2f9bd5,
+      #b73831,
+      #6c3f1c
+    );
+  box-shadow:
+    inset 0 0 0 6px #8b6841,
+    inset 0 0 0 10px rgba(22, 17, 12, 0.85),
+    0 2px 0 rgba(255, 255, 255, 0.25);
+}
+
+.brand-ring img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  filter: sepia(0.65) saturate(1.35) brightness(0.74);
+  transform: rotate(-22deg);
+}
+
+@media (max-width: 720px) {
+  .brand-mark {
+    margin-bottom: 28px;
+  }
+}
