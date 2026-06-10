@@ -1,0 +1,129 @@
+.reservations-list {
+  padding: 29px;
+  border-radius: 25px;
+  background: var(--store-card);
+}
+
+.reservations-list > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #bdbdb6;
+}
+
+.reservations-list h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 400;
+}
+
+.reservations-list select {
+  padding: 9px 16px;
+  border: 1px solid #9d9b90;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.reservation-card {
+  display: grid;
+  grid-template-columns: 105px minmax(210px, 1fr) minmax(170px, auto) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 22px 0;
+  border-bottom: 1px solid #bdbdb6;
+}
+
+.reservation-card:last-child {
+  border-bottom: 0;
+}
+
+.reservation-image {
+  width: 105px;
+  height: 112px;
+  border-radius: 16px;
+  background: #cecec2;
+}
+
+.reservation-copy span,
+.reservation-copy p {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+}
+
+.reservation-copy h3 {
+  margin: 7px 0;
+  font-size: 21px;
+  font-weight: 400;
+}
+
+.reservation-copy p {
+  margin: 0;
+}
+
+.reservation-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #a29544;
+}
+
+.status-1 {
+  background: #768348;
+}
+
+.status-2 {
+  background: #817a6b;
+}
+
+.reservation-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.reservation-actions a,
+.reservation-actions button {
+  padding: 8px 16px;
+  border: 1px solid #9d9b90;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.reservation-actions a {
+  border-color: #dbe84d;
+  background: #dbe84d;
+  font-weight: 700;
+}
+
+@media (max-width: 800px) {
+  .reservation-card {
+    grid-template-columns: 85px 1fr;
+  }
+
+  .reservation-image {
+    width: 85px;
+    height: 95px;
+  }
+
+  .reservation-status,
+  .reservation-actions {
+    grid-column: 2;
+  }
+
+  .reservation-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

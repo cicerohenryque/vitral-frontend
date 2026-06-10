@@ -9,6 +9,7 @@ import { HomePage } from './components/Home/HomePage'
 import { MessagesPage } from './components/Messages/MessagesPage'
 import { OffersPage } from './components/Offers/OffersPage'
 import { ProductPage } from './components/Product/ProductPage'
+import { ReservationsPage } from './components/Reservations/ReservationsPage'
 import { ReleasesPage } from './components/Releases/ReleasesPage'
 import { SearchResultsPage } from './components/Search/SearchResultsPage'
 import { SellerPage } from './components/Seller/SellerPage'
@@ -26,6 +27,7 @@ function App() {
         <Route path="/mensagens" element={<MessagesPage />} />
         <Route path="/ofertas" element={<OffersPage />} />
         <Route path="/produto/:productId" element={<ProductPage />} />
+        <Route path="/reservas" element={<ReservationsPage />} />
         <Route path="/vendedor/:sellerId" element={<SellerPage />} />
         <Route path="/lancamentos" element={<ReleasesPage />} />
         <Route path="/buscar" element={<SearchResultsPage />} />
