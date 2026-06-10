@@ -1,0 +1,15 @@
+.vitral-logo {
+  --logo-size: 166px;
+  display: block;
+  width: var(--logo-size);
+  height: var(--logo-size);
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background-repeat: no-repeat;
+  background-position:
+    calc(var(--logo-size) * -0.2711)
+    calc(var(--logo-size) * -0.6566);
+  background-size:
+    calc(var(--logo-size) * 8.2048)
+    calc(var(--logo-size) * 5.8313);
+}
