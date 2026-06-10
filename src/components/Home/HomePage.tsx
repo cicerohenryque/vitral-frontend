@@ -10,7 +10,7 @@ const menuItems = [
   { label: 'Categorias', to: '/categorias' },
   { label: 'Mensagens', to: '/mensagens' },
   { label: 'Ofertas', to: '/ofertas' },
-  { label: 'Lançamentos', to: '#lancamentos' },
+  { label: 'Lançamentos', to: '/lancamentos' },
   { label: 'Suporte', to: '#suporte' },
 ]
 

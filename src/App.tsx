@@ -6,6 +6,7 @@ import { HelpPage } from './components/Help/HelpPage'
 import { HomePage } from './components/Home/HomePage'
 import { MessagesPage } from './components/Messages/MessagesPage'
 import { OffersPage } from './components/Offers/OffersPage'
+import { ReleasesPage } from './components/Releases/ReleasesPage'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/favoritos" element={<FavoritesPage />} />
         <Route path="/mensagens" element={<MessagesPage />} />
         <Route path="/ofertas" element={<OffersPage />} />
+        <Route path="/lancamentos" element={<ReleasesPage />} />
         <Route path="/ajuda" element={<HelpPage />} />
         <Route path="/entrar" element={<AuthPage />} />
       </Routes>
