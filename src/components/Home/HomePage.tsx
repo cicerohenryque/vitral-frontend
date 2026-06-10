@@ -6,6 +6,7 @@ import './HomePage.css'
 
 const sections = ['Mais vendidos', 'Clássicos', 'Lançamentos']
 const menuItems = [
+  { label: 'Carrinho', to: '/carrinho' },
   { label: 'Favoritos', to: '/favoritos' },
   { label: 'Categorias', to: '/categorias' },
   { label: 'Mensagens', to: '/mensagens' },

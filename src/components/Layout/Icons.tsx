@@ -99,3 +99,19 @@ export function MinusCircleIcon(props: IconProps) {
     </Icon>
   )
 }
+
+export function CartIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path
+        d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L20 8H6"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="9" cy="19" r="1.4" fill="currentColor" />
+      <circle cx="17" cy="19" r="1.4" fill="currentColor" />
+    </Icon>
+  )
+}
