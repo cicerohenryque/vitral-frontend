@@ -1,15 +1,16 @@
 import { BrandMark } from './BrandMark'
 import { LoginForm } from './LoginForm'
 import { SignupForm } from './SignupForm'
+import { Link } from 'react-router-dom'
 import './AuthPage.css'
 
 export function AuthPage() {
   return (
     <main className="auth-page">
-      <a href="/" className="back-link" aria-label="Voltar para a página anterior">
+      <Link to="/" className="back-link" aria-label="Voltar para a página anterior">
         <span aria-hidden="true">←</span>
         Voltar
-      </a>
+      </Link>
 
       <BrandMark />
 

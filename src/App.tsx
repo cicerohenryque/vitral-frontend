@@ -1,7 +1,16 @@
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthPage } from './components/Auth/AuthPage'
+import { HomePage } from './components/Home/HomePage'
 
 function App() {
-  return <AuthPage />
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/entrar" element={<AuthPage />} />
+      </Routes>
+    </BrowserRouter>
+  )
 }
 
 export default App
