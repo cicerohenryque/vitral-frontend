@@ -1,0 +1,291 @@
+.home-page {
+  --page-bg: #cecec2;
+  --accent-bg: #b6b18d;
+  min-height: 100svh;
+  background: var(--page-bg);
+  color: #11110f;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.announcement {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 65px;
+  padding: 0 25px;
+  background: var(--accent-bg);
+  font-size: 22px;
+}
+
+.announcement p {
+  margin: 0;
+}
+
+.announcement a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-header {
+  position: relative;
+  display: grid;
+  grid-template-columns: 220px minmax(320px, 495px) 220px;
+  align-items: start;
+  justify-content: space-between;
+  min-height: 344px;
+  padding: 43px 46px 0;
+}
+
+.logo-button {
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  align-self: start;
+  width: 100%;
+  height: 63px;
+  margin-top: 42px;
+  border-radius: 999px;
+  background: #dedede;
+  overflow: hidden;
+}
+
+.search-bar input {
+  width: 100%;
+  height: 100%;
+  padding: 0 10px 0 32px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #1c1c1c;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 22px;
+}
+
+.search-bar input::placeholder {
+  color: #a2a2a2;
+  opacity: 1;
+}
+
+.search-bar button {
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.login-link {
+  display: inline-flex;
+  align-items: center;
+  justify-self: end;
+  gap: 5px;
+  margin-top: 57px;
+  color: inherit;
+  font-size: 31px;
+  text-decoration: none;
+}
+
+.favorites-button {
+  display: grid;
+  place-items: center;
+  justify-self: center;
+  width: 48px;
+  height: 48px;
+  margin-top: 86px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.side-menu {
+  position: absolute;
+  z-index: 2;
+  top: 65px;
+  left: 0;
+  width: 311px;
+  min-height: 335px;
+  padding: 25px 42px 45px;
+  background: var(--accent-bg);
+}
+
+.menu-close {
+  display: grid;
+  gap: 5px;
+  width: 28px;
+  margin: 0 0 39px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.menu-close span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: #27303c;
+}
+
+.side-menu nav {
+  display: grid;
+  gap: 7px;
+}
+
+.side-menu a {
+  color: inherit;
+  font-size: 29px;
+  font-weight: 700;
+  line-height: 1.14;
+  text-decoration: none;
+}
+
+.catalog {
+  padding: 23px 4.65vw 60px;
+  overflow: hidden;
+}
+
+.product-section {
+  margin-bottom: 88px;
+}
+
+.product-section h2 {
+  margin: 0 0 14px 0.9vw;
+  font-size: 30px;
+  font-weight: 400;
+}
+
+.product-carousel {
+  position: relative;
+}
+
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(150px, 202px));
+  justify-content: space-between;
+  gap: 30px;
+}
+
+.product-card {
+  height: 226px;
+  border-radius: 23px;
+  background: #dedede;
+}
+
+.carousel-arrow {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  width: 30px;
+  height: 50px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #2e322f;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 38px;
+  font-weight: 200;
+  line-height: 1;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.carousel-arrow-left {
+  left: -43px;
+}
+
+.carousel-arrow-right {
+  right: -43px;
+}
+
+.menu-is-open .home-header {
+  grid-template-columns: 295px minmax(320px, 495px) 220px;
+  padding-top: 74px;
+}
+
+.menu-is-open .logo-button {
+  visibility: hidden;
+}
+
+.menu-is-open .search-bar {
+  margin-top: 10px;
+}
+
+.menu-is-open .catalog {
+  padding-top: 23px;
+}
+
+@media (max-width: 900px) {
+  .announcement {
+    gap: 24px;
+    font-size: 16px;
+  }
+
+  .home-header,
+  .menu-is-open .home-header {
+    grid-template-columns: auto 1fr auto;
+    min-height: 255px;
+    padding: 32px 24px 0;
+    gap: 20px;
+  }
+
+  .vitral-logo {
+    --logo-size: 110px !important;
+  }
+
+  .search-bar {
+    margin-top: 23px;
+  }
+
+  .login-link {
+    margin-top: 35px;
+    font-size: 23px;
+  }
+
+  .product-list {
+    grid-template-columns: repeat(5, 190px);
+    justify-content: start;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 640px) {
+  .announcement p {
+    max-width: 80%;
+  }
+
+  .home-header,
+  .menu-is-open .home-header {
+    grid-template-columns: auto 1fr;
+    min-height: 235px;
+  }
+
+  .search-bar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 0;
+  }
+
+  .login-link,
+  .favorites-button {
+    grid-column: 2;
+    grid-row: 1;
+    margin-top: 27px;
+  }
+
+  .side-menu {
+    width: min(311px, 82vw);
+  }
+}
