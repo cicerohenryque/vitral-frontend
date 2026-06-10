@@ -10,6 +10,7 @@ import { MessagesPage } from './components/Messages/MessagesPage'
 import { OffersPage } from './components/Offers/OffersPage'
 import { ProductPage } from './components/Product/ProductPage'
 import { ReleasesPage } from './components/Releases/ReleasesPage'
+import { SearchResultsPage } from './components/Search/SearchResultsPage'
 import { SellerPage } from './components/Seller/SellerPage'
 import { SupportPage } from './components/Support/SupportPage'
 
@@ -27,6 +28,7 @@ function App() {
         <Route path="/produto/:productId" element={<ProductPage />} />
         <Route path="/vendedor/:sellerId" element={<SellerPage />} />
         <Route path="/lancamentos" element={<ReleasesPage />} />
+        <Route path="/buscar" element={<SearchResultsPage />} />
         <Route path="/suporte" element={<SupportPage />} />
         <Route path="/ajuda" element={<HelpPage />} />
         <Route path="/entrar" element={<AuthPage />} />
