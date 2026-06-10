@@ -7,6 +7,7 @@ import { HelpPage } from './components/Help/HelpPage'
 import { HomePage } from './components/Home/HomePage'
 import { MessagesPage } from './components/Messages/MessagesPage'
 import { OffersPage } from './components/Offers/OffersPage'
+import { ProductPage } from './components/Product/ProductPage'
 import { ReleasesPage } from './components/Releases/ReleasesPage'
 import { SupportPage } from './components/Support/SupportPage'
 
@@ -20,6 +21,7 @@ function App() {
         <Route path="/favoritos" element={<FavoritesPage />} />
         <Route path="/mensagens" element={<MessagesPage />} />
         <Route path="/ofertas" element={<OffersPage />} />
+        <Route path="/produto/:productId" element={<ProductPage />} />
         <Route path="/lancamentos" element={<ReleasesPage />} />
         <Route path="/suporte" element={<SupportPage />} />
         <Route path="/ajuda" element={<HelpPage />} />
