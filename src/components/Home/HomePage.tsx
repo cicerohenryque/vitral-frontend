@@ -5,7 +5,14 @@ import { HeartIcon, SearchIcon, UserIcon } from '../Layout/Icons'
 import './HomePage.css'
 
 const sections = ['Mais vendidos', 'Clássicos', 'Lançamentos']
-const menuItems = ['Favoritos', 'Categorias', 'Mensagens', 'Ofertas', 'Lançamentos', 'Suporte']
+const menuItems = [
+  { label: 'Favoritos', to: '/favoritos' },
+  { label: 'Categorias', to: '#categorias' },
+  { label: 'Mensagens', to: '#mensagens' },
+  { label: 'Ofertas', to: '#ofertas' },
+  { label: 'Lançamentos', to: '#lancamentos' },
+  { label: 'Suporte', to: '#suporte' },
+]
 
 function ProductSection({ title }: { title: string }) {
   return (
@@ -82,9 +89,9 @@ export function HomePage() {
           </button>
           <nav aria-label="Menu principal">
             {menuItems.map((item) => (
-              <a href={`#${item.toLowerCase()}`} key={item}>
-                {item}
-              </a>
+              <Link to={item.to} key={item.label}>
+                {item.label}
+              </Link>
             ))}
           </nav>
         </aside>
