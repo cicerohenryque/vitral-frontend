@@ -1,0 +1,20 @@
+.topbar {
+  background: var(--color-beige);
+  width: 100%;
+}
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.topbar-message {
+  font-weight: 600;
+  font-size: 15px;
+}
+.topbar-help {
+  font-weight: 600;
+  font-size: 15px;
+}
+.topbar-help:hover { text-decoration: underline; }

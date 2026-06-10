@@ -1,0 +1,26 @@
+.produto-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  margin-top: 12px;
+}
+.produto-table thead th {
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--color-beige);
+  font-family: var(--font-serif);
+}
+.produto-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+.produto-table-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.produto-table-actions .vit-btn {
+  padding: 6px 14px;
+  font-size: 13px;
+}
