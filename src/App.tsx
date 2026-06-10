@@ -7,6 +7,7 @@ import { FavoritesPage } from './components/Favorites/FavoritesPage'
 import { HelpPage } from './components/Help/HelpPage'
 import { HistoryPage } from './components/History/HistoryPage'
 import { HomePage } from './components/Home/HomePage'
+import { ListingsPage } from './components/Listings/ListingsPage'
 import { MessagesPage } from './components/Messages/MessagesPage'
 import { OffersPage } from './components/Offers/OffersPage'
 import { ProductPage } from './components/Product/ProductPage'
@@ -26,6 +27,7 @@ function App() {
         <Route path="/categorias" element={<CategoriesPage />} />
         <Route path="/favoritos" element={<FavoritesPage />} />
         <Route path="/historico" element={<HistoryPage />} />
+        <Route path="/anuncios" element={<ListingsPage />} />
         <Route path="/mensagens" element={<MessagesPage />} />
         <Route path="/ofertas" element={<OffersPage />} />
         <Route path="/produto/:productId" element={<ProductPage />} />
