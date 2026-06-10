@@ -7,6 +7,7 @@ import { HomePage } from './components/Home/HomePage'
 import { MessagesPage } from './components/Messages/MessagesPage'
 import { OffersPage } from './components/Offers/OffersPage'
 import { ReleasesPage } from './components/Releases/ReleasesPage'
+import { SupportPage } from './components/Support/SupportPage'
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/mensagens" element={<MessagesPage />} />
         <Route path="/ofertas" element={<OffersPage />} />
         <Route path="/lancamentos" element={<ReleasesPage />} />
+        <Route path="/suporte" element={<SupportPage />} />
         <Route path="/ajuda" element={<HelpPage />} />
         <Route path="/entrar" element={<AuthPage />} />
       </Routes>
