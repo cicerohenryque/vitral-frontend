@@ -9,6 +9,7 @@ import { HistoryPage } from './components/History/HistoryPage'
 import { HomePage } from './components/Home/HomePage'
 import { ListingsPage } from './components/Listings/ListingsPage'
 import { MessagesPage } from './components/Messages/MessagesPage'
+import { NotFoundPage } from './components/NotFound/NotFoundPage'
 import { OffersPage } from './components/Offers/OffersPage'
 import { ProductPage } from './components/Product/ProductPage'
 import { ReservationsPage } from './components/Reservations/ReservationsPage'
@@ -38,6 +39,7 @@ function App() {
         <Route path="/suporte" element={<SupportPage />} />
         <Route path="/ajuda" element={<HelpPage />} />
         <Route path="/entrar" element={<AuthPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   )
