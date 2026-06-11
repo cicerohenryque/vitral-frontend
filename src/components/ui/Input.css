@@ -1,0 +1,23 @@
+.vit-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+.vit-input-label {
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--font-serif);
+}
+.vit-input {
+  background: #ece8d6;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 15px;
+  font-family: var(--font-sans);
+  outline: none;
+  width: 100%;
+}
+.vit-input:focus { border-color: var(--color-yellow); }
+.vit-input::placeholder { color: #8a8a8a; font-size: 12px; }

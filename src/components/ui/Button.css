@@ -1,0 +1,30 @@
+.vit-btn {
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 16px;
+  font-family: var(--font-serif);
+  transition: background 0.15s, opacity 0.15s, transform 0.05s;
+}
+.vit-btn:active { transform: translateY(1px); }
+.vit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.vit-btn-primary {
+  background: var(--color-yellow);
+  color: var(--color-text);
+}
+.vit-btn-primary:hover:not(:disabled) { background: var(--color-yellow-hover); }
+
+.vit-btn-ghost {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+.vit-btn-ghost:hover:not(:disabled) { background: rgba(0, 0, 0, 0.05); }
+
+.vit-btn-danger {
+  background: var(--color-danger);
+  color: #fff;
+}
+.vit-btn-danger:hover:not(:disabled) { background: #962b21; }
