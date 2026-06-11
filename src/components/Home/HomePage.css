@@ -144,12 +144,23 @@
   gap: 7px;
 }
 
-.side-menu a {
+.side-menu a,
+.logout-button {
   color: inherit;
+  font-family: Georgia, 'Times New Roman', serif;
   font-size: 29px;
   font-weight: 700;
   line-height: 1.14;
+  text-align: left;
   text-decoration: none;
+}
+
+.logout-button {
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
 .catalog {
