@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { StorePage } from '../Layout/StorePage'
 import './AccountPage.css'
 
@@ -18,6 +19,7 @@ export function AccountPage() {
             <a href="#endereco">Endereço</a>
             <a href="#seguranca">Segurança</a>
             <a href="#preferencias">Preferências</a>
+            <Link className="account-delete-link" to="/conta/excluir">Excluir conta</Link>
           </nav>
         </aside>
 

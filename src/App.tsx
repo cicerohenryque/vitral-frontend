@@ -5,6 +5,7 @@ import { CartPage } from './components/Cart/CartPage'
 import { CheckoutPage } from './components/Checkout/CheckoutPage'
 import { CategoriesPage } from './components/Categories/CategoriesPage'
 import { FavoritesPage } from './components/Favorites/FavoritesPage'
+import { DeleteAccountPage } from './components/DeleteAccount/DeleteAccountPage'
 import { HelpPage } from './components/Help/HelpPage'
 import { HistoryPage } from './components/History/HistoryPage'
 import { HomePage } from './components/Home/HomePage'
@@ -29,6 +30,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/conta" element={<AccountPage />} />
+        <Route path="/conta/excluir" element={<DeleteAccountPage />} />
         <Route path="/carrinho" element={<CartPage />} />
         <Route path="/confirmar-pedido" element={<CheckoutPage />} />
         <Route path="/categorias" element={<CategoriesPage />} />

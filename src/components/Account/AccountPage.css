@@ -71,6 +71,10 @@
   background: var(--store-accent);
 }
 
+.account-summary nav .account-delete-link {
+  color: #7d3930;
+}
+
 .account-form {
   padding: 33px;
 }
