@@ -15,6 +15,7 @@ import { ProductPage } from './components/Product/ProductPage'
 import { ReservationsPage } from './components/Reservations/ReservationsPage'
 import { ReleasesPage } from './components/Releases/ReleasesPage'
 import { SearchResultsPage } from './components/Search/SearchResultsPage'
+import { SeboProfilePage } from './components/SeboProfile/SeboProfilePage'
 import { SellerPage } from './components/Seller/SellerPage'
 import { SupportPage } from './components/Support/SupportPage'
 
@@ -33,6 +34,7 @@ function App() {
         <Route path="/ofertas" element={<OffersPage />} />
         <Route path="/produto/:productId" element={<ProductPage />} />
         <Route path="/reservas" element={<ReservationsPage />} />
+        <Route path="/sebo/perfil" element={<SeboProfilePage />} />
         <Route path="/vendedor/:sellerId" element={<SellerPage />} />
         <Route path="/lancamentos" element={<ReleasesPage />} />
         <Route path="/buscar" element={<SearchResultsPage />} />
