@@ -109,7 +109,7 @@ export function CartPage() {
               </div>
             </dl>
             <p>Pagamento, entrega e reserva serão combinados diretamente com cada vendedor.</p>
-            <button type="button">Solicitar reserva</button>
+            <Link className="cart-checkout-link" to="/confirmar-pedido">Confirmar pedido</Link>
             <Link to="/">Continuar comprando</Link>
           </aside>
         </section>

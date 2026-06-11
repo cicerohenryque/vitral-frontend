@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthPage } from './components/Auth/AuthPage'
 import { AccountPage } from './components/Account/AccountPage'
 import { CartPage } from './components/Cart/CartPage'
+import { CheckoutPage } from './components/Checkout/CheckoutPage'
 import { CategoriesPage } from './components/Categories/CategoriesPage'
 import { FavoritesPage } from './components/Favorites/FavoritesPage'
 import { HelpPage } from './components/Help/HelpPage'
@@ -29,6 +30,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/conta" element={<AccountPage />} />
         <Route path="/carrinho" element={<CartPage />} />
+        <Route path="/confirmar-pedido" element={<CheckoutPage />} />
         <Route path="/categorias" element={<CategoriesPage />} />
         <Route path="/favoritos" element={<FavoritesPage />} />
         <Route path="/historico" element={<HistoryPage />} />
