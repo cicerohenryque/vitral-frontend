@@ -17,6 +17,7 @@ import { ProductPage } from './components/Product/ProductPage'
 import { ReservationsPage } from './components/Reservations/ReservationsPage'
 import { ReleasesPage } from './components/Releases/ReleasesPage'
 import { SearchResultsPage } from './components/Search/SearchResultsPage'
+import { EmptySearchPage } from './components/Search/EmptySearchPage'
 import { SaleConfirmationPage } from './components/Sales/SaleConfirmationPage'
 import { SalesHistoryPage } from './components/Sales/SalesHistoryPage'
 import { SalesOrdersPage } from './components/Sales/SalesOrdersPage'
@@ -48,6 +49,7 @@ function App() {
         <Route path="/vendedor/:sellerId" element={<SellerPage />} />
         <Route path="/lancamentos" element={<ReleasesPage />} />
         <Route path="/buscar" element={<SearchResultsPage />} />
+        <Route path="/buscar/sem-resultados" element={<EmptySearchPage />} />
         <Route path="/suporte" element={<SupportPage />} />
         <Route path="/ajuda" element={<HelpPage />} />
         <Route path="/entrar" element={<AuthPage />} />
