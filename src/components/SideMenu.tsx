@@ -6,13 +6,14 @@ type Props = {
   onClose: () => void
 }
 
-const ITEMS_FUTUROS = [
-  { label: 'Favoritos', to: '#favoritos' },
-  { label: 'Categorias', to: '#categorias' },
-  { label: 'Mensagens', to: '#mensagens' },
-  { label: 'Ofertas', to: '#ofertas' },
-  { label: 'Lançamentos', to: '#lancamentos' },
-  { label: 'Suporte', to: '#suporte' },
+const MENU_ITEMS = [
+  { label: 'Carrinho', to: '/carrinho' },
+  { label: 'Favoritos', to: '/favoritos' },
+  { label: 'Categorias', to: '/categorias' },
+  { label: 'Mensagens', to: '/mensagens' },
+  { label: 'Ofertas', to: '/ofertas' },
+  { label: 'Lançamentos', to: '/lancamentos' },
+  { label: 'Suporte', to: '/suporte' },
 ]
 
 export function SideMenu({ onClose }: Props) {
@@ -38,16 +39,11 @@ export function SideMenu({ onClose }: Props) {
                 <Link to="/painel/perfil" onClick={onClose}>Meu Perfil</Link>
               </li>
             )}
-            {ITEMS_FUTUROS.map((item) => (
+            {MENU_ITEMS.map((item) => (
               <li key={item.label}>
-                <a
-                  href={item.to}
-                  onClick={(e) => { e.preventDefault(); onClose() }}
-                  className="disabled"
-                  title="Em breve"
-                >
+                <Link to={item.to} onClick={onClose}>
                   {item.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

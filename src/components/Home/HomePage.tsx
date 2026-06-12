@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { BrandLogo } from '../Layout/BrandLogo'
 import { HeartIcon, SearchIcon, UserIcon } from '../Layout/Icons'
 import './HomePage.css'
 
 const sections = ['Mais vendidos', 'Clássicos', 'Lançamentos']
 const menuItems = [
+  { label: 'Carrinho', to: '/carrinho' },
   { label: 'Favoritos', to: '/favoritos' },
   { label: 'Categorias', to: '/categorias' },
   { label: 'Mensagens', to: '/mensagens' },
@@ -37,6 +38,15 @@ function ProductSection({ title }: { title: string }) {
 
 export function HomePage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(localStorage.getItem('authToken')))
+  const navigate = useNavigate()
+
+  function handleLogout() {
+    localStorage.removeItem('authToken')
+    setIsAuthenticated(false)
+    setIsMenuOpen(false)
+    navigate('/', { replace: true })
+  }
 
   return (
     <main className={`home-page${isMenuOpen ? ' menu-is-open' : ''}`}>
@@ -93,6 +103,11 @@ export function HomePage() {
                 {item.label}
               </Link>
             ))}
+            {isAuthenticated && (
+              <button className="logout-button" type="button" onClick={handleLogout}>
+                Sair
+              </button>
+            )}
           </nav>
         </aside>
       )}

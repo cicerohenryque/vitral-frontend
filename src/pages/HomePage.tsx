@@ -11,7 +11,6 @@ export function HomePage() {
 
   useEffect(() => {
     let active = true
-    setLoading(true)
     buscaService
       .buscarProdutos({}, 0, 12)
       .then((page) => {

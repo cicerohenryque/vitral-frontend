@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Header } from '../components/Header'
 import { TopBar } from '../components/TopBar'
 import { Button } from '../components/ui/Button'
@@ -30,7 +30,7 @@ export function MeusProdutosPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  function load() {
+  const load = useCallback(() => {
     if (!seboId) {
       setLoading(false)
       return
@@ -41,9 +41,13 @@ export function MeusProdutosPage() {
       .then((page) => setProdutos(page.content))
       .catch((err) => setError(extractErrorMessage(err, 'Erro ao listar produtos')))
       .finally(() => setLoading(false))
-  }
+  }, [seboId])
 
-  useEffect(load, [seboId])
+  useEffect(() => {
+    // Reload the catalog when the authenticated sebo changes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    load()
+  }, [load])
 
   function update<K extends keyof ProdutoRequest>(key: K, value: ProdutoRequest[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))

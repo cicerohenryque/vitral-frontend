@@ -31,10 +31,14 @@ export function BuscaPage() {
   const [totalSebos, setTotalSebos] = useState(0)
 
   useEffect(() => {
+    // Keep the editable input aligned with browser navigation.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInputQ(searchParams.get('q') ?? '')
   }, [searchParams])
 
   useEffect(() => {
+    // Loading starts whenever the URL-backed filters change.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     const params = {
       q: q || undefined,
@@ -90,12 +94,17 @@ export function BuscaPage() {
     e.preventDefault()
     const next = new URLSearchParams(searchParams)
     if (tab === 'produtos') {
-      condicao ? next.set('condicao', condicao) : next.delete('condicao')
-      precoMin ? next.set('precoMin', precoMin) : next.delete('precoMin')
-      precoMax ? next.set('precoMax', precoMax) : next.delete('precoMax')
+      if (condicao) next.set('condicao', condicao)
+      else next.delete('condicao')
+      if (precoMin) next.set('precoMin', precoMin)
+      else next.delete('precoMin')
+      if (precoMax) next.set('precoMax', precoMax)
+      else next.delete('precoMax')
     } else {
-      cidade ? next.set('cidade', cidade) : next.delete('cidade')
-      uf ? next.set('uf', uf) : next.delete('uf')
+      if (cidade) next.set('cidade', cidade)
+      else next.delete('cidade')
+      if (uf) next.set('uf', uf)
+      else next.delete('uf')
     }
     setSearchParams(next)
   }

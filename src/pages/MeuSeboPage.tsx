@@ -24,17 +24,14 @@ export function MeuSeboPage() {
   const { seboId, setSeboId } = useAuth()
   const [form, setForm] = useState<SeboRequest>(EMPTY)
   const [existing, setExisting] = useState<Sebo | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(Boolean(seboId))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
-    if (!seboId) {
-      setLoading(false)
-      return
-    }
+    if (!seboId) return
     seboService
       .buscarPorId(seboId)
       .then((sebo) => {

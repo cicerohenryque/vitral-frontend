@@ -10,15 +10,11 @@ export function ConfirmarEmailPage() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
 
-  const [estado, setEstado] = useState<Estado>('carregando')
-  const [mensagem, setMensagem] = useState('')
+  const [estado, setEstado] = useState<Estado>(token ? 'carregando' : 'erro')
+  const [mensagem, setMensagem] = useState(token ? '' : 'Link de confirmação inválido.')
 
   useEffect(() => {
-    if (!token) {
-      setMensagem('Link de confirmação inválido.')
-      setEstado('erro')
-      return
-    }
+    if (!token) return
 
     authService
       .confirmarEmail(token)
