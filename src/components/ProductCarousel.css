@@ -1,6 +1,12 @@
 .carousel {
   margin: 22px 0 36px;
 }
+.carousel-empty {
+  max-width: 620px;
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  line-height: 1.55;
+}
 .carousel-wrapper {
   position: relative;
   display: flex;

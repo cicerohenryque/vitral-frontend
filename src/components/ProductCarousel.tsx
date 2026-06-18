@@ -8,11 +8,12 @@ type Props = {
   produtos: Produto[]
   loading?: boolean
   placeholderCount?: number
+  emptyMessage?: string
 }
 
-export function ProductCarousel({ title, produtos, loading, placeholderCount = 5 }: Props) {
+export function ProductCarousel({ title, produtos, loading, placeholderCount = 5, emptyMessage }: Props) {
   const trackRef = useRef<HTMLDivElement>(null)
-  const items = loading || produtos.length === 0
+  const items = loading
     ? Array.from({ length: placeholderCount }, (_, i) => ({ key: `skel-${i}`, produto: undefined }))
     : produtos.map((p) => ({ key: `p-${p.id}`, produto: p }))
 
@@ -25,6 +26,9 @@ export function ProductCarousel({ title, produtos, loading, placeholderCount = 5
   return (
     <section className="carousel">
       <h2 className="section-title">{title}</h2>
+      {!loading && produtos.length === 0 ? (
+        <p className="carousel-empty">{emptyMessage ?? 'Nenhum produto para exibir.'}</p>
+      ) : null}
       <div className="carousel-wrapper">
         <button
           type="button"

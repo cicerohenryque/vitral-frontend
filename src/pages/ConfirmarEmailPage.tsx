@@ -38,18 +38,18 @@ export function ConfirmarEmailPage() {
           </>
         ) : estado === 'sucesso' ? (
           <>
-            <div className="confirmar-email-icon">✅</div>
+            <div className="confirmar-email-icon">✓</div>
             <h2>E-mail confirmado!</h2>
             <div className="flash success">{mensagem}</div>
             <Link to="/auth" className="confirmar-email-btn">Ir para o login</Link>
           </>
         ) : (
           <>
-            <div className="confirmar-email-icon">❌</div>
+            <div className="confirmar-email-icon">!</div>
             <h2>Confirmação falhou</h2>
             <div className="flash error">{mensagem}</div>
             <p className="confirmar-email-hint">
-              O link pode ter expirado (válido por 24h) ou já foi utilizado.
+              O link pode ter expirado ou já ter sido utilizado.
             </p>
             <Link to="/auth" className="confirmar-email-btn">Voltar para o login</Link>
           </>

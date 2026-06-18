@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { TopBar } from '../components/TopBar'
 import { ProductCard } from '../components/ProductCard'
@@ -16,10 +16,10 @@ export function BuscaPage() {
 
   const tab = (searchParams.get('tab') as Tab) ?? 'produtos'
   const q = searchParams.get('q') ?? ''
-  const categoria = searchParams.get('categoria') ?? ''
 
   const [inputQ, setInputQ] = useState(q)
   const [condicao, setCondicao] = useState(searchParams.get('condicao') ?? '')
+  const [seboId, setSeboId] = useState(searchParams.get('seboId') ?? '')
   const [precoMin, setPrecoMin] = useState(searchParams.get('precoMin') ?? '')
   const [precoMax, setPrecoMax] = useState(searchParams.get('precoMax') ?? '')
   const [cidade, setCidade] = useState(searchParams.get('cidade') ?? '')
@@ -27,7 +27,8 @@ export function BuscaPage() {
 
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [sebos, setSebos] = useState<Sebo[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loadingProdutos, setLoadingProdutos] = useState(true)
+  const [loadingSebos, setLoadingSebos] = useState(true)
   const [totalProdutos, setTotalProdutos] = useState(0)
   const [totalSebos, setTotalSebos] = useState(0)
 
@@ -38,12 +39,9 @@ export function BuscaPage() {
   }, [searchParams])
 
   useEffect(() => {
-    // Loading starts whenever the URL-backed filters change.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true)
     const params = {
       q: q || undefined,
-      categoria: categoria || undefined,
+      seboId: seboId ? Number(seboId) : undefined,
       condicao: condicao ? (condicao as CondicaoProduto) : undefined,
       precoMin: precoMin ? Number(precoMin) : undefined,
       precoMax: precoMax ? Number(precoMax) : undefined,
@@ -55,9 +53,12 @@ export function BuscaPage() {
         setProdutos(page.content)
         setTotalProdutos(page.totalElements)
       })
-      .catch(() => setProdutos([]))
-      .finally(() => setLoading(false))
-  }, [q, categoria, condicao, precoMin, precoMax])
+      .catch(() => {
+        setProdutos([])
+        setTotalProdutos(0)
+      })
+      .finally(() => setLoadingProdutos(false))
+  }, [q, seboId, condicao, precoMin, precoMax])
 
   useEffect(() => {
     const params = {
@@ -72,7 +73,11 @@ export function BuscaPage() {
         setSebos(page.content)
         setTotalSebos(page.totalElements)
       })
-      .catch(() => setSebos([]))
+      .catch(() => {
+        setSebos([])
+        setTotalSebos(0)
+      })
+      .finally(() => setLoadingSebos(false))
   }, [q, cidade, uf])
 
   function handleSearch(e: React.FormEvent) {
@@ -83,6 +88,8 @@ export function BuscaPage() {
     } else {
       next.delete('q')
     }
+    setLoadingProdutos(true)
+    setLoadingSebos(true)
     setSearchParams(next)
   }
 
@@ -98,15 +105,19 @@ export function BuscaPage() {
     if (tab === 'produtos') {
       if (condicao) next.set('condicao', condicao)
       else next.delete('condicao')
+      if (seboId) next.set('seboId', seboId)
+      else next.delete('seboId')
       if (precoMin) next.set('precoMin', precoMin)
       else next.delete('precoMin')
       if (precoMax) next.set('precoMax', precoMax)
       else next.delete('precoMax')
+      setLoadingProdutos(true)
     } else {
       if (cidade) next.set('cidade', cidade)
       else next.delete('cidade')
       if (uf) next.set('uf', uf)
       else next.delete('uf')
+      setLoadingSebos(true)
     }
     setSearchParams(next)
   }
@@ -114,14 +125,16 @@ export function BuscaPage() {
   function limparFiltros() {
     const next = new URLSearchParams()
     if (q) next.set('q', q)
-    if (categoria) next.set('categoria', categoria)
     next.set('tab', tab)
     setSearchParams(next)
     setCondicao('')
+    setSeboId('')
     setPrecoMin('')
     setPrecoMax('')
     setCidade('')
     setUf('')
+    setLoadingProdutos(true)
+    setLoadingSebos(true)
   }
 
   return (
@@ -139,13 +152,7 @@ export function BuscaPage() {
           <button type="submit">Buscar</button>
         </form>
 
-        {q || categoria ? (
-          <p className="busca-termo">
-            {q ? <>Resultados para: <strong>"{q}"</strong></> : null}
-            {q && categoria ? ' em ' : null}
-            {categoria ? <strong>{categoria}</strong> : null}
-          </p>
-        ) : null}
+        {q ? <p className="busca-termo">Resultados para: <strong>"{q}"</strong></p> : null}
 
         <div className="busca-layout">
           <aside className="busca-filtros">
@@ -161,6 +168,16 @@ export function BuscaPage() {
                       <option value={CondicaoProduto.SEMINOVO}>Seminovo</option>
                       <option value={CondicaoProduto.USADO}>Usado</option>
                     </select>
+                  </label>
+                  <label className="busca-filtro-label">
+                    ID do sebo
+                    <input
+                      type="number"
+                      min={1}
+                      value={seboId}
+                      onChange={(e) => setSeboId(e.target.value)}
+                      placeholder="ex: 1"
+                    />
                   </label>
                   <label className="busca-filtro-label">
                     Preço mín. (R$)
@@ -234,7 +251,7 @@ export function BuscaPage() {
             </div>
 
             {tab === 'produtos' ? (
-              loading ? (
+              loadingProdutos ? (
                 <div className="busca-grid">
                   {Array.from({ length: 8 }).map((_, i) => (
                     <div key={i} className="skeleton-card" />
@@ -249,35 +266,33 @@ export function BuscaPage() {
                   ))}
                 </div>
               )
+            ) : loadingSebos ? (
+              <p className="busca-empty">Carregando sebos...</p>
+            ) : sebos.length === 0 ? (
+              <p className="busca-empty">Nenhum sebo encontrado.</p>
             ) : (
-              sebos.length === 0 ? (
-                <p className="busca-empty">Nenhum sebo encontrado.</p>
-              ) : (
-                <div className="busca-sebos-lista">
-                  {sebos.map((s) => (
-                    <div key={s.id} className="busca-sebo-card">
-                      {s.fotoUrl ? (
-                        <img src={s.fotoUrl} alt={s.nome} className="busca-sebo-foto" />
-                      ) : (
-                        <div className="busca-sebo-foto busca-sebo-foto-placeholder">📚</div>
-                      )}
-                      <div className="busca-sebo-info">
-                        <h3>{s.nome}</h3>
-                        {s.cidade ? (
-                          <p className="busca-sebo-local">{s.cidade}{s.uf ? ` — ${s.uf}` : ''}</p>
-                        ) : null}
-                        {s.descricao ? <p className="busca-sebo-desc">{s.descricao}</p> : null}
-                        {s.horarioFuncionamento ? (
-                          <p className="busca-sebo-horario">⏰ {s.horarioFuncionamento}</p>
-                        ) : null}
-                        {s.telefone ? (
-                          <p className="busca-sebo-tel">📞 {s.telefone}</p>
-                        ) : null}
-                      </div>
+              <div className="busca-sebos-lista">
+                {sebos.map((s) => (
+                  <Link key={s.id} className="busca-sebo-card" to={`/vendedor/${s.id}`}>
+                    {s.fotoUrl ? (
+                      <img src={s.fotoUrl} alt={s.nome} className="busca-sebo-foto" />
+                    ) : (
+                      <div className="busca-sebo-foto busca-sebo-foto-placeholder">S</div>
+                    )}
+                    <div className="busca-sebo-info">
+                      <h3>{s.nome}</h3>
+                      {s.cidade ? (
+                        <p className="busca-sebo-local">{s.cidade}{s.uf ? ` - ${s.uf}` : ''}</p>
+                      ) : null}
+                      {s.descricao ? <p className="busca-sebo-desc">{s.descricao}</p> : null}
+                      {s.horarioFuncionamento ? (
+                        <p className="busca-sebo-horario">{s.horarioFuncionamento}</p>
+                      ) : null}
+                      {s.telefone ? <p className="busca-sebo-tel">{s.telefone}</p> : null}
                     </div>
-                  ))}
-                </div>
-              )
+                  </Link>
+                ))}
+              </div>
             )}
           </section>
         </div>

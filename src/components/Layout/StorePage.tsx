@@ -23,7 +23,7 @@ export function StorePage({
   function handleSearch(event: React.FormEvent) {
     event.preventDefault()
     const term = search.trim()
-    if (term) navigate(`/busca?q=${encodeURIComponent(term)}`)
+    if (term) navigate(`/busca?tab=produtos&q=${encodeURIComponent(term)}`)
   }
 
   return (

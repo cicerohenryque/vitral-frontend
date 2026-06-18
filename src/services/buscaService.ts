@@ -6,7 +6,6 @@ import type { CondicaoProduto } from '../types/produto'
 
 export type BuscaProdutosParams = {
   q?: string
-  categoria?: string
   seboId?: number
   condicao?: CondicaoProduto
   precoMin?: number

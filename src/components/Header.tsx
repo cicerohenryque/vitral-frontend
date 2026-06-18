@@ -39,7 +39,8 @@ export function Header() {
           className="header-search"
           onSubmit={(e) => {
             e.preventDefault()
-            if (search.trim()) navigate(`/busca?q=${encodeURIComponent(search.trim())}`)
+            const term = search.trim()
+            if (term) navigate(`/busca?tab=produtos&q=${encodeURIComponent(term)}`)
           }}
         >
           <input

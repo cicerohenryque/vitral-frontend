@@ -1,12 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useMemo, useState } from 'react'
 import { StorePage } from '../Layout/StorePage'
-import { extractErrorMessage } from '../../services/api'
-import { categoriaService } from '../../services/categoriaService'
 import type { Categoria } from '../../types/categoria'
 import './CategoriesPage.css'
 
-const fallbackCategories: Categoria[] = [
+const categories: Categoria[] = [
   { nome: 'Livros', slug: 'livros' },
   { nome: 'Discos', slug: 'discos' },
   { nome: 'CDs', slug: 'cds' },
@@ -18,38 +15,13 @@ const fallbackCategories: Categoria[] = [
 ]
 
 export function CategoriesPage() {
-  const [categories, setCategories] = useState<Categoria[]>([])
   const [query, setQuery] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    let active = true
-
-    categoriaService
-      .listar()
-      .then((items) => {
-        if (active) setCategories(items.length ? items : fallbackCategories)
-      })
-      .catch((err) => {
-        if (!active) return
-        setCategories(fallbackCategories)
-        setError(extractErrorMessage(err, 'Nao foi possivel carregar as categorias do servidor.'))
-      })
-      .finally(() => {
-        if (active) setLoading(false)
-      })
-
-    return () => {
-      active = false
-    }
-  }, [])
 
   const filteredCategories = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
     if (!normalizedQuery) return categories
     return categories.filter((category) => category.nome.toLowerCase().includes(normalizedQuery))
-  }, [categories, query])
+  }, [query])
 
   return (
     <StorePage
@@ -66,17 +38,15 @@ export function CategoriesPage() {
         />
       </form>
 
-      {error ? <p className="category-error">{error}</p> : null}
+      <p className="category-error">
+        Categorias ainda não existem como endpoint no backend atual. Use a busca para filtrar produtos por texto, sebo, condição e preço.
+      </p>
 
       <section className="category-grid" aria-label="Categorias do acervo">
-        {loading ? (
-          Array.from({ length: 8 }).map((_, index) => (
-            <div className="category-card category-card-skeleton" key={index} aria-hidden="true" />
-          ))
-        ) : filteredCategories.length === 0 ? (
+        {filteredCategories.length === 0 ? (
           <p className="category-empty">Nenhuma categoria encontrada.</p>
         ) : filteredCategories.map((category, index) => (
-          <Link className="category-card" to={`/busca?tab=produtos&categoria=${encodeURIComponent(category.slug)}`} key={category.slug}>
+          <article className="category-card" key={category.slug}>
             <span className="category-number">{String(index + 1).padStart(2, '0')}</span>
             <h2>{category.nome}</h2>
             {typeof category.totalProdutos === 'number' ? (
@@ -85,7 +55,7 @@ export function CategoriesPage() {
             <span className="category-arrow" aria-hidden="true">
               →
             </span>
-          </Link>
+          </article>
         ))}
       </section>
     </StorePage>
