@@ -21,24 +21,29 @@ const EMPTY: SeboRequest = {
 }
 
 export function MeuSeboPage() {
-  const { seboId, setSeboId } = useAuth()
+  const { account, seboId, setSeboId } = useAuth()
   const [form, setForm] = useState<SeboRequest>(EMPTY)
   const [existing, setExisting] = useState<Sebo | null>(null)
-  const [loading, setLoading] = useState(Boolean(seboId))
+  const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
-    if (!seboId) {
-      return
-    }
+    const request = seboId
+      ? seboService.buscarPorId(seboId)
+      : account
+        ? seboService.buscarPorConta(account.id, account.name, account.email)
+        : Promise.resolve(null)
 
-    seboService
-      .buscarPorId(seboId)
+    request
       .then((sebo) => {
         if (!active) return
+        if (!sebo) {
+          setExisting(null)
+          return
+        }
         setExisting(sebo)
         setSeboId(sebo.id)
         setForm({
@@ -61,7 +66,7 @@ export function MeuSeboPage() {
     return () => {
       active = false
     }
-  }, [seboId, setSeboId])
+  }, [account, seboId, setSeboId])
 
   function update<K extends keyof SeboRequest>(key: K, value: SeboRequest[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))

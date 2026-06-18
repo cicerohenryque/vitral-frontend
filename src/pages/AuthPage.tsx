@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { authService } from '../services/authService'
+import { seboService } from '../services/seboService'
 import { extractErrorMessage } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
 import { AccountType } from '../types/account'
@@ -11,7 +12,7 @@ import './AuthPage.css'
 
 export function AuthPage() {
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const { login, setSeboId } = useAuth()
 
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
@@ -34,6 +35,14 @@ export function AuthPage() {
     try {
       const res = await authService.login({ email: loginEmail, password: loginPassword })
       login(res.token, res.account)
+      if (res.account.type === AccountType.SEBO) {
+        try {
+          const sebo = await seboService.buscarPorConta(res.account.id, res.account.name, res.account.email)
+          if (sebo) setSeboId(sebo.id)
+        } catch {
+          // The user can still create or recover the sebo profile from the panel.
+        }
+      }
       navigate('/')
     } catch (err) {
       setLoginError(extractErrorMessage(err, 'Falha ao entrar'))

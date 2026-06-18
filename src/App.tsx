@@ -79,11 +79,39 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/carrinho" element={<CartPage />} />
-        <Route path="/confirmar-pedido" element={<CheckoutPage />} />
+        <Route
+          path="/carrinho"
+          element={
+            <ProtectedRoute>
+              <CartPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/confirmar-pedido"
+          element={
+            <ProtectedRoute>
+              <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/categorias" element={<CategoriesPage />} />
-        <Route path="/favoritos" element={<FavoritesPage />} />
-        <Route path="/historico" element={<HistoryPage />} />
+        <Route
+          path="/favoritos"
+          element={
+            <ProtectedRoute>
+              <FavoritesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/historico"
+          element={
+            <ProtectedRoute>
+              <HistoryPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/anuncios"
           element={
@@ -92,10 +120,24 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/mensagens" element={<MessagesPage />} />
+        <Route
+          path="/mensagens"
+          element={
+            <ProtectedRoute>
+              <MessagesPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/ofertas" element={<OffersPage />} />
         <Route path="/produto/:productId" element={<ProductPage />} />
-        <Route path="/reservas" element={<ReservationsPage />} />
+        <Route
+          path="/reservas"
+          element={
+            <ProtectedRoute>
+              <ReservationsPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/sebo/perfil"
           element={
@@ -104,9 +146,30 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/vendas" element={<SalesOrdersPage />} />
-        <Route path="/vendas/historico" element={<SalesHistoryPage />} />
-        <Route path="/vendas/:orderId/confirmar" element={<SaleConfirmationPage />} />
+        <Route
+          path="/vendas"
+          element={
+            <ProtectedRoute requireRole={AccountType.SEBO}>
+              <SalesOrdersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendas/historico"
+          element={
+            <ProtectedRoute requireRole={AccountType.SEBO}>
+              <SalesHistoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendas/:orderId/confirmar"
+          element={
+            <ProtectedRoute requireRole={AccountType.SEBO}>
+              <SaleConfirmationPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/vendedor/:sellerId" element={<SellerPage />} />
         <Route path="/lancamentos" element={<ReleasesPage />} />
         <Route path="/suporte" element={<SupportPage />} />
