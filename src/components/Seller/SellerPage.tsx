@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ProductCard } from '../ProductCard'
-import { StorePage } from '../Layout/StorePage'
+import { StorePage, StoreStatus } from '../Layout/StorePage'
 import { produtoService } from '../../services/produtoService'
 import { seboService } from '../../services/seboService'
 import { extractErrorMessage } from '../../services/api'
@@ -46,15 +46,33 @@ export function SellerPage() {
   if (invalidSellerId) {
     return (
       <StorePage title="Sebo indisponivel" subtitle="O identificador informado nao e valido.">
-        <p className="store-empty">Informe um ID de sebo valido.</p>
+        <StoreStatus
+          title="ID de sebo invalido"
+          description="Confira o link acessado ou procure o sebo novamente pela busca."
+          tone="error"
+          action={<Link to="/busca?tab=sebos">Buscar sebos</Link>}
+        />
       </StorePage>
     )
   }
 
   return (
     <StorePage title="Perfil do vendedor" subtitle="Conheca o sebo e os itens disponiveis.">
-      {loading ? <p className="busca-empty">Carregando sebo...</p> : null}
-      {error ? <div className="flash error">{error}</div> : null}
+      {loading ? (
+        <StoreStatus
+          title="Carregando sebo"
+          description="Buscando o perfil público e os produtos disponíveis."
+          busy
+        />
+      ) : null}
+      {!loading && error ? (
+        <StoreStatus
+          title="Nao foi possivel carregar este sebo"
+          description={error}
+          tone="error"
+          action={<Link to="/busca?tab=sebos">Buscar sebos</Link>}
+        />
+      ) : null}
       {seller ? (
         <>
           <section className="seller-profile">
@@ -82,7 +100,11 @@ export function SellerPage() {
               </div>
             </header>
             {products.length === 0 ? (
-              <p className="busca-empty">Este sebo ainda nao possui produtos cadastrados.</p>
+              <StoreStatus
+                title="Nenhum produto cadastrado"
+                description="Este sebo existe no backend, mas ainda nao possui produtos publicados."
+                action={<Link to="/busca">Voltar para busca</Link>}
+              />
             ) : (
               <div className="busca-grid">
                 {products.map((product) => (

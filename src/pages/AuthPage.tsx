@@ -88,7 +88,7 @@ export function AuthPage() {
 
       <div className="auth-grid">
         <form className="auth-card" onSubmit={handleLogin}>
-          {loginError ? <div className="flash error">{loginError}</div> : null}
+          {loginError ? <div className="flash error" role="alert">{loginError}</div> : null}
           <Input
             id="login-email"
             label="Usuário ou E-mail:"
@@ -112,7 +112,7 @@ export function AuthPage() {
 
         {regSuccess ? (
           <div className="auth-card auth-success-card">
-            <div className="flash success">{regSuccess}</div>
+            <div className="flash success" role="status">{regSuccess}</div>
             <p className="auth-card-subtitle">Verifique sua caixa de entrada e clique no link de confirmação para ativar sua conta.</p>
             <Button type="button" onClick={() => setRegSuccess(null)}>
               Cadastrar outra conta
@@ -122,7 +122,7 @@ export function AuthPage() {
           <form className="auth-card" onSubmit={handleRegister}>
             <p className="auth-card-title">Ainda não possui conta?</p>
             <p className="auth-card-subtitle"><em>Cadastra-se:</em></p>
-            {regError ? <div className="flash error">{regError}</div> : null}
+            {regError ? <div className="flash error" role="alert">{regError}</div> : null}
             <Input
               id="reg-name"
               label="Usuário:"

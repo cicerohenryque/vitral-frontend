@@ -1,22 +1,19 @@
 import { Link } from 'react-router-dom'
-import { StorePage } from '../Layout/StorePage'
-import './CheckoutPage.css'
+import { StorePage, StoreStatus } from '../Layout/StorePage'
 
 export function CheckoutPage() {
   return (
     <StorePage title="Confirmar pedido" subtitle="Pedidos ainda não estão disponíveis no backend atual.">
-      <section className="checkout-success">
-        <span>Funcionalidade pendente</span>
-        <h2>Não há endpoint para confirmar pedidos.</h2>
-        <p>
-          Assim que o backend expuser criação de pedidos/reservas, esta tela poderá enviar as
-          solicitações reais para os sebos.
-        </p>
-        <div>
+      <StoreStatus
+        title="Não há endpoint para confirmar pedidos"
+        description="Assim que o backend expuser criação de pedidos ou reservas, esta tela poderá enviar solicitações reais para os sebos."
+        action={
+          <>
           <Link to="/carrinho">Voltar ao carrinho</Link>
           <Link to="/busca">Buscar produtos</Link>
-        </div>
-      </section>
+          </>
+        }
+      />
     </StorePage>
   )
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Header } from '../components/Header'
 import { TopBar } from '../components/TopBar'
+import { StoreStatus } from '../components/Layout/StorePage'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { seboService } from '../services/seboService'
@@ -100,7 +101,13 @@ export function MeuSeboPage() {
       <div className="page">
         <TopBar />
         <Header />
-        <main className="container"><p>Carregando...</p></main>
+        <main className="container form-page">
+          <StoreStatus
+            title="Carregando perfil do sebo"
+            description="Buscando os dados do sebo vinculados à sua conta."
+            busy
+          />
+        </main>
       </div>
     )
   }
@@ -111,8 +118,8 @@ export function MeuSeboPage() {
       <Header />
       <main className="container form-page">
         <h1 className="form-page-title">{existing ? 'Editar perfil do sebo' : 'Cadastrar perfil do sebo'}</h1>
-        {error ? <div className="flash error">{error}</div> : null}
-        {success ? <div className="flash success">{success}</div> : null}
+        {error ? <div className="flash error" role="alert">{error}</div> : null}
+        {success ? <div className="flash success" role="status">{success}</div> : null}
         <form className="form-grid" onSubmit={handleSubmit}>
           <Input id="descricao" label="Descrição"
             value={form.descricao ?? ''} onChange={(e) => update('descricao', e.target.value)} />

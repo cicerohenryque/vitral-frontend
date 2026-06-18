@@ -11,6 +11,14 @@ type StorePageProps = {
   searchPlaceholder?: string
 }
 
+type StoreStatusProps = {
+  title: string
+  description: string
+  action?: ReactNode
+  tone?: 'neutral' | 'success' | 'error'
+  busy?: boolean
+}
+
 export function StorePage({
   title,
   subtitle,
@@ -83,5 +91,26 @@ export function ProductPlaceholder({
       <h2>{label}</h2>
       <span className="store-product-line" />
     </article>
+  )
+}
+
+export function StoreStatus({
+  title,
+  description,
+  action,
+  tone = 'neutral',
+  busy = false,
+}: StoreStatusProps) {
+  return (
+    <section
+      className={`store-status store-status-${tone}`}
+      aria-busy={busy}
+      aria-live={busy ? 'polite' : undefined}
+    >
+      {busy ? <span className="store-status-spinner" aria-hidden="true" /> : null}
+      <h2>{title}</h2>
+      <p>{description}</p>
+      {action ? <div className="store-status-action">{action}</div> : null}
+    </section>
   )
 }

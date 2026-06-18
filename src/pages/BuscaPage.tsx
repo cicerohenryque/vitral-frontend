@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { TopBar } from '../components/TopBar'
 import { ProductCard } from '../components/ProductCard'
+import { extractErrorMessage } from '../services/api'
 import { buscaService } from '../services/buscaService'
 import type { Produto } from '../types/produto'
 import type { Sebo } from '../types/sebo'
@@ -29,6 +30,8 @@ export function BuscaPage() {
   const [sebos, setSebos] = useState<Sebo[]>([])
   const [loadingProdutos, setLoadingProdutos] = useState(true)
   const [loadingSebos, setLoadingSebos] = useState(true)
+  const [errorProdutos, setErrorProdutos] = useState<string | null>(null)
+  const [errorSebos, setErrorSebos] = useState<string | null>(null)
   const [totalProdutos, setTotalProdutos] = useState(0)
   const [totalSebos, setTotalSebos] = useState(0)
 
@@ -50,10 +53,12 @@ export function BuscaPage() {
     buscaService
       .buscarProdutos(params)
       .then((page) => {
+        setErrorProdutos(null)
         setProdutos(page.content)
         setTotalProdutos(page.totalElements)
       })
-      .catch(() => {
+      .catch((err) => {
+        setErrorProdutos(extractErrorMessage(err, 'Nao foi possivel carregar os produtos.'))
         setProdutos([])
         setTotalProdutos(0)
       })
@@ -70,10 +75,12 @@ export function BuscaPage() {
     buscaService
       .buscarSebos(params)
       .then((page) => {
+        setErrorSebos(null)
         setSebos(page.content)
         setTotalSebos(page.totalElements)
       })
-      .catch(() => {
+      .catch((err) => {
+        setErrorSebos(extractErrorMessage(err, 'Nao foi possivel carregar os sebos.'))
         setSebos([])
         setTotalSebos(0)
       })
@@ -90,12 +97,21 @@ export function BuscaPage() {
     }
     setLoadingProdutos(true)
     setLoadingSebos(true)
+    setErrorProdutos(null)
+    setErrorSebos(null)
     setSearchParams(next)
   }
 
   function setTab(t: Tab) {
     const next = new URLSearchParams(searchParams)
     next.set('tab', t)
+    if (t === 'produtos') {
+      setLoadingProdutos(true)
+      setErrorProdutos(null)
+    } else {
+      setLoadingSebos(true)
+      setErrorSebos(null)
+    }
     setSearchParams(next)
   }
 
@@ -112,12 +128,14 @@ export function BuscaPage() {
       if (precoMax) next.set('precoMax', precoMax)
       else next.delete('precoMax')
       setLoadingProdutos(true)
+      setErrorProdutos(null)
     } else {
       if (cidade) next.set('cidade', cidade)
       else next.delete('cidade')
       if (uf) next.set('uf', uf)
       else next.delete('uf')
       setLoadingSebos(true)
+      setErrorSebos(null)
     }
     setSearchParams(next)
   }
@@ -135,6 +153,8 @@ export function BuscaPage() {
     setUf('')
     setLoadingProdutos(true)
     setLoadingSebos(true)
+    setErrorProdutos(null)
+    setErrorSebos(null)
   }
 
   return (
@@ -145,6 +165,7 @@ export function BuscaPage() {
         <form className="busca-search-bar" onSubmit={handleSearch}>
           <input
             type="search"
+            aria-label="Pesquisar produtos ou sebos"
             placeholder="O que você está procurando?"
             value={inputQ}
             onChange={(e) => setInputQ(e.target.value)}
@@ -233,9 +254,11 @@ export function BuscaPage() {
           </aside>
 
           <section className="busca-resultados">
-            <div className="busca-tabs">
+            <div className="busca-tabs" role="tablist" aria-label="Tipo de resultado">
               <button
                 type="button"
+                role="tab"
+                aria-selected={tab === 'produtos'}
                 className={`busca-tab${tab === 'produtos' ? ' active' : ''}`}
                 onClick={() => setTab('produtos')}
               >
@@ -243,6 +266,8 @@ export function BuscaPage() {
               </button>
               <button
                 type="button"
+                role="tab"
+                aria-selected={tab === 'sebos'}
                 className={`busca-tab${tab === 'sebos' ? ' active' : ''}`}
                 onClick={() => setTab('sebos')}
               >
@@ -251,7 +276,9 @@ export function BuscaPage() {
             </div>
 
             {tab === 'produtos' ? (
-              loadingProdutos ? (
+              errorProdutos ? (
+                <div className="flash error" role="alert">{errorProdutos}</div>
+              ) : loadingProdutos ? (
                 <div className="busca-grid">
                   {Array.from({ length: 8 }).map((_, i) => (
                     <div key={i} className="skeleton-card" />
@@ -266,6 +293,8 @@ export function BuscaPage() {
                   ))}
                 </div>
               )
+            ) : errorSebos ? (
+              <div className="flash error" role="alert">{errorSebos}</div>
             ) : loadingSebos ? (
               <p className="busca-empty">Carregando sebos...</p>
             ) : sebos.length === 0 ? (

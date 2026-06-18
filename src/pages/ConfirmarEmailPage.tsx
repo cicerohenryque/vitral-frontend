@@ -32,22 +32,22 @@ export function ConfirmarEmailPage() {
     <div className="confirmar-email-page">
       <div className="confirmar-email-card">
         {estado === 'carregando' ? (
-          <>
+          <div role="status">
             <div className="confirmar-email-icon">⏳</div>
             <h2>Confirmando seu e-mail...</h2>
-          </>
+          </div>
         ) : estado === 'sucesso' ? (
           <>
             <div className="confirmar-email-icon">✓</div>
             <h2>E-mail confirmado!</h2>
-            <div className="flash success">{mensagem}</div>
+            <div className="flash success" role="status">{mensagem}</div>
             <Link to="/auth" className="confirmar-email-btn">Ir para o login</Link>
           </>
         ) : (
           <>
             <div className="confirmar-email-icon">!</div>
             <h2>Confirmação falhou</h2>
-            <div className="flash error">{mensagem}</div>
+            <div className="flash error" role="alert">{mensagem}</div>
             <p className="confirmar-email-hint">
               O link pode ter expirado ou já ter sido utilizado.
             </p>

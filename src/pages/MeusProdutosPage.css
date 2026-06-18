@@ -1,5 +1,11 @@
+.produto-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
 .produto-table {
   width: 100%;
+  min-width: 680px;
   border-collapse: separate;
   border-spacing: 0;
   font-family: var(--font-sans);
@@ -42,8 +48,7 @@
 }
 
 @media (max-width: 760px) {
-  .produto-table {
-    display: block;
-    overflow-x: auto;
+  .produto-table-scroll {
+    padding-bottom: 6px;
   }
 }

@@ -25,9 +25,11 @@ export function Header() {
             type="button"
             className="header-menu-button"
             aria-label="Abrir menu"
+            aria-controls="main-side-menu"
+            aria-expanded={menuOpen}
             onClick={() => setMenuOpen((v) => !v)}
           >
-            <span /><span /><span />
+            <span aria-hidden="true" /><span aria-hidden="true" /><span aria-hidden="true" />
           </button>
         ) : (
           <Link to="/" className="header-logo">
@@ -45,6 +47,7 @@ export function Header() {
         >
           <input
             type="search"
+            aria-label="Pesquisar produtos"
             placeholder="O que você está procurando?"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -63,7 +66,9 @@ export function Header() {
               <button type="button" className="header-action-link" onClick={handleLogout}>
                 Sair
               </button>
-              <span className="header-fav" aria-label="Favoritos">♥</span>
+              {!isSebo ? (
+                <Link to="/favoritos" className="header-fav" aria-label="Favoritos">♥</Link>
+              ) : null}
             </>
           ) : (
             <Link to="/auth" className="header-entrar">

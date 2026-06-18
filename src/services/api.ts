@@ -4,7 +4,7 @@ import type { ApiError } from '../types/common'
 export const TOKEN_KEY = 'vitral_token'
 
 export const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? '/api/v1',
   headers: { 'Content-Type': 'application/json' },
 })
 

@@ -24,11 +24,11 @@ export function ProductCarousel({ title, produtos, loading, placeholderCount = 5
   }
 
   return (
-    <section className="carousel">
+    <section className="carousel" aria-busy={loading}>
       <h2 className="section-title">{title}</h2>
       {!loading && produtos.length === 0 ? (
         <p className="carousel-empty">{emptyMessage ?? 'Nenhum produto para exibir.'}</p>
-      ) : null}
+      ) : (
       <div className="carousel-wrapper">
         <button
           type="button"
@@ -54,6 +54,7 @@ export function ProductCarousel({ title, produtos, loading, placeholderCount = 5
           ›
         </button>
       </div>
+      )}
     </section>
   )
 }

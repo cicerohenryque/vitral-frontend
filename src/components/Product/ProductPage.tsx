@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { CartIcon, HeartIcon } from '../Layout/Icons'
-import { StorePage } from '../Layout/StorePage'
+import { StorePage, StoreStatus } from '../Layout/StorePage'
 import { extractErrorMessage } from '../../services/api'
 import { produtoService } from '../../services/produtoService'
 import { seboService } from '../../services/seboService'
@@ -49,7 +48,11 @@ export function ProductPage() {
   if (invalidProductId) {
     return (
       <StorePage title="Produto indisponivel" subtitle="Nao foi possivel carregar este item.">
-        <p className="product-empty">Produto invalido.</p>
+        <StoreStatus
+          title="Produto invalido"
+          description="Confira o link acessado e tente abrir o produto novamente pela busca."
+          tone="error"
+        />
       </StorePage>
     )
   }
@@ -74,7 +77,12 @@ export function ProductPage() {
   if (error || !produto) {
     return (
       <StorePage title="Produto indisponivel" subtitle="Nao foi possivel carregar este item.">
-        <p className="product-empty">{error ?? 'Produto nao encontrado.'}</p>
+        <StoreStatus
+          title="Produto nao encontrado"
+          description={error ?? 'Nao encontramos este produto no backend.'}
+          tone="error"
+          action={<Link to="/busca">Voltar para busca</Link>}
+        />
       </StorePage>
     )
   }
@@ -86,16 +94,18 @@ export function ProductPage() {
           <div className="product-main-image">
             {produto.fotoUrl ? <img src={produto.fotoUrl} alt={produto.titulo} /> : null}
           </div>
-          <div className="product-thumbnails">
-            {Array.from({ length: produto.fotoUrl ? 1 : 4 }, (_, index) => (
-              <button
-                className={index === 0 ? 'is-selected' : ''}
-                type="button"
-                aria-label={`Ver imagem ${index + 1}`}
-                key={index}
-              />
-            ))}
-          </div>
+          {produto.fotoUrl ? (
+            <div className="product-thumbnails">
+              {Array.from({ length: 1 }, (_, index) => (
+                <button
+                  className={index === 0 ? 'is-selected' : ''}
+                  type="button"
+                  aria-label={`Ver imagem ${index + 1}`}
+                  key={index}
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
 
         <article className="product-information">
@@ -113,15 +123,23 @@ export function ProductPage() {
           </dl>
 
           <div className="product-actions">
-            <button className="product-reserve" type="button" disabled={!produto.ativo}>Solicitar reserva</button>
-            <Link className="product-cart" to="/carrinho">
-              <CartIcon size={22} />
-              Adicionar ao carrinho
-            </Link>
-            <button className="product-favorite" type="button" aria-label="Adicionar aos favoritos">
-              <HeartIcon size={26} />
+            <button className="product-reserve" type="button" disabled>
+              Reserva indisponível
+            </button>
+            <button className="product-cart" type="button" disabled>
+              Carrinho indisponível
+            </button>
+            <button className="product-favorite" type="button" disabled aria-label="Favoritos indisponíveis">
+              Favorito indisponível
             </button>
           </div>
+          {!produto.ativo ? (
+            <p className="product-action-note">Este produto está indisponível no acervo.</p>
+          ) : (
+            <p className="product-action-note">
+              Reserva, carrinho e favoritos dependem de endpoints que ainda não existem no backend.
+            </p>
+          )}
 
           <Link className="product-seller" to={`/vendedor/${produto.seboId}`}>
             <span>Vendido por</span>

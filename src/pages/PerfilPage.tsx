@@ -38,11 +38,11 @@ export function PerfilPage() {
   return (
     <div className="page">
       <TopBar />
-      <Header />
+        <Header />
       <main className="container form-page">
         <h1 className="form-page-title">Meu Perfil</h1>
-        {erro ? <div className="flash error">{erro}</div> : null}
-        {sucesso ? <div className="flash success">{sucesso}</div> : null}
+        {erro ? <div className="flash error" role="alert">{erro}</div> : null}
+        {sucesso ? <div className="flash success" role="status">{sucesso}</div> : null}
         <form className="form-grid" onSubmit={handleSubmit}>
           <Input
             id="perfil-name"

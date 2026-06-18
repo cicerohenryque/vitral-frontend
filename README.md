@@ -1,73 +1,82 @@
-# React + TypeScript + Vite
+# Vitral Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend React + TypeScript do Vitral, integrado ao backend Spring em `/api/v1`.
 
-Currently, two official plugins are available:
+## Requisitos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js compatível com Vite 8
+- npm
+- Backend Vitral rodando localmente, por padrão em `http://localhost:8080`
 
-## React Compiler
+## Configuração
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Crie um arquivo `.env` a partir do exemplo:
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Variáveis disponíveis:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+VITE_API_URL=http://localhost:8080
+VITE_API_BASE_URL=/api/v1
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `VITE_API_URL`: destino do proxy do Vite para chamadas iniciadas com `/api`.
+- `VITE_API_BASE_URL`: base usada pelo Axios. Em desenvolvimento, mantenha `/api/v1` para usar o proxy e evitar CORS.
+
+## Rodando localmente
+
+```bash
+npm install
+npm run dev
+```
+
+O app abre em `http://localhost:5173` e encaminha `/api` para o backend configurado em `VITE_API_URL`.
+
+## Scripts
+
+```bash
+npm run dev
+npm run lint
+npm run build
+npm run preview
+```
+
+## Integrações atuais
+
+Já usam endpoints reais do backend:
+
+- autenticação, cadastro, confirmação de e-mail e logout;
+- perfil do usuário autenticado;
+- cadastro/edição do perfil do sebo;
+- cadastro, edição, listagem e remoção de produtos do sebo;
+- busca de produtos e sebos;
+- detalhe real do produto por ID;
+- perfil público real do sebo por ID;
+- proteção de rotas para usuário autenticado e contas `SEBO`.
+
+Rotas sem endpoint no backend exibem estado pendente, sem dados fictícios:
+
+- favoritos;
+- carrinho;
+- reservas;
+- confirmação de pedido;
+- histórico de pedidos;
+- compras recebidas;
+- confirmação/recusa de vendas;
+- histórico de vendas;
+- mensagens;
+- ofertas;
+- lançamentos;
+- exclusão de conta.
+
+## Validação
+
+Antes de abrir PR ou fazer push, rode:
+
+```bash
+npm run lint
+npm run build
 ```
