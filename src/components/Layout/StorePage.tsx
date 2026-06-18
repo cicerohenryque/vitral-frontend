@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, type ReactNode } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { BrandLogo } from './BrandLogo'
 import { BackIcon, SearchIcon, UserIcon } from './Icons'
 import './StorePage.css'
@@ -17,6 +17,15 @@ export function StorePage({
   children,
   searchPlaceholder = 'O que você está procurando?',
 }: StorePageProps) {
+  const navigate = useNavigate()
+  const [search, setSearch] = useState('')
+
+  function handleSearch(event: React.FormEvent) {
+    event.preventDefault()
+    const term = search.trim()
+    if (term) navigate(`/busca?q=${encodeURIComponent(term)}`)
+  }
+
   return (
     <main className="store-page">
       <header className="store-header">
@@ -41,8 +50,13 @@ export function StorePage({
           {subtitle && <p>{subtitle}</p>}
         </div>
 
-        <form className="store-search" role="search" onSubmit={(event) => event.preventDefault()}>
-          <input aria-label="Pesquisar" placeholder={searchPlaceholder} />
+        <form className="store-search" role="search" onSubmit={handleSearch}>
+          <input
+            aria-label="Pesquisar"
+            placeholder={searchPlaceholder}
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
           <button type="submit" aria-label="Pesquisar">
             <SearchIcon size={20} />
           </button>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { SideMenu } from './SideMenu'
-import logo from '../assets/hero.png'
+import logo from '../assets/vitral-sebo-icon.svg'
 import './Header.css'
 
 export function Header() {

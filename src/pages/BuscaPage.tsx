@@ -16,6 +16,7 @@ export function BuscaPage() {
 
   const tab = (searchParams.get('tab') as Tab) ?? 'produtos'
   const q = searchParams.get('q') ?? ''
+  const categoria = searchParams.get('categoria') ?? ''
 
   const [inputQ, setInputQ] = useState(q)
   const [condicao, setCondicao] = useState(searchParams.get('condicao') ?? '')
@@ -42,6 +43,7 @@ export function BuscaPage() {
     setLoading(true)
     const params = {
       q: q || undefined,
+      categoria: categoria || undefined,
       condicao: condicao ? (condicao as CondicaoProduto) : undefined,
       precoMin: precoMin ? Number(precoMin) : undefined,
       precoMax: precoMax ? Number(precoMax) : undefined,
@@ -55,7 +57,7 @@ export function BuscaPage() {
       })
       .catch(() => setProdutos([]))
       .finally(() => setLoading(false))
-  }, [q, condicao, precoMin, precoMax])
+  }, [q, categoria, condicao, precoMin, precoMax])
 
   useEffect(() => {
     const params = {
@@ -112,6 +114,7 @@ export function BuscaPage() {
   function limparFiltros() {
     const next = new URLSearchParams()
     if (q) next.set('q', q)
+    if (categoria) next.set('categoria', categoria)
     next.set('tab', tab)
     setSearchParams(next)
     setCondicao('')
@@ -136,7 +139,13 @@ export function BuscaPage() {
           <button type="submit">Buscar</button>
         </form>
 
-        {q ? <p className="busca-termo">Resultados para: <strong>"{q}"</strong></p> : null}
+        {q || categoria ? (
+          <p className="busca-termo">
+            {q ? <>Resultados para: <strong>"{q}"</strong></> : null}
+            {q && categoria ? ' em ' : null}
+            {categoria ? <strong>{categoria}</strong> : null}
+          </p>
+        ) : null}
 
         <div className="busca-layout">
           <aside className="busca-filtros">

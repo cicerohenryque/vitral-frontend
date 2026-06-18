@@ -6,4 +6,8 @@ export const usuarioService = {
     const { data } = await api.put<Account>('/usuarios/me', payload)
     return data
   },
+
+  async excluirConta(): Promise<void> {
+    await api.delete('/usuarios/me')
+  },
 }

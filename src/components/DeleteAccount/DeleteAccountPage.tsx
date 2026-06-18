@@ -1,18 +1,32 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../hooks/useAuth'
+import { usuarioService } from '../../services/usuarioService'
 import { MinusCircleIcon } from '../Layout/Icons'
 import { StorePage } from '../Layout/StorePage'
 import './DeleteAccountPage.css'
 
 export function DeleteAccountPage() {
   const [confirmation, setConfirmation] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
   const navigate = useNavigate()
+  const { logout } = useAuth()
   const canDelete = confirmation.trim().toUpperCase() === 'EXCLUIR'
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!canDelete) return
-    localStorage.removeItem('authToken')
-    navigate('/', { replace: true })
+    setBusy(true)
+    setError('')
+
+    try {
+      await usuarioService.excluirConta()
+      logout()
+      navigate('/', { replace: true })
+    } catch {
+      setError('Não foi possível excluir a conta. Tente novamente.')
+      setBusy(false)
+    }
   }
 
   return (
@@ -36,8 +50,11 @@ export function DeleteAccountPage() {
             Confirmação
             <input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} placeholder="Digite EXCLUIR" />
           </label>
-          <button type="button" disabled={!canDelete} onClick={handleDelete}>Excluir minha conta</button>
-          <Link to="/conta">Cancelar e voltar</Link>
+          {error && <p>{error}</p>}
+          <button type="button" disabled={!canDelete || busy} onClick={handleDelete}>
+            {busy ? 'Excluindo...' : 'Excluir minha conta'}
+          </button>
+          <Link to="/painel/perfil">Cancelar e voltar</Link>
         </div>
       </section>
     </StorePage>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { TopBar } from '../components/TopBar'
 import { Button } from '../components/ui/Button'
@@ -57,6 +58,7 @@ export function PerfilPage() {
             <Button type="submit" disabled={busy}>
               {busy ? 'Salvando...' : 'Salvar'}
             </Button>
+            <Link to="/conta/excluir">Excluir conta</Link>
           </div>
         </form>
       </main>

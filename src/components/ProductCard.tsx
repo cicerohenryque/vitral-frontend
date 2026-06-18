@@ -12,7 +12,7 @@ export function ProductCard({ produto }: Props) {
   }
 
   return (
-    <Link to={`/produtos/${produto.id}`} className="product-card product-card-real">
+    <Link to={`/produto/${produto.id}`} className="product-card product-card-real">
       {produto.fotoUrl ? (
         <img src={produto.fotoUrl} alt={produto.titulo} />
       ) : (

@@ -12,6 +12,11 @@ export const seboService = {
     return data
   },
 
+  async buscarMeu(): Promise<Sebo> {
+    const { data } = await api.get<Sebo>('/sebos/me')
+    return data
+  },
+
   async buscarPorId(id: number): Promise<Sebo> {
     const { data } = await api.get<Sebo>(`/sebos/${id}`)
     return data
