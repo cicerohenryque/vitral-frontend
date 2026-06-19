@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { Header } from '../components/Header'
 import { TopBar } from '../components/TopBar'
 import { ProductCarousel } from '../components/ProductCarousel'
+import { extractErrorMessage } from '../services/api'
 import { buscaService } from '../services/buscaService'
 import type { Produto } from '../types/produto'
 
 export function HomePage() {
   const [recentes, setRecentes] = useState<Produto[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
@@ -16,8 +18,11 @@ export function HomePage() {
       .then((page) => {
         if (active) setRecentes(page.content)
       })
-      .catch(() => {
-        if (active) setRecentes([])
+      .catch((err) => {
+        if (active) {
+          setError(extractErrorMessage(err, 'Nao foi possivel carregar os produtos.'))
+          setRecentes([])
+        }
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -32,6 +37,7 @@ export function HomePage() {
       <TopBar />
       <Header />
       <main className="container">
+        {error ? <div className="flash error" role="alert">{error}</div> : null}
         <ProductCarousel title="Produtos disponíveis" produtos={recentes} loading={loading} />
         <ProductCarousel title="Clássicos" produtos={recentes.slice().reverse()} loading={loading} />
       </main>

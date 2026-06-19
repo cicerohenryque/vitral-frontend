@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { TopBar } from '../components/TopBar'
 import { ProductCard } from '../components/ProductCard'
+import { extractErrorMessage } from '../services/api'
 import { buscaService } from '../services/buscaService'
 import type { Produto } from '../types/produto'
 import type { Sebo } from '../types/sebo'
@@ -19,6 +20,7 @@ export function BuscaPage() {
 
   const [inputQ, setInputQ] = useState(q)
   const [condicao, setCondicao] = useState(searchParams.get('condicao') ?? '')
+  const [seboId, setSeboId] = useState(searchParams.get('seboId') ?? '')
   const [precoMin, setPrecoMin] = useState(searchParams.get('precoMin') ?? '')
   const [precoMax, setPrecoMax] = useState(searchParams.get('precoMax') ?? '')
   const [cidade, setCidade] = useState(searchParams.get('cidade') ?? '')
@@ -26,7 +28,10 @@ export function BuscaPage() {
 
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [sebos, setSebos] = useState<Sebo[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loadingProdutos, setLoadingProdutos] = useState(true)
+  const [loadingSebos, setLoadingSebos] = useState(true)
+  const [errorProdutos, setErrorProdutos] = useState<string | null>(null)
+  const [errorSebos, setErrorSebos] = useState<string | null>(null)
   const [totalProdutos, setTotalProdutos] = useState(0)
   const [totalSebos, setTotalSebos] = useState(0)
 
@@ -37,11 +42,9 @@ export function BuscaPage() {
   }, [searchParams])
 
   useEffect(() => {
-    // Loading starts whenever the URL-backed filters change.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true)
     const params = {
       q: q || undefined,
+      seboId: seboId ? Number(seboId) : undefined,
       condicao: condicao ? (condicao as CondicaoProduto) : undefined,
       precoMin: precoMin ? Number(precoMin) : undefined,
       precoMax: precoMax ? Number(precoMax) : undefined,
@@ -50,12 +53,17 @@ export function BuscaPage() {
     buscaService
       .buscarProdutos(params)
       .then((page) => {
+        setErrorProdutos(null)
         setProdutos(page.content)
         setTotalProdutos(page.totalElements)
       })
-      .catch(() => setProdutos([]))
-      .finally(() => setLoading(false))
-  }, [q, condicao, precoMin, precoMax])
+      .catch((err) => {
+        setErrorProdutos(extractErrorMessage(err, 'Nao foi possivel carregar os produtos.'))
+        setProdutos([])
+        setTotalProdutos(0)
+      })
+      .finally(() => setLoadingProdutos(false))
+  }, [q, seboId, condicao, precoMin, precoMax])
 
   useEffect(() => {
     const params = {
@@ -67,10 +75,16 @@ export function BuscaPage() {
     buscaService
       .buscarSebos(params)
       .then((page) => {
+        setErrorSebos(null)
         setSebos(page.content)
         setTotalSebos(page.totalElements)
       })
-      .catch(() => setSebos([]))
+      .catch((err) => {
+        setErrorSebos(extractErrorMessage(err, 'Nao foi possivel carregar os sebos.'))
+        setSebos([])
+        setTotalSebos(0)
+      })
+      .finally(() => setLoadingSebos(false))
   }, [q, cidade, uf])
 
   function handleSearch(e: React.FormEvent) {
@@ -81,12 +95,23 @@ export function BuscaPage() {
     } else {
       next.delete('q')
     }
+    setLoadingProdutos(true)
+    setLoadingSebos(true)
+    setErrorProdutos(null)
+    setErrorSebos(null)
     setSearchParams(next)
   }
 
   function setTab(t: Tab) {
     const next = new URLSearchParams(searchParams)
     next.set('tab', t)
+    if (t === 'produtos') {
+      setLoadingProdutos(true)
+      setErrorProdutos(null)
+    } else {
+      setLoadingSebos(true)
+      setErrorSebos(null)
+    }
     setSearchParams(next)
   }
 
@@ -96,15 +121,21 @@ export function BuscaPage() {
     if (tab === 'produtos') {
       if (condicao) next.set('condicao', condicao)
       else next.delete('condicao')
+      if (seboId) next.set('seboId', seboId)
+      else next.delete('seboId')
       if (precoMin) next.set('precoMin', precoMin)
       else next.delete('precoMin')
       if (precoMax) next.set('precoMax', precoMax)
       else next.delete('precoMax')
+      setLoadingProdutos(true)
+      setErrorProdutos(null)
     } else {
       if (cidade) next.set('cidade', cidade)
       else next.delete('cidade')
       if (uf) next.set('uf', uf)
       else next.delete('uf')
+      setLoadingSebos(true)
+      setErrorSebos(null)
     }
     setSearchParams(next)
   }
@@ -115,10 +146,15 @@ export function BuscaPage() {
     next.set('tab', tab)
     setSearchParams(next)
     setCondicao('')
+    setSeboId('')
     setPrecoMin('')
     setPrecoMax('')
     setCidade('')
     setUf('')
+    setLoadingProdutos(true)
+    setLoadingSebos(true)
+    setErrorProdutos(null)
+    setErrorSebos(null)
   }
 
   return (
@@ -129,6 +165,7 @@ export function BuscaPage() {
         <form className="busca-search-bar" onSubmit={handleSearch}>
           <input
             type="search"
+            aria-label="Pesquisar produtos ou sebos"
             placeholder="O que você está procurando?"
             value={inputQ}
             onChange={(e) => setInputQ(e.target.value)}
@@ -152,6 +189,16 @@ export function BuscaPage() {
                       <option value={CondicaoProduto.SEMINOVO}>Seminovo</option>
                       <option value={CondicaoProduto.USADO}>Usado</option>
                     </select>
+                  </label>
+                  <label className="busca-filtro-label">
+                    ID do sebo
+                    <input
+                      type="number"
+                      min={1}
+                      value={seboId}
+                      onChange={(e) => setSeboId(e.target.value)}
+                      placeholder="ex: 1"
+                    />
                   </label>
                   <label className="busca-filtro-label">
                     Preço mín. (R$)
@@ -207,9 +254,11 @@ export function BuscaPage() {
           </aside>
 
           <section className="busca-resultados">
-            <div className="busca-tabs">
+            <div className="busca-tabs" role="tablist" aria-label="Tipo de resultado">
               <button
                 type="button"
+                role="tab"
+                aria-selected={tab === 'produtos'}
                 className={`busca-tab${tab === 'produtos' ? ' active' : ''}`}
                 onClick={() => setTab('produtos')}
               >
@@ -217,6 +266,8 @@ export function BuscaPage() {
               </button>
               <button
                 type="button"
+                role="tab"
+                aria-selected={tab === 'sebos'}
                 className={`busca-tab${tab === 'sebos' ? ' active' : ''}`}
                 onClick={() => setTab('sebos')}
               >
@@ -225,7 +276,9 @@ export function BuscaPage() {
             </div>
 
             {tab === 'produtos' ? (
-              loading ? (
+              errorProdutos ? (
+                <div className="flash error" role="alert">{errorProdutos}</div>
+              ) : loadingProdutos ? (
                 <div className="busca-grid">
                   {Array.from({ length: 8 }).map((_, i) => (
                     <div key={i} className="skeleton-card" />
@@ -240,35 +293,35 @@ export function BuscaPage() {
                   ))}
                 </div>
               )
+            ) : errorSebos ? (
+              <div className="flash error" role="alert">{errorSebos}</div>
+            ) : loadingSebos ? (
+              <p className="busca-empty">Carregando sebos...</p>
+            ) : sebos.length === 0 ? (
+              <p className="busca-empty">Nenhum sebo encontrado.</p>
             ) : (
-              sebos.length === 0 ? (
-                <p className="busca-empty">Nenhum sebo encontrado.</p>
-              ) : (
-                <div className="busca-sebos-lista">
-                  {sebos.map((s) => (
-                    <div key={s.id} className="busca-sebo-card">
-                      {s.fotoUrl ? (
-                        <img src={s.fotoUrl} alt={s.nome} className="busca-sebo-foto" />
-                      ) : (
-                        <div className="busca-sebo-foto busca-sebo-foto-placeholder">📚</div>
-                      )}
-                      <div className="busca-sebo-info">
-                        <h3>{s.nome}</h3>
-                        {s.cidade ? (
-                          <p className="busca-sebo-local">{s.cidade}{s.uf ? ` — ${s.uf}` : ''}</p>
-                        ) : null}
-                        {s.descricao ? <p className="busca-sebo-desc">{s.descricao}</p> : null}
-                        {s.horarioFuncionamento ? (
-                          <p className="busca-sebo-horario">⏰ {s.horarioFuncionamento}</p>
-                        ) : null}
-                        {s.telefone ? (
-                          <p className="busca-sebo-tel">📞 {s.telefone}</p>
-                        ) : null}
-                      </div>
+              <div className="busca-sebos-lista">
+                {sebos.map((s) => (
+                  <Link key={s.id} className="busca-sebo-card" to={`/vendedor/${s.id}`}>
+                    {s.fotoUrl ? (
+                      <img src={s.fotoUrl} alt={s.nome} className="busca-sebo-foto" />
+                    ) : (
+                      <div className="busca-sebo-foto busca-sebo-foto-placeholder">S</div>
+                    )}
+                    <div className="busca-sebo-info">
+                      <h3>{s.nome}</h3>
+                      {s.cidade ? (
+                        <p className="busca-sebo-local">{s.cidade}{s.uf ? ` - ${s.uf}` : ''}</p>
+                      ) : null}
+                      {s.descricao ? <p className="busca-sebo-desc">{s.descricao}</p> : null}
+                      {s.horarioFuncionamento ? (
+                        <p className="busca-sebo-horario">{s.horarioFuncionamento}</p>
+                      ) : null}
+                      {s.telefone ? <p className="busca-sebo-tel">{s.telefone}</p> : null}
                     </div>
-                  ))}
-                </div>
-              )
+                  </Link>
+                ))}
+              </div>
             )}
           </section>
         </div>

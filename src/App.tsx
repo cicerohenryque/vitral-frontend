@@ -1,5 +1,4 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { AccountPage } from './components/Account/AccountPage'
 import { CartPage } from './components/Cart/CartPage'
 import { CategoriesPage } from './components/Categories/CategoriesPage'
 import { CheckoutPage } from './components/Checkout/CheckoutPage'
@@ -7,7 +6,6 @@ import { DeleteAccountPage } from './components/DeleteAccount/DeleteAccountPage'
 import { FavoritesPage } from './components/Favorites/FavoritesPage'
 import { HelpPage } from './components/Help/HelpPage'
 import { HistoryPage } from './components/History/HistoryPage'
-import { ListingsPage } from './components/Listings/ListingsPage'
 import { MessagesPage } from './components/Messages/MessagesPage'
 import { OffersPage } from './components/Offers/OffersPage'
 import { ProductPage } from './components/Product/ProductPage'
@@ -16,9 +14,6 @@ import { ReservationsPage } from './components/Reservations/ReservationsPage'
 import { SaleConfirmationPage } from './components/Sales/SaleConfirmationPage'
 import { SalesHistoryPage } from './components/Sales/SalesHistoryPage'
 import { SalesOrdersPage } from './components/Sales/SalesOrdersPage'
-import { EmptySearchPage } from './components/Search/EmptySearchPage'
-import { SearchResultsPage } from './components/Search/SearchResultsPage'
-import { SeboProfilePage } from './components/SeboProfile/SeboProfilePage'
 import { SellerPage } from './components/Seller/SellerPage'
 import { SupportPage } from './components/Support/SupportPage'
 import { AuthPage } from './pages/AuthPage'
@@ -41,8 +36,7 @@ function App() {
         <Route path="/entrar" element={<AuthPage />} />
         <Route path="/auth/confirmar" element={<ConfirmarEmailPage />} />
         <Route path="/busca" element={<BuscaPage />} />
-        <Route path="/buscar" element={<SearchResultsPage />} />
-        <Route path="/buscar/sem-resultados" element={<EmptySearchPage />} />
+        <Route path="/buscar" element={<BuscaPage />} />
 
         <Route
           path="/painel/perfil"
@@ -69,22 +63,113 @@ function App() {
           }
         />
 
-        <Route path="/conta" element={<AccountPage />} />
-        <Route path="/conta/excluir" element={<DeleteAccountPage />} />
-        <Route path="/carrinho" element={<CartPage />} />
-        <Route path="/confirmar-pedido" element={<CheckoutPage />} />
+        <Route
+          path="/conta"
+          element={
+            <ProtectedRoute>
+              <PerfilPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/conta/excluir"
+          element={
+            <ProtectedRoute>
+              <DeleteAccountPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/carrinho"
+          element={
+            <ProtectedRoute>
+              <CartPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/confirmar-pedido"
+          element={
+            <ProtectedRoute>
+              <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/categorias" element={<CategoriesPage />} />
-        <Route path="/favoritos" element={<FavoritesPage />} />
-        <Route path="/historico" element={<HistoryPage />} />
-        <Route path="/anuncios" element={<ListingsPage />} />
-        <Route path="/mensagens" element={<MessagesPage />} />
+        <Route
+          path="/favoritos"
+          element={
+            <ProtectedRoute>
+              <FavoritesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/historico"
+          element={
+            <ProtectedRoute>
+              <HistoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/anuncios"
+          element={
+            <ProtectedRoute requireRole={AccountType.SEBO}>
+              <MeusProdutosPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mensagens"
+          element={
+            <ProtectedRoute>
+              <MessagesPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/ofertas" element={<OffersPage />} />
         <Route path="/produto/:productId" element={<ProductPage />} />
-        <Route path="/reservas" element={<ReservationsPage />} />
-        <Route path="/sebo/perfil" element={<SeboProfilePage />} />
-        <Route path="/vendas" element={<SalesOrdersPage />} />
-        <Route path="/vendas/historico" element={<SalesHistoryPage />} />
-        <Route path="/vendas/:orderId/confirmar" element={<SaleConfirmationPage />} />
+        <Route
+          path="/reservas"
+          element={
+            <ProtectedRoute>
+              <ReservationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sebo/perfil"
+          element={
+            <ProtectedRoute requireRole={AccountType.SEBO}>
+              <MeuSeboPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendas"
+          element={
+            <ProtectedRoute requireRole={AccountType.SEBO}>
+              <SalesOrdersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendas/historico"
+          element={
+            <ProtectedRoute requireRole={AccountType.SEBO}>
+              <SalesHistoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendas/:orderId/confirmar"
+          element={
+            <ProtectedRoute requireRole={AccountType.SEBO}>
+              <SaleConfirmationPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/vendedor/:sellerId" element={<SellerPage />} />
         <Route path="/lancamentos" element={<ReleasesPage />} />
         <Route path="/suporte" element={<SupportPage />} />

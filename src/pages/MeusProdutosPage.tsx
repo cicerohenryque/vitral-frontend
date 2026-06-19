@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { TopBar } from '../components/TopBar'
+import { StoreStatus } from '../components/Layout/StorePage'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { produtoService } from '../services/produtoService'
@@ -39,7 +41,10 @@ export function MeusProdutosPage() {
     produtoService
       .listarPorSebo(seboId, 0, 50)
       .then((page) => setProdutos(page.content))
-      .catch((err) => setError(extractErrorMessage(err, 'Erro ao listar produtos')))
+      .catch((err) => {
+        setProdutos([])
+        setError(extractErrorMessage(err, 'Erro ao listar produtos'))
+      })
       .finally(() => setLoading(false))
   }, [seboId])
 
@@ -115,7 +120,11 @@ export function MeusProdutosPage() {
         <Header />
         <main className="container form-page">
           <h1 className="form-page-title">Cadastre seu sebo primeiro</h1>
-          <p>Você precisa criar o perfil do seu sebo antes de adicionar produtos.</p>
+          <StoreStatus
+            title="Perfil do sebo necessário"
+            description="Você precisa criar o perfil do seu sebo antes de adicionar produtos ao catálogo."
+            action={<Link to="/painel/sebo">Cadastrar sebo</Link>}
+          />
         </main>
       </div>
     )
@@ -127,8 +136,8 @@ export function MeusProdutosPage() {
       <Header />
       <main className="container form-page">
         <h1 className="form-page-title">Meus produtos</h1>
-        {error ? <div className="flash error">{error}</div> : null}
-        {success ? <div className="flash success">{success}</div> : null}
+        {error ? <div className="flash error" role="alert">{error}</div> : null}
+        {success ? <div className="flash success" role="status">{success}</div> : null}
 
         <form className="form-grid" onSubmit={handleSubmit}>
           <Input id="titulo" label="Título" required
@@ -165,35 +174,44 @@ export function MeusProdutosPage() {
 
         <h2 className="section-title">Catálogo ({produtos.length})</h2>
         {loading ? (
-          <p>Carregando...</p>
+          <StoreStatus
+            title="Carregando catálogo"
+            description="Buscando os produtos cadastrados no backend."
+            busy
+          />
         ) : produtos.length === 0 ? (
-          <p>Nenhum produto cadastrado ainda.</p>
+          <StoreStatus
+            title="Nenhum produto cadastrado"
+            description="Adicione o primeiro item usando o formulário acima. Ele será salvo no backend do sebo."
+          />
         ) : (
-          <table className="produto-table">
-            <thead>
-              <tr>
-                <th>Título</th>
-                <th>Autor</th>
-                <th>Preço</th>
-                <th>Condição</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {produtos.map((p) => (
-                <tr key={p.id}>
-                  <td>{p.titulo}</td>
-                  <td>{p.autor ?? '-'}</td>
-                  <td>R$ {Number(p.preco).toFixed(2)}</td>
-                  <td>{p.condicao}</td>
-                  <td className="produto-table-actions">
-                    <Button type="button" variant="ghost" onClick={() => startEdit(p)}>Editar</Button>
-                    <Button type="button" variant="danger" onClick={() => handleRemove(p)}>Remover</Button>
-                  </td>
+          <div className="produto-table-scroll">
+            <table className="produto-table">
+              <thead>
+                <tr>
+                  <th scope="col">Título</th>
+                  <th scope="col">Autor</th>
+                  <th scope="col">Preço</th>
+                  <th scope="col">Condição</th>
+                  <th scope="col">Ações</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {produtos.map((p) => (
+                  <tr key={p.id}>
+                    <td>{p.titulo}</td>
+                    <td>{p.autor ?? '-'}</td>
+                    <td>R$ {Number(p.preco).toFixed(2)}</td>
+                    <td>{p.condicao}</td>
+                    <td className="produto-table-actions">
+                      <Button type="button" variant="ghost" onClick={() => startEdit(p)}>Editar</Button>
+                      <Button type="button" variant="danger" onClick={() => handleRemove(p)}>Remover</Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </main>
     </div>

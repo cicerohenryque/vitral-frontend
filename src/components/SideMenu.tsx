@@ -6,26 +6,40 @@ type Props = {
   onClose: () => void
 }
 
-const MENU_ITEMS = [
-  { label: 'Carrinho', to: '/carrinho' },
-  { label: 'Favoritos', to: '/favoritos' },
+const publicItems = [
   { label: 'Categorias', to: '/categorias' },
-  { label: 'Mensagens', to: '/mensagens' },
   { label: 'Ofertas', to: '/ofertas' },
   { label: 'Lançamentos', to: '/lancamentos' },
   { label: 'Suporte', to: '/suporte' },
 ]
 
+const userItems = [
+  { label: 'Carrinho', to: '/carrinho' },
+  { label: 'Favoritos', to: '/favoritos' },
+  { label: 'Reservas', to: '/reservas' },
+  { label: 'Histórico', to: '/historico' },
+  { label: 'Mensagens', to: '/mensagens' },
+]
+
+const seboItems = [
+  { label: 'Compras recebidas', to: '/vendas' },
+  { label: 'Histórico de vendas', to: '/vendas/historico' },
+]
+
 export function SideMenu({ onClose }: Props) {
-  const { isSebo } = useAuth()
+  const { isAuthenticated, isSebo } = useAuth()
 
   return (
     <>
       <div className="sidemenu-backdrop" onClick={onClose} />
-      <aside className="sidemenu">
-        <nav>
+      <aside className="sidemenu" id="main-side-menu" aria-label="Menu principal">
+        <nav aria-label="Navegação principal">
           <ul>
-            {isSebo ? (
+            {!isAuthenticated ? (
+              <li>
+                <Link to="/auth" onClick={onClose}>Entrar</Link>
+              </li>
+            ) : isSebo ? (
               <>
                 <li>
                   <Link to="/painel/sebo" onClick={onClose}>Meu Sebo</Link>
@@ -39,7 +53,28 @@ export function SideMenu({ onClose }: Props) {
                 <Link to="/painel/perfil" onClick={onClose}>Meu Perfil</Link>
               </li>
             )}
-            {MENU_ITEMS.map((item) => (
+
+            {isAuthenticated && !isSebo
+              ? userItems.map((item) => (
+                <li key={item.label}>
+                  <Link to={item.to} onClick={onClose}>
+                    {item.label}
+                  </Link>
+                </li>
+              ))
+              : null}
+
+            {isAuthenticated && isSebo
+              ? seboItems.map((item) => (
+                <li key={item.label}>
+                  <Link to={item.to} onClick={onClose}>
+                    {item.label}
+                  </Link>
+                </li>
+              ))
+              : null}
+
+            {publicItems.map((item) => (
               <li key={item.label}>
                 <Link to={item.to} onClick={onClose}>
                   {item.label}

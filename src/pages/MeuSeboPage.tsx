@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Header } from '../components/Header'
 import { TopBar } from '../components/TopBar'
+import { StoreStatus } from '../components/Layout/StorePage'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { seboService } from '../services/seboService'
@@ -21,22 +22,31 @@ const EMPTY: SeboRequest = {
 }
 
 export function MeuSeboPage() {
-  const { seboId, setSeboId } = useAuth()
+  const { account, seboId, setSeboId } = useAuth()
   const [form, setForm] = useState<SeboRequest>(EMPTY)
   const [existing, setExisting] = useState<Sebo | null>(null)
-  const [loading, setLoading] = useState(Boolean(seboId))
+  const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
-    if (!seboId) return
-    seboService
-      .buscarPorId(seboId)
+    const request = seboId
+      ? seboService.buscarPorId(seboId)
+      : account
+        ? seboService.buscarPorConta(account.id, account.name, account.email)
+        : Promise.resolve(null)
+
+    request
       .then((sebo) => {
         if (!active) return
+        if (!sebo) {
+          setExisting(null)
+          return
+        }
         setExisting(sebo)
+        setSeboId(sebo.id)
         setForm({
           descricao: sebo.descricao ?? '',
           telefone: sebo.telefone ?? '',
@@ -57,7 +67,7 @@ export function MeuSeboPage() {
     return () => {
       active = false
     }
-  }, [seboId])
+  }, [account, seboId, setSeboId])
 
   function update<K extends keyof SeboRequest>(key: K, value: SeboRequest[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -91,7 +101,13 @@ export function MeuSeboPage() {
       <div className="page">
         <TopBar />
         <Header />
-        <main className="container"><p>Carregando...</p></main>
+        <main className="container form-page">
+          <StoreStatus
+            title="Carregando perfil do sebo"
+            description="Buscando os dados do sebo vinculados à sua conta."
+            busy
+          />
+        </main>
       </div>
     )
   }
@@ -102,8 +118,8 @@ export function MeuSeboPage() {
       <Header />
       <main className="container form-page">
         <h1 className="form-page-title">{existing ? 'Editar perfil do sebo' : 'Cadastrar perfil do sebo'}</h1>
-        {error ? <div className="flash error">{error}</div> : null}
-        {success ? <div className="flash success">{success}</div> : null}
+        {error ? <div className="flash error" role="alert">{error}</div> : null}
+        {success ? <div className="flash success" role="status">{success}</div> : null}
         <form className="form-grid" onSubmit={handleSubmit}>
           <Input id="descricao" label="Descrição"
             value={form.descricao ?? ''} onChange={(e) => update('descricao', e.target.value)} />

@@ -1,4 +1,4 @@
-import referenceImage from '../../assets/home-reference.png'
+import logo from '../../assets/vitral-sebo-icon.svg'
 import './BrandLogo.css'
 
 type BrandLogoProps = {
@@ -11,7 +11,7 @@ export function BrandLogo({ size = 166 }: BrandLogoProps) {
       className="vitral-logo"
       style={{
         '--logo-size': `${size}px`,
-        backgroundImage: `url(${referenceImage})`,
+        backgroundImage: `url(${logo})`,
       } as React.CSSProperties}
       role="img"
       aria-label="Vitral"

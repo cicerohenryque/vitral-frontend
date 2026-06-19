@@ -10,7 +10,7 @@ export type Account = {
   name: string
   email: string
   type: AccountType
-  emailVerificado: boolean
+  emailVerificado?: boolean
 }
 
 export type RegisterRequest = {

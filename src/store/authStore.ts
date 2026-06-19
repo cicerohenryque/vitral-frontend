@@ -40,7 +40,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: (token, account) => {
     localStorage.setItem(TOKEN_KEY, token)
     localStorage.setItem(ACCOUNT_KEY, JSON.stringify(account))
-    set({ token, account })
+    localStorage.removeItem(SEBO_ID_KEY)
+    set({ token, account, seboId: null })
   },
 
   logout: () => {

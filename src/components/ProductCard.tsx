@@ -12,11 +12,16 @@ export function ProductCard({ produto }: Props) {
   }
 
   return (
-    <Link to={`/produtos/${produto.id}`} className="product-card product-card-real">
+    <Link
+      to={`/produto/${produto.id}`}
+      className={`product-card product-card-real${!produto.ativo ? ' product-card-unavailable' : ''}`}
+      aria-label={`${produto.titulo}, R$ ${Number(produto.preco).toFixed(2)}${!produto.ativo ? ', indisponivel' : ''}`}
+    >
+      {!produto.ativo ? <span className="product-card-badge">Indisponível</span> : null}
       {produto.fotoUrl ? (
         <img src={produto.fotoUrl} alt={produto.titulo} />
       ) : (
-        <div className="product-card-placeholder" />
+        <div className="product-card-placeholder">Sem imagem</div>
       )}
       <div className="product-card-info">
         <strong>{produto.titulo}</strong>
