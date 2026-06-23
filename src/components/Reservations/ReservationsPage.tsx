@@ -14,6 +14,7 @@ function statusLabel(status: string) {
 export function ReservationsPage() {
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [loading, setLoading] = useState(true)
+  const [busyId, setBusyId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -36,6 +37,19 @@ export function ReservationsPage() {
       active = false
     }
   }, [])
+
+  async function cancelarPedido(id: number) {
+    setBusyId(id)
+    setError(null)
+    try {
+      await pedidoService.cancelarPedido(id)
+      setPedidos((current) => current.filter((pedido) => pedido.id !== id))
+    } catch (err) {
+      setError(extractErrorMessage(err, 'Nao foi possivel cancelar o pedido.'))
+    } finally {
+      setBusyId(null)
+    }
+  }
 
   return (
     <StorePage title="Minhas reservas" subtitle="Acompanhe os pedidos aguardando confirmação do sebo.">
@@ -63,10 +77,20 @@ export function ReservationsPage() {
               <ul className="store-order-items">
                 {pedido.itens.map((item) => (
                   <li key={item.id}>
-                    {item.tituloSnapshot} · R$ {Number(item.precoSnapshot).toFixed(2)}
+                    {item.tituloSnapshot} · Qtd. {item.quantidade} · R$ {Number(item.precoSnapshot).toFixed(2)}
                   </li>
                 ))}
               </ul>
+              <div className="store-list-actions">
+                <button
+                  className="danger"
+                  type="button"
+                  disabled={busyId === pedido.id}
+                  onClick={() => cancelarPedido(pedido.id)}
+                >
+                  {busyId === pedido.id ? 'Cancelando...' : 'Cancelar pedido'}
+                </button>
+              </div>
             </article>
           ))}
         </section>

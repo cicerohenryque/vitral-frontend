@@ -15,7 +15,11 @@ export function CheckoutPage() {
   const [error, setError] = useState<string | null>(null)
 
   const total = useMemo(
-    () => items.reduce((sum, item) => sum + Number(item.preco), 0),
+    () => items.reduce((sum, item) => sum + Number(item.subtotal), 0),
+    [items],
+  )
+  const totalItems = useMemo(
+    () => items.reduce((sum, item) => sum + Number(item.quantidade), 0),
     [items],
   )
 
@@ -76,7 +80,7 @@ export function CheckoutPage() {
           {error ? <div className="flash error" role="alert">{error}</div> : null}
           <section className="store-summary" aria-label="Resumo do pedido">
             <div>
-              <p>{items.length} {items.length === 1 ? 'item' : 'itens'} para confirmar</p>
+              <p>{totalItems} {totalItems === 1 ? 'item' : 'itens'} para confirmar</p>
               <strong>R$ {total.toFixed(2)}</strong>
             </div>
             <button className="primary" type="button" disabled={busy} onClick={confirmarPedido}>
@@ -92,8 +96,8 @@ export function CheckoutPage() {
                 </Link>
                 <div className="store-list-copy">
                   <h2>{item.titulo}</h2>
-                  <p>{item.autor ?? 'Autor nao informado'} · {item.condicao}</p>
-                  <strong className="store-list-price">R$ {Number(item.preco).toFixed(2)}</strong>
+                  <p>{item.autor ?? 'Autor nao informado'} · {item.condicao} · Qtd. {item.quantidade}</p>
+                  <strong className="store-list-price">R$ {Number(item.subtotal).toFixed(2)}</strong>
                 </div>
               </article>
             ))}

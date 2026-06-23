@@ -21,12 +21,15 @@
 
 .category-card {
   position: relative;
+  width: 100%;
   min-height: 162px;
   padding: 22px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--store-card);
   color: inherit;
+  cursor: pointer;
+  text-align: left;
   text-decoration: none;
   box-shadow: var(--shadow-sm);
   transition:
@@ -41,6 +44,11 @@
   background: #fbf8f0;
   box-shadow: 0 16px 34px rgba(45, 43, 34, 0.1);
   transform: translateY(-3px);
+}
+
+.category-card.is-selected {
+  border-color: rgba(93, 107, 54, 0.5);
+  background: var(--color-accent-soft);
 }
 
 .category-number {
@@ -90,6 +98,10 @@
 
 .category-empty {
   grid-column: 1 / -1;
+}
+
+.category-products {
+  margin-top: 34px;
 }
 
 @keyframes category-pulse {

@@ -89,6 +89,9 @@ export function SellerPage() {
             </div>
             <div className="seller-actions">
               <Link to={`/busca?tab=produtos&seboId=${seller.id}`}>Ver produtos</Link>
+              <Link to={`/mensagens?destinatarioId=${seller.accountId}&nome=${encodeURIComponent(seller.nome)}`}>
+                Enviar mensagem
+              </Link>
             </div>
           </section>
 

@@ -5,9 +5,11 @@ import { TopBar } from '../components/TopBar'
 import { StoreStatus } from '../components/Layout/StorePage'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
+import { categoriaService } from '../services/categoriaService'
 import { produtoService } from '../services/produtoService'
 import { extractErrorMessage } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
+import type { Categoria } from '../types/categoria'
 import { CondicaoProduto } from '../types/produto'
 import type { Produto, ProdutoRequest } from '../types/produto'
 import './FormPage.css'
@@ -18,6 +20,7 @@ const EMPTY: ProdutoRequest = {
   autor: '',
   descricao: '',
   preco: 0,
+  estoque: 1,
   condicao: CondicaoProduto.USADO,
   fotoUrl: '',
 }
@@ -25,6 +28,7 @@ const EMPTY: ProdutoRequest = {
 export function MeusProdutosPage() {
   const { seboId } = useAuth()
   const [produtos, setProdutos] = useState<Produto[]>([])
+  const [categorias, setCategorias] = useState<Categoria[]>([])
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState<ProdutoRequest>(EMPTY)
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -54,6 +58,22 @@ export function MeusProdutosPage() {
     load()
   }, [load])
 
+  useEffect(() => {
+    let active = true
+    categoriaService
+      .listar()
+      .then((page) => {
+        if (active) setCategorias(page.content)
+      })
+      .catch(() => {
+        if (active) setCategorias([])
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
+
   function update<K extends keyof ProdutoRequest>(key: K, value: ProdutoRequest[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
@@ -62,9 +82,11 @@ export function MeusProdutosPage() {
     setEditingId(p.id)
     setForm({
       titulo: p.titulo,
+      categoriaId: p.categoriaId ?? undefined,
       autor: p.autor ?? '',
       descricao: p.descricao ?? '',
       preco: p.preco,
+      estoque: p.estoque ?? 0,
       condicao: p.condicao,
       fotoUrl: p.fotoUrl ?? '',
     })
@@ -86,6 +108,7 @@ export function MeusProdutosPage() {
       const payload: ProdutoRequest = {
         ...form,
         preco: Number(form.preco),
+        estoque: Number(form.estoque ?? 0),
       }
       if (editingId) {
         await produtoService.atualizar(editingId, payload)
@@ -146,6 +169,21 @@ export function MeusProdutosPage() {
             value={form.autor ?? ''} onChange={(e) => update('autor', e.target.value)} />
           <Input id="preco" label="Preço (R$)" type="number" step="0.01" min="0" required
             value={form.preco} onChange={(e) => update('preco', Number(e.target.value))} />
+          <Input id="estoque" label="Estoque" type="number" step="1" min="0"
+            value={form.estoque ?? 0} onChange={(e) => update('estoque', Number(e.target.value))} />
+          <label className="vit-input-wrapper">
+            <span className="vit-input-label">Categoria</span>
+            <select
+              className="vit-input"
+              value={form.categoriaId ?? ''}
+              onChange={(e) => update('categoriaId', e.target.value ? Number(e.target.value) : undefined)}
+            >
+              <option value="">Sem categoria</option>
+              {categorias.map((categoria) => (
+                <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>
+              ))}
+            </select>
+          </label>
           <label className="vit-input-wrapper">
             <span className="vit-input-label">Condição</span>
             <select
@@ -191,7 +229,9 @@ export function MeusProdutosPage() {
                 <tr>
                   <th scope="col">Título</th>
                   <th scope="col">Autor</th>
+                  <th scope="col">Categoria</th>
                   <th scope="col">Preço</th>
+                  <th scope="col">Estoque</th>
                   <th scope="col">Condição</th>
                   <th scope="col">Ações</th>
                 </tr>
@@ -201,7 +241,9 @@ export function MeusProdutosPage() {
                   <tr key={p.id}>
                     <td>{p.titulo}</td>
                     <td>{p.autor ?? '-'}</td>
+                    <td>{p.categoriaNome ?? '-'}</td>
                     <td>R$ {Number(p.preco).toFixed(2)}</td>
+                    <td>{p.estoque ?? 0}</td>
                     <td>{p.condicao}</td>
                     <td className="produto-table-actions">
                       <Button type="button" variant="ghost" onClick={() => startEdit(p)}>Editar</Button>

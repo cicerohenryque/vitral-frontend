@@ -57,7 +57,7 @@ export function SalesOrdersPage() {
               <ul className="store-order-items">
                 {pedido.itens.map((item) => (
                   <li key={item.id}>
-                    {item.tituloSnapshot} · R$ {Number(item.precoSnapshot).toFixed(2)}
+                    {item.tituloSnapshot} · Qtd. {item.quantidade} · R$ {Number(item.precoSnapshot).toFixed(2)}
                   </li>
                 ))}
               </ul>

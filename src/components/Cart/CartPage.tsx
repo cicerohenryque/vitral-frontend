@@ -12,7 +12,11 @@ export function CartPage() {
   const [error, setError] = useState<string | null>(null)
 
   const total = useMemo(
-    () => items.reduce((sum, item) => sum + Number(item.preco), 0),
+    () => items.reduce((sum, item) => sum + Number(item.subtotal), 0),
+    [items],
+  )
+  const totalItems = useMemo(
+    () => items.reduce((sum, item) => sum + Number(item.quantidade), 0),
     [items],
   )
 
@@ -52,6 +56,30 @@ export function CartPage() {
     }
   }
 
+  async function atualizarQuantidade(item: CestaItem, quantidade: number) {
+    const nextQuantity = Math.max(1, Math.min(quantidade, item.estoqueDisponivel))
+    setBusyId(item.produtoId)
+    setError(null)
+    try {
+      await cestaService.atualizarQuantidade(item.produtoId, nextQuantity)
+      setItems((current) =>
+        current.map((currentItem) =>
+          currentItem.produtoId === item.produtoId
+            ? {
+              ...currentItem,
+              quantidade: nextQuantity,
+              subtotal: Number(currentItem.preco) * nextQuantity,
+            }
+            : currentItem,
+        ),
+      )
+    } catch (err) {
+      setError(extractErrorMessage(err, 'Nao foi possivel atualizar a quantidade.'))
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   return (
     <StorePage
       title="Carrinho"
@@ -72,7 +100,7 @@ export function CartPage() {
         <>
           <section className="store-summary" aria-label="Resumo do carrinho">
             <div>
-              <p>{items.length} {items.length === 1 ? 'item' : 'itens'} na cesta</p>
+              <p>{totalItems} {totalItems === 1 ? 'item' : 'itens'} na cesta</p>
               <strong>R$ {total.toFixed(2)}</strong>
             </div>
             <Link className="primary" to="/confirmar-pedido">Confirmar pedido</Link>
@@ -87,9 +115,23 @@ export function CartPage() {
                 <div className="store-list-copy">
                   <h2>{item.titulo}</h2>
                   <p>{item.autor ?? 'Autor nao informado'} · {item.condicao}</p>
-                  <strong className="store-list-price">R$ {Number(item.preco).toFixed(2)}</strong>
+                  <p>Estoque disponível: {item.estoqueDisponivel}</p>
+                  <strong className="store-list-price">
+                    R$ {Number(item.subtotal).toFixed(2)}
+                  </strong>
                 </div>
                 <div className="store-list-actions">
+                  <label className="store-quantity">
+                    Qtd.
+                    <input
+                      type="number"
+                      min={1}
+                      max={item.estoqueDisponivel}
+                      value={item.quantidade}
+                      disabled={busyId === item.produtoId}
+                      onChange={(event) => atualizarQuantidade(item, Number(event.target.value))}
+                    />
+                  </label>
                   <Link to={`/produto/${item.produtoId}`} className="primary">Ver produto</Link>
                   <button
                     className="danger"

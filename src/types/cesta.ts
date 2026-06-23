@@ -6,6 +6,9 @@ export type CestaItem = {
   titulo: string
   autor: string | null
   preco: number
+  quantidade: number
+  subtotal: number
+  estoqueDisponivel: number
   condicao: CondicaoProduto
   fotoUrl: string | null
 }

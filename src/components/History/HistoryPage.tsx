@@ -14,6 +14,7 @@ function statusLabel(status: string) {
 export function HistoryPage() {
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [loading, setLoading] = useState(true)
+  const [busyId, setBusyId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -36,6 +37,19 @@ export function HistoryPage() {
       active = false
     }
   }, [])
+
+  async function cancelarPedido(id: number) {
+    setBusyId(id)
+    setError(null)
+    try {
+      const atualizado = await pedidoService.cancelarPedido(id)
+      setPedidos((current) => current.map((pedido) => (pedido.id === id ? atualizado : pedido)))
+    } catch (err) {
+      setError(extractErrorMessage(err, 'Nao foi possivel cancelar o pedido.'))
+    } finally {
+      setBusyId(null)
+    }
+  }
 
   return (
     <StorePage title="Histórico" subtitle="Pedidos feitos com os sebos do Vitral.">
@@ -63,10 +77,22 @@ export function HistoryPage() {
               <ul className="store-order-items">
                 {pedido.itens.map((item) => (
                   <li key={item.id}>
-                    {item.tituloSnapshot} · R$ {Number(item.precoSnapshot).toFixed(2)}
+                    {item.tituloSnapshot} · Qtd. {item.quantidade} · R$ {Number(item.precoSnapshot).toFixed(2)}
                   </li>
                 ))}
               </ul>
+              {pedido.status === StatusPedido.AGUARDANDO_CONFIRMACAO ? (
+                <div className="store-list-actions">
+                  <button
+                    className="danger"
+                    type="button"
+                    disabled={busyId === pedido.id}
+                    onClick={() => cancelarPedido(pedido.id)}
+                  >
+                    {busyId === pedido.id ? 'Cancelando...' : 'Cancelar pedido'}
+                  </button>
+                </div>
+              ) : null}
             </article>
           ))}
         </section>

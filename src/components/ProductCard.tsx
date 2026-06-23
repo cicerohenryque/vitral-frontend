@@ -11,13 +11,15 @@ export function ProductCard({ produto }: Props) {
     return <div className="product-card skeleton-card" aria-hidden="true" />
   }
 
+  const unavailable = !produto.ativo || Number(produto.estoque ?? 0) <= 0
+
   return (
     <Link
       to={`/produto/${produto.id}`}
-      className={`product-card product-card-real${!produto.ativo ? ' product-card-unavailable' : ''}`}
-      aria-label={`${produto.titulo}, R$ ${Number(produto.preco).toFixed(2)}${!produto.ativo ? ', indisponivel' : ''}`}
+      className={`product-card product-card-real${unavailable ? ' product-card-unavailable' : ''}`}
+      aria-label={`${produto.titulo}, R$ ${Number(produto.preco).toFixed(2)}${unavailable ? ', indisponivel' : ''}`}
     >
-      {!produto.ativo ? <span className="product-card-badge">Indisponível</span> : null}
+      {unavailable ? <span className="product-card-badge">Indisponível</span> : null}
       {produto.fotoUrl ? (
         <img src={produto.fotoUrl} alt={produto.titulo} />
       ) : (
@@ -25,6 +27,7 @@ export function ProductCard({ produto }: Props) {
       )}
       <div className="product-card-info">
         <strong>{produto.titulo}</strong>
+        {produto.categoriaNome ? <small>{produto.categoriaNome}</small> : null}
         <span>R$ {Number(produto.preco).toFixed(2)}</span>
       </div>
     </Link>

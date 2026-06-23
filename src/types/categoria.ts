@@ -1,6 +1,6 @@
 export type Categoria = {
-  id?: number | string
+  id: number
   nome: string
   slug: string
-  totalProdutos?: number
+  descricao: string | null
 }

@@ -11,6 +11,7 @@ export type PedidoItem = {
   produtoId: number
   tituloSnapshot: string
   precoSnapshot: number
+  quantidade: number
 }
 
 export type Pedido = {

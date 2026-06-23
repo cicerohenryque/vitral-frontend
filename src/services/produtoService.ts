@@ -28,4 +28,18 @@ export const produtoService = {
     })
     return data
   },
+
+  async listarPorCategoria(categoriaId: number, page = 0, size = 20): Promise<Page<Produto>> {
+    const { data } = await api.get<Page<Produto>>(`/produtos/categoria/${categoriaId}`, {
+      params: { page, size },
+    })
+    return data
+  },
+
+  async listarLancamentos(page = 0, size = 20): Promise<Page<Produto>> {
+    const { data } = await api.get<Page<Produto>>('/produtos/lancamentos', {
+      params: { page, size },
+    })
+    return data
+  },
 }

@@ -1,27 +1,85 @@
-import { useMemo, useState } from 'react'
-import { StorePage } from '../Layout/StorePage'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { ProductCard } from '../ProductCard'
+import { StorePage, StoreStatus } from '../Layout/StorePage'
+import { extractErrorMessage } from '../../services/api'
+import { categoriaService } from '../../services/categoriaService'
+import { produtoService } from '../../services/produtoService'
 import type { Categoria } from '../../types/categoria'
+import type { Produto } from '../../types/produto'
 import './CategoriesPage.css'
 
-const categories: Categoria[] = [
-  { nome: 'Livros', slug: 'livros' },
-  { nome: 'Discos', slug: 'discos' },
-  { nome: 'CDs', slug: 'cds' },
-  { nome: 'Eletronicos', slug: 'eletronicos' },
-  { nome: 'Colecionaveis', slug: 'colecionaveis' },
-  { nome: 'Quadrinhos', slug: 'quadrinhos' },
-  { nome: 'Filmes', slug: 'filmes' },
-  { nome: 'Raridades', slug: 'raridades' },
-]
-
 export function CategoriesPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const selectedId = Number(searchParams.get('categoriaId'))
+  const hasSelectedCategory = Number.isFinite(selectedId)
+
   const [query, setQuery] = useState('')
+  const [categories, setCategories] = useState<Categoria[]>([])
+  const [products, setProducts] = useState<Produto[]>([])
+  const [loadingCategories, setLoadingCategories] = useState(true)
+  const [loadingProducts, setLoadingProducts] = useState(hasSelectedCategory)
+  const [error, setError] = useState<string | null>(null)
+  const [productError, setProductError] = useState<string | null>(null)
+
+  const selectedCategory = categories.find((category) => category.id === selectedId)
 
   const filteredCategories = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
     if (!normalizedQuery) return categories
     return categories.filter((category) => category.nome.toLowerCase().includes(normalizedQuery))
-  }, [query])
+  }, [categories, query])
+
+  useEffect(() => {
+    let active = true
+    categoriaService
+      .listar()
+      .then((page) => {
+        if (!active) return
+        setCategories(page.content)
+        setError(null)
+      })
+      .catch((err) => {
+        if (active) setError(extractErrorMessage(err, 'Nao foi possivel carregar as categorias.'))
+      })
+      .finally(() => {
+        if (active) setLoadingCategories(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let active = true
+    if (!hasSelectedCategory) {
+      return
+    }
+
+    produtoService
+      .listarPorCategoria(selectedId)
+      .then((page) => {
+        if (!active) return
+        setProducts(page.content)
+      })
+      .catch((err) => {
+        if (active) setProductError(extractErrorMessage(err, 'Nao foi possivel carregar os produtos da categoria.'))
+      })
+      .finally(() => {
+        if (active) setLoadingProducts(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [hasSelectedCategory, selectedId])
+
+  function selectCategory(category: Categoria) {
+    setLoadingProducts(true)
+    setProductError(null)
+    setSearchParams({ categoriaId: String(category.id) })
+  }
 
   return (
     <StorePage
@@ -38,26 +96,57 @@ export function CategoriesPage() {
         />
       </form>
 
-      <p className="category-error">
-        Categorias ainda não existem como endpoint no backend atual. Use a busca para filtrar produtos por texto, sebo, condição e preço.
-      </p>
+      {loadingCategories ? (
+        <StoreStatus title="Carregando categorias" description="Buscando categorias cadastradas no backend." busy />
+      ) : error ? (
+        <StoreStatus title="Erro ao carregar categorias" description={error} tone="error" />
+      ) : filteredCategories.length === 0 ? (
+        <StoreStatus title="Nenhuma categoria encontrada" description="Tente buscar por outro termo." />
+      ) : (
+        <>
+          <section className="category-grid" aria-label="Categorias do acervo">
+            {filteredCategories.map((category, index) => (
+              <button
+                className={`category-card${category.id === selectedId ? ' is-selected' : ''}`}
+                key={category.id}
+                type="button"
+                onClick={() => selectCategory(category)}
+              >
+                <span className="category-number">{String(index + 1).padStart(2, '0')}</span>
+                <h2>{category.nome}</h2>
+                {category.descricao ? <small>{category.descricao}</small> : null}
+                <span className="category-arrow" aria-hidden="true">
+                  →
+                </span>
+              </button>
+            ))}
+          </section>
 
-      <section className="category-grid" aria-label="Categorias do acervo">
-        {filteredCategories.length === 0 ? (
-          <p className="category-empty">Nenhuma categoria encontrada.</p>
-        ) : filteredCategories.map((category, index) => (
-          <article className="category-card" key={category.slug}>
-            <span className="category-number">{String(index + 1).padStart(2, '0')}</span>
-            <h2>{category.nome}</h2>
-            {typeof category.totalProdutos === 'number' ? (
-              <small>{category.totalProdutos} produtos</small>
-            ) : null}
-            <span className="category-arrow" aria-hidden="true">
-              →
-            </span>
-          </article>
-        ))}
-      </section>
+          {hasSelectedCategory ? (
+            <section className="category-products" aria-label="Produtos da categoria">
+              <h2 className="section-title">
+                {selectedCategory ? `Produtos em ${selectedCategory.nome}` : 'Produtos da categoria'}
+              </h2>
+              {loadingProducts ? (
+                <StoreStatus title="Carregando produtos" description="Buscando produtos desta categoria." busy />
+              ) : productError ? (
+                <StoreStatus title="Erro ao carregar produtos" description={productError} tone="error" />
+              ) : products.length === 0 ? (
+                <StoreStatus
+                  title="Nenhum produto nesta categoria"
+                  description="Quando os sebos publicarem itens nessa categoria, eles aparecerão aqui."
+                />
+              ) : (
+                <div className="busca-grid">
+                  {products.map((product) => (
+                    <ProductCard key={product.id} produto={product} />
+                  ))}
+                </div>
+              )}
+            </section>
+          ) : null}
+        </>
+      )}
     </StorePage>
   )
 }
