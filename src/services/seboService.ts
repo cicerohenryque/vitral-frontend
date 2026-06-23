@@ -1,5 +1,6 @@
 import { api } from './api'
 import type { Page } from '../types/common'
+import type { MensagemResponse } from '../types/account'
 import type { Sebo, SeboRequest } from '../types/sebo'
 
 export const seboService = {
@@ -23,5 +24,10 @@ export const seboService = {
       params: { q: name, page: 0, size: 20 },
     })
     return data.content.find((sebo) => sebo.accountId === accountId || sebo.email === email) ?? null
+  },
+
+  async excluirConta(): Promise<MensagemResponse> {
+    const { data } = await api.delete<MensagemResponse>('/sebos/me')
+    return data
   },
 }

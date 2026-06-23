@@ -55,22 +55,22 @@ Já usam endpoints reais do backend:
 - busca de produtos e sebos;
 - detalhe real do produto por ID;
 - perfil público real do sebo por ID;
+- favoritos do usuário;
+- cesta/carrinho persistido;
+- confirmação de pedido a partir da cesta;
+- histórico de pedidos do usuário;
+- compras recebidas pelo sebo;
+- confirmação ou recusa de vendas pelo sebo;
+- histórico de vendas do sebo;
+- exclusão de conta de usuário comum e de sebo;
 - proteção de rotas para usuário autenticado e contas `SEBO`.
 
 Rotas sem endpoint no backend exibem estado pendente, sem dados fictícios:
 
-- favoritos;
-- carrinho;
-- reservas;
-- confirmação de pedido;
-- histórico de pedidos;
-- compras recebidas;
-- confirmação/recusa de vendas;
-- histórico de vendas;
 - mensagens;
 - ofertas;
 - lançamentos;
-- exclusão de conta.
+- categorias.
 
 ## Validação
 

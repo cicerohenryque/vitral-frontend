@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { StorePage, StoreStatus } from '../Layout/StorePage'
+import { useAuth } from '../../hooks/useAuth'
 import { extractErrorMessage } from '../../services/api'
+import { cestaService } from '../../services/cestaService'
+import { favoritoService } from '../../services/favoritoService'
 import { produtoService } from '../../services/produtoService'
 import { seboService } from '../../services/seboService'
 import type { Produto } from '../../types/produto'
@@ -9,6 +12,7 @@ import type { Sebo } from '../../types/sebo'
 import './ProductPage.css'
 
 export function ProductPage() {
+  const { isAuthenticated, isUsuario } = useAuth()
   const { productId } = useParams()
   const numericProductId = Number(productId)
   const invalidProductId = !Number.isFinite(numericProductId)
@@ -16,6 +20,9 @@ export function ProductPage() {
   const [sebo, setSebo] = useState<Sebo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [actionMessage, setActionMessage] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [busyAction, setBusyAction] = useState<'cesta' | 'favorito' | null>(null)
 
   useEffect(() => {
     let active = true
@@ -44,6 +51,36 @@ export function ProductPage() {
       active = false
     }
   }, [invalidProductId, numericProductId])
+
+  async function adicionarCesta() {
+    if (!produto) return
+    setBusyAction('cesta')
+    setActionMessage(null)
+    setActionError(null)
+    try {
+      const response = await cestaService.adicionar(produto.id)
+      setActionMessage(response.mensagem)
+    } catch (err) {
+      setActionError(extractErrorMessage(err, 'Nao foi possivel adicionar à cesta.'))
+    } finally {
+      setBusyAction(null)
+    }
+  }
+
+  async function favoritar() {
+    if (!produto) return
+    setBusyAction('favorito')
+    setActionMessage(null)
+    setActionError(null)
+    try {
+      const response = await favoritoService.favoritar(produto.id)
+      setActionMessage(response.mensagem)
+    } catch (err) {
+      setActionError(extractErrorMessage(err, 'Nao foi possivel favoritar o produto.'))
+    } finally {
+      setBusyAction(null)
+    }
+  }
 
   if (invalidProductId) {
     return (
@@ -123,21 +160,45 @@ export function ProductPage() {
           </dl>
 
           <div className="product-actions">
-            <button className="product-reserve" type="button" disabled>
-              Reserva indisponível
-            </button>
-            <button className="product-cart" type="button" disabled>
-              Carrinho indisponível
-            </button>
-            <button className="product-favorite" type="button" disabled aria-label="Favoritos indisponíveis">
-              Favorito indisponível
-            </button>
+            {isAuthenticated && isUsuario ? (
+              <>
+                <button
+                  className="product-reserve"
+                  type="button"
+                  disabled={!produto.ativo || Boolean(busyAction)}
+                  onClick={adicionarCesta}
+                >
+                  {busyAction === 'cesta' ? 'Adicionando...' : 'Adicionar à cesta'}
+                </button>
+                <Link className="product-cart" to="/carrinho">
+                  Ver carrinho
+                </Link>
+                <button
+                  className="product-favorite"
+                  type="button"
+                  disabled={!produto.ativo || Boolean(busyAction)}
+                  onClick={favoritar}
+                >
+                  {busyAction === 'favorito' ? 'Salvando...' : 'Favoritar'}
+                </button>
+              </>
+            ) : isAuthenticated ? (
+              <button className="product-reserve" type="button" disabled>
+                Ações disponíveis para usuários
+              </button>
+            ) : (
+              <Link className="product-cart" to="/auth">
+                Entrar para comprar
+              </Link>
+            )}
           </div>
+          {actionError ? <div className="flash error" role="alert">{actionError}</div> : null}
+          {actionMessage ? <div className="flash success" role="status">{actionMessage}</div> : null}
           {!produto.ativo ? (
             <p className="product-action-note">Este produto está indisponível no acervo.</p>
           ) : (
             <p className="product-action-note">
-              Reserva, carrinho e favoritos dependem de endpoints que ainda não existem no backend.
+              Adicione o item à cesta e confirme o pedido para enviá-lo ao sebo.
             </p>
           )}
 
