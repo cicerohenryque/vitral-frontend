@@ -1,4 +1,7 @@
+import { useState, type FormEvent } from 'react'
 import { StorePage } from '../Layout/StorePage'
+import { enviarSuporte } from '../../services/suporteService'
+import { extractErrorMessage } from '../../services/api'
 import './SupportPage.css'
 
 const questions = [
@@ -9,6 +12,35 @@ const questions = [
 ]
 
 export function SupportPage() {
+  const [assunto, setAssunto] = useState('')
+  const [mensagem, setMensagem] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [sucesso, setSucesso] = useState(false)
+  const [erro, setErro] = useState<string | null>(null)
+
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault()
+    setErro(null)
+    setSucesso(false)
+
+    if (!assunto.trim() || !mensagem.trim()) {
+      setErro('Preencha o assunto e a mensagem antes de enviar.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      await enviarSuporte({ assunto: assunto.trim(), mensagem: mensagem.trim() })
+      setSucesso(true)
+      setAssunto('')
+      setMensagem('')
+    } catch (err) {
+      setErro(extractErrorMessage(err, 'Não foi possível enviar sua mensagem. Tente novamente.'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <StorePage
       title="Suporte"
@@ -47,15 +79,38 @@ export function SupportPage() {
           ))}
         </div>
 
-        <form className="support-form" onSubmit={(event) => event.preventDefault()}>
+        <form className="support-form" onSubmit={handleSubmit} noValidate>
           <h2>Envie sua dúvida</h2>
+
           <label htmlFor="support-subject">Assunto</label>
-          <input id="support-subject" placeholder="Informe o assunto" />
+          <input
+            id="support-subject"
+            placeholder="Informe o assunto"
+            value={assunto}
+            onChange={(e) => setAssunto(e.target.value)}
+            disabled={loading}
+          />
 
           <label htmlFor="support-message">Mensagem</label>
-          <textarea id="support-message" rows={5} placeholder="Conte o que aconteceu" />
+          <textarea
+            id="support-message"
+            rows={5}
+            placeholder="Conte o que aconteceu"
+            value={mensagem}
+            onChange={(e) => setMensagem(e.target.value)}
+            disabled={loading}
+          />
 
-          <button type="submit">Enviar mensagem</button>
+          {erro && <p className="support-feedback support-feedback--erro" role="alert">{erro}</p>}
+          {sucesso && (
+            <p className="support-feedback support-feedback--sucesso" role="status">
+              Mensagem enviada com sucesso! Nossa equipe entrará em contato em breve.
+            </p>
+          )}
+
+          <button type="submit" disabled={loading}>
+            {loading ? 'Enviando...' : 'Enviar mensagem'}
+          </button>
         </form>
       </section>
     </StorePage>

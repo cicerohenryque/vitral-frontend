@@ -11,8 +11,9 @@ import './CategoriesPage.css'
 
 export function CategoriesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const selectedId = Number(searchParams.get('categoriaId'))
-  const hasSelectedCategory = Number.isFinite(selectedId)
+  const selectedParam = searchParams.get('categoriaId')
+  const selectedId = Number(selectedParam)
+  const hasSelectedCategory = selectedParam !== null && Number.isFinite(selectedId)
 
   const [query, setQuery] = useState('')
   const [categories, setCategories] = useState<Categoria[]>([])

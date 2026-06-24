@@ -69,6 +69,13 @@ export function CheckoutPage() {
           tone="success"
           action={<Link to="/reservas">Acompanhar pedido</Link>}
         />
+      ) : error && items.length === 0 ? (
+        <StoreStatus
+          title="Erro ao carregar carrinho"
+          description={error}
+          tone="error"
+          action={<Link to="/carrinho">Voltar para o carrinho</Link>}
+        />
       ) : items.length === 0 ? (
         <StoreStatus
           title="Sua cesta está vazia"

@@ -105,13 +105,6 @@ export function BuscaPage() {
   function setTab(t: Tab) {
     const next = new URLSearchParams(searchParams)
     next.set('tab', t)
-    if (t === 'produtos') {
-      setLoadingProdutos(true)
-      setErrorProdutos(null)
-    } else {
-      setLoadingSebos(true)
-      setErrorSebos(null)
-    }
     setSearchParams(next)
   }
 
