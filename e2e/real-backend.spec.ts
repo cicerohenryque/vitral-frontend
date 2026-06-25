@@ -49,6 +49,7 @@ test.describe.serial('frontend integrado ao backend real', () => {
     await expect(pageSearch).toHaveValue('Sebo E2E')
     await page.locator('.busca-search-bar').getByRole('button', { name: 'Buscar' }).click()
     await expect(page).toHaveURL(/q=Sebo\+E2E|q=Sebo%20E2E/)
+    await expect(page.getByRole('link', { name: /Sebo E2E/ })).toBeVisible()
     await page.getByLabel('Cidade').fill('Fortaleza')
     await page.getByLabel('Estado (UF)').fill('CE')
     await page.getByRole('button', { name: 'Aplicar' }).click()

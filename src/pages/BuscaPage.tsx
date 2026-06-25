@@ -107,6 +107,7 @@ export function BuscaPage() {
     } else {
       next.delete('q')
     }
+    if (next.toString() === searchParams.toString()) return
     setLoadingProdutos(true)
     setLoadingSebos(true)
     setErrorProdutos(null)
@@ -132,6 +133,7 @@ export function BuscaPage() {
       else next.delete('precoMin')
       if (precoMax) next.set('precoMax', precoMax)
       else next.delete('precoMax')
+      if (next.toString() === searchParams.toString()) return
       setLoadingProdutos(true)
       setErrorProdutos(null)
     } else {
@@ -139,6 +141,7 @@ export function BuscaPage() {
       else next.delete('cidade')
       if (uf) next.set('uf', uf)
       else next.delete('uf')
+      if (next.toString() === searchParams.toString()) return
       setLoadingSebos(true)
       setErrorSebos(null)
     }
@@ -149,6 +152,7 @@ export function BuscaPage() {
     const next = new URLSearchParams()
     if (q) next.set('q', q)
     next.set('tab', tab)
+    if (next.toString() === searchParams.toString()) return
     setSearchParams(next)
     setCondicao('')
     setSeboId('')
