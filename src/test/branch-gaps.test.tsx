@@ -127,7 +127,7 @@ describe('CartPage — branch de clamp de quantidade', () => {
       condicao: CondicaoProduto.USADO, fotoUrl: null,
     }
     vi.spyOn(cestaService, 'listar').mockResolvedValue([item])
-    const atualizarSpy = vi.spyOn(cestaService, 'atualizarQuantidade').mockResolvedValue(undefined)
+    const atualizarSpy = vi.spyOn(cestaService, 'atualizarQuantidade').mockResolvedValue({ mensagem: 'Quantidade atualizada' })
     renderPage(<CartPage />)
 
     expect(await screen.findByText('Livro Clamp')).toBeInTheDocument()
@@ -144,7 +144,7 @@ describe('CartPage — branch de clamp de quantidade', () => {
       condicao: CondicaoProduto.NOVO, fotoUrl: null,
     }
     vi.spyOn(cestaService, 'listar').mockResolvedValue([item])
-    const atualizarSpy = vi.spyOn(cestaService, 'atualizarQuantidade').mockResolvedValue(undefined)
+    const atualizarSpy = vi.spyOn(cestaService, 'atualizarQuantidade').mockResolvedValue({ mensagem: 'Quantidade atualizada' })
     renderPage(<CartPage />)
 
     expect(await screen.findByText('Livro Min')).toBeInTheDocument()
@@ -302,6 +302,7 @@ describe('MeuSeboPage — branches adicionais', () => {
     vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(null)
     const novoSebo = { id: 10, accountId: 1, nome: 'Rute', email: 'rute@teste.com', descricao: 'Desc', telefone: '99', cep: '60000', logradouro: 'Rua A', cidade: 'Fortaleza', uf: '', horarioFuncionamento: '8h', fotoUrl: null }
     vi.spyOn(seboService, 'criar').mockResolvedValue(novoSebo)
+    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(novoSebo)
 
     renderPage(<MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
@@ -315,6 +316,7 @@ describe('MeuSeboPage — branches adicionais', () => {
     vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(null)
     const novoSebo = { id: 11, accountId: 1, nome: 'Rute', email: 'rute@teste.com', descricao: 'x', telefone: '99', cep: '60000', logradouro: 'Rua A', cidade: 'Fortaleza', uf: 'CE', horarioFuncionamento: '8h', fotoUrl: null }
     vi.spyOn(seboService, 'criar').mockResolvedValue(novoSebo)
+    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(novoSebo)
 
     renderPage(<MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()

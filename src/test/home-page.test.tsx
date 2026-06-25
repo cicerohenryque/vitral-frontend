@@ -92,7 +92,7 @@ describe('HomePage', () => {
     expect(screen.getByText('Clássicos')).toBeInTheDocument()
   })
 
-  it('exibe os dois titulos de secao sempre', () => {
+  it('exibe os dois titulos de secao sempre', async () => {
     vi.mocked(buscaService.buscarProdutos).mockResolvedValue(pageVazia)
     vi.mocked(produtoService.listarClassicos).mockResolvedValue(pageVazia)
 
@@ -100,5 +100,6 @@ describe('HomePage', () => {
 
     expect(screen.getByText('Produtos disponíveis')).toBeInTheDocument()
     expect(screen.getByText('Clássicos')).toBeInTheDocument()
+    expect(await screen.findAllByText('Nenhum produto para exibir.')).toHaveLength(2)
   })
 })

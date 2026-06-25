@@ -192,6 +192,7 @@ describe('paginas principais', () => {
 
   it('carrega home com produtos e apresenta falha da busca', async () => {
     vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValueOnce({ ...emptyPage, content: [produto], totalElements: 1 }).mockRejectedValueOnce(new Error('offline'))
+    vi.spyOn(produtoService, 'listarClassicos').mockResolvedValue({ ...emptyPage, content: [produto], totalElements: 1 })
     const first = renderAt('/', <HomePage />)
     expect(await screen.findAllByText('Livro Teste')).toHaveLength(2)
     first.unmount()
