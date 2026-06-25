@@ -29,6 +29,8 @@ export default defineConfig({
       reuseExistingServer: false,
       env: {
         JAVA_HOME: javaHome,
+        JWT_SECRET: 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=',
+        JWT_EXPIRATION: '86400000',
         PATH: `${javaHome}/bin:${process.env.PATH ?? ''}`,
       },
     },

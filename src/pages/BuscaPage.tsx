@@ -17,14 +17,20 @@ export function BuscaPage() {
 
   const tab = (searchParams.get('tab') as Tab) ?? 'produtos'
   const q = searchParams.get('q') ?? ''
+  const appliedCondicao = searchParams.get('condicao') ?? ''
+  const appliedSeboId = searchParams.get('seboId') ?? ''
+  const appliedPrecoMin = searchParams.get('precoMin') ?? ''
+  const appliedPrecoMax = searchParams.get('precoMax') ?? ''
+  const appliedCidade = searchParams.get('cidade') ?? ''
+  const appliedUf = searchParams.get('uf') ?? ''
 
   const [inputQ, setInputQ] = useState(q)
-  const [condicao, setCondicao] = useState(searchParams.get('condicao') ?? '')
-  const [seboId, setSeboId] = useState(searchParams.get('seboId') ?? '')
-  const [precoMin, setPrecoMin] = useState(searchParams.get('precoMin') ?? '')
-  const [precoMax, setPrecoMax] = useState(searchParams.get('precoMax') ?? '')
-  const [cidade, setCidade] = useState(searchParams.get('cidade') ?? '')
-  const [uf, setUf] = useState(searchParams.get('uf') ?? '')
+  const [condicao, setCondicao] = useState(appliedCondicao)
+  const [seboId, setSeboId] = useState(appliedSeboId)
+  const [precoMin, setPrecoMin] = useState(appliedPrecoMin)
+  const [precoMax, setPrecoMax] = useState(appliedPrecoMax)
+  const [cidade, setCidade] = useState(appliedCidade)
+  const [uf, setUf] = useState(appliedUf)
 
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [sebos, setSebos] = useState<Sebo[]>([])
@@ -38,16 +44,22 @@ export function BuscaPage() {
   useEffect(() => {
     // Keep the editable input aligned with browser navigation.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setInputQ(searchParams.get('q') ?? '')
-  }, [searchParams])
+    setInputQ(q)
+    setCondicao(appliedCondicao)
+    setSeboId(appliedSeboId)
+    setPrecoMin(appliedPrecoMin)
+    setPrecoMax(appliedPrecoMax)
+    setCidade(appliedCidade)
+    setUf(appliedUf)
+  }, [q, appliedCondicao, appliedSeboId, appliedPrecoMin, appliedPrecoMax, appliedCidade, appliedUf])
 
   useEffect(() => {
     const params = {
       q: q || undefined,
-      seboId: seboId ? Number(seboId) : undefined,
-      condicao: condicao ? (condicao as CondicaoProduto) : undefined,
-      precoMin: precoMin ? Number(precoMin) : undefined,
-      precoMax: precoMax ? Number(precoMax) : undefined,
+      seboId: appliedSeboId ? Number(appliedSeboId) : undefined,
+      condicao: appliedCondicao ? (appliedCondicao as CondicaoProduto) : undefined,
+      precoMin: appliedPrecoMin ? Number(appliedPrecoMin) : undefined,
+      precoMax: appliedPrecoMax ? Number(appliedPrecoMax) : undefined,
     }
 
     buscaService
@@ -63,13 +75,13 @@ export function BuscaPage() {
         setTotalProdutos(0)
       })
       .finally(() => setLoadingProdutos(false))
-  }, [q, seboId, condicao, precoMin, precoMax])
+  }, [q, appliedSeboId, appliedCondicao, appliedPrecoMin, appliedPrecoMax])
 
   useEffect(() => {
     const params = {
       q: q || undefined,
-      cidade: cidade || undefined,
-      uf: uf || undefined,
+      cidade: appliedCidade || undefined,
+      uf: appliedUf || undefined,
     }
 
     buscaService
@@ -85,7 +97,7 @@ export function BuscaPage() {
         setTotalSebos(0)
       })
       .finally(() => setLoadingSebos(false))
-  }, [q, cidade, uf])
+  }, [q, appliedCidade, appliedUf])
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
