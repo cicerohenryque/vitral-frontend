@@ -172,7 +172,14 @@ function App() {
         />
         <Route path="/vendedor/:sellerId" element={<SellerPage />} />
         <Route path="/lancamentos" element={<ReleasesPage />} />
-        <Route path="/suporte" element={<SupportPage />} />
+        <Route
+          path="/suporte"
+          element={
+            <ProtectedRoute>
+              <SupportPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/ajuda" element={<HelpPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

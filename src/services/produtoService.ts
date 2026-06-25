@@ -42,4 +42,11 @@ export const produtoService = {
     })
     return data
   },
+
+  async listarClassicos(page = 0, size = 20): Promise<Page<Produto>> {
+    const { data } = await api.get<Page<Produto>>('/produtos/classicos', {
+      params: { page, size },
+    })
+    return data
+  },
 }

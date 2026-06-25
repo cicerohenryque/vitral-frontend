@@ -75,16 +75,18 @@ describe('contratos dos servicos com o backend', () => {
     expect(get).toHaveBeenCalledWith('/pedidos/vendas', { params: { page: 0, size: 20 } })
   })
 
-  it('consulta categorias, produtos por categoria e lancamentos', async () => {
+  it('consulta categorias, produtos por categoria, lancamentos e classicos', async () => {
     const get = vi.spyOn(api, 'get').mockResolvedValue({ data: page })
 
     await categoriaService.listar()
     await produtoService.listarPorCategoria(5)
     await produtoService.listarLancamentos()
+    await produtoService.listarClassicos()
 
     expect(get).toHaveBeenCalledWith('/categorias', { params: { page: 0, size: 50 } })
     expect(get).toHaveBeenCalledWith('/produtos/categoria/5', { params: { page: 0, size: 20 } })
     expect(get).toHaveBeenCalledWith('/produtos/lancamentos', { params: { page: 0, size: 20 } })
+    expect(get).toHaveBeenCalledWith('/produtos/classicos', { params: { page: 0, size: 20 } })
   })
 
   it('envia e lista mensagens e conversas', async () => {
