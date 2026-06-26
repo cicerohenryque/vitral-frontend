@@ -3,7 +3,7 @@ import type { Account } from '../types/account'
 import type { MensagemResponse } from '../types/account'
 
 export const usuarioService = {
-  async atualizarPerfil(payload: { name: string }): Promise<Account> {
+  async atualizarPerfil(payload: { name: string; fotoUrl?: string }): Promise<Account> {
     const { data } = await api.put<Account>('/usuarios/me', payload)
     return data
   },

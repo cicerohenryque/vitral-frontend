@@ -9,6 +9,37 @@ async function login(page: import('@playwright/test').Page, email: string) {
 }
 
 test.describe.serial('frontend integrado ao backend real', () => {
+  test('envia imagem e consulta arquivo enviado pela API real', async ({ request }) => {
+    const loginResponse = await request.post('http://127.0.0.1:8081/api/v1/auth/login', {
+      data: { email: 'sebo.e2e@vitral.test', password: 'senha1234' },
+    })
+    expect(loginResponse.ok()).toBeTruthy()
+    const { token } = await loginResponse.json()
+    const image = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+      'base64',
+    )
+
+    const uploadResponse = await request.post('http://127.0.0.1:8081/api/v1/uploads/images', {
+      headers: { Authorization: `Bearer ${token}` },
+      multipart: {
+        file: {
+          name: 'pixel.png',
+          mimeType: 'image/png',
+          buffer: image,
+        },
+      },
+    })
+
+    expect(uploadResponse.ok()).toBeTruthy()
+    const body = await uploadResponse.json()
+    expect(body.url).toMatch(/^\/api\/v1\/uploads\/images\/.+\.png$/)
+
+    const imageResponse = await request.get(`http://127.0.0.1:8081${body.url}`)
+    expect(imageResponse.ok()).toBeTruthy()
+    expect(imageResponse.headers()['content-type']).toContain('image/png')
+  })
+
   test('consulta catalogo, categoria e detalhes sem mocks', async ({ page }) => {
     await page.goto('/')
 

@@ -8,6 +8,7 @@ import { ofertaService } from '../services/ofertaService'
 import { pedidoService } from '../services/pedidoService'
 import { produtoService } from '../services/produtoService'
 import { seboService } from '../services/seboService'
+import { uploadService } from '../services/uploadService'
 import { StatusPedido } from '../types/pedido'
 
 const page = { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20, first: true, last: true }
@@ -118,5 +119,15 @@ describe('contratos dos servicos com o backend', () => {
     expect(post).toHaveBeenCalledWith('/ofertas', payload)
     expect(put).toHaveBeenCalledWith('/ofertas/8', payload)
     expect(remove).toHaveBeenCalledWith('/ofertas/8')
+  })
+
+  it('envia imagem via multipart', async () => {
+    const post = vi.spyOn(api, 'post').mockResolvedValue({ data: { url: '/api/v1/uploads/images/foto.jpg' } })
+    const file = new File(['foto'], 'foto.jpg', { type: 'image/jpeg' })
+
+    await expect(uploadService.uploadImage(file)).resolves.toEqual({ url: '/api/v1/uploads/images/foto.jpg' })
+    expect(post).toHaveBeenCalledWith('/uploads/images', expect.any(FormData), {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
   })
 })

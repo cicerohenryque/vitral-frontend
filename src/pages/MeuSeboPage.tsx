@@ -3,6 +3,7 @@ import { Header } from '../components/Header'
 import { TopBar } from '../components/TopBar'
 import { StoreStatus } from '../components/Layout/StorePage'
 import { Button } from '../components/ui/Button'
+import { ImageUploadField } from '../components/ui/ImageUploadField'
 import { Input } from '../components/ui/Input'
 import { seboService } from '../services/seboService'
 import { extractErrorMessage } from '../services/api'
@@ -136,8 +137,12 @@ export function MeuSeboPage() {
           <Input id="horario" label="Horário de funcionamento"
             value={form.horarioFuncionamento ?? ''}
             onChange={(e) => update('horarioFuncionamento', e.target.value)} />
-          <Input id="fotoUrl" label="URL da foto"
-            value={form.fotoUrl ?? ''} onChange={(e) => update('fotoUrl', e.target.value)} />
+          <ImageUploadField
+            id="fotoUrl"
+            label="Foto do sebo"
+            value={form.fotoUrl}
+            onChange={(url) => update('fotoUrl', url)}
+          />
           <div className="form-actions">
             <Button type="submit" disabled={busy}>
               {busy ? 'Salvando...' : existing ? 'Atualizar' : 'Cadastrar'}

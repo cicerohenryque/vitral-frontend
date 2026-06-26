@@ -4,6 +4,7 @@ import { Header } from '../components/Header'
 import { TopBar } from '../components/TopBar'
 import { StoreStatus } from '../components/Layout/StorePage'
 import { Button } from '../components/ui/Button'
+import { ImageUploadField } from '../components/ui/ImageUploadField'
 import { Input } from '../components/ui/Input'
 import { categoriaService } from '../services/categoriaService'
 import { produtoService } from '../services/produtoService'
@@ -196,8 +197,12 @@ export function MeusProdutosPage() {
               <option value={CondicaoProduto.USADO}>Usado</option>
             </select>
           </label>
-          <Input id="fotoUrl" label="URL da foto"
-            value={form.fotoUrl ?? ''} onChange={(e) => update('fotoUrl', e.target.value)} />
+          <ImageUploadField
+            id="fotoUrl"
+            label="Foto do produto"
+            value={form.fotoUrl}
+            onChange={(url) => update('fotoUrl', url)}
+          />
           <Input id="descricao" label="Descrição"
             value={form.descricao ?? ''} onChange={(e) => update('descricao', e.target.value)} />
           <div className="form-actions">
