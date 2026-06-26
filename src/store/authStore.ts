@@ -28,6 +28,7 @@ type AuthState = {
   seboId: number | null
   login: (token: string, account: Account) => void
   logout: () => void
+  forceLogout: () => void
   setAccount: (account: Account) => void
   setSeboId: (seboId: number) => void
 }
@@ -49,6 +50,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(ACCOUNT_KEY)
     localStorage.removeItem(SEBO_ID_KEY)
+    set({ token: null, account: null, seboId: null })
+  },
+
+  forceLogout: () => {
     set({ token: null, account: null, seboId: null })
   },
 

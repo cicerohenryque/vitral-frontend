@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../hooks/useAuth'
 import { BrandLogo } from './BrandLogo'
 import { BackIcon, SearchIcon, UserIcon } from './Icons'
 import './StorePage.css'
@@ -26,12 +27,18 @@ export function StorePage({
   searchPlaceholder = 'O que você está procurando?',
 }: StorePageProps) {
   const navigate = useNavigate()
+  const { isAuthenticated, isSebo, logout } = useAuth()
   const [search, setSearch] = useState('')
 
   function handleSearch(event: React.FormEvent) {
     event.preventDefault()
     const term = search.trim()
     if (term) navigate(`/busca?tab=produtos&q=${encodeURIComponent(term)}`)
+  }
+
+  function handleLogout() {
+    logout()
+    navigate('/')
   }
 
   return (
@@ -46,10 +53,22 @@ export function StorePage({
           <BrandLogo size={145} />
         </Link>
 
-        <Link className="store-login" to="/entrar">
-          <UserIcon size={27} />
-          Entrar
-        </Link>
+        {isAuthenticated ? (
+          <div className="store-login-actions">
+            <Link className="store-login" to={isSebo ? '/painel/sebo' : '/painel/perfil'}>
+              <UserIcon size={27} />
+              {isSebo ? 'Meu Sebo' : 'Meu Perfil'}
+            </Link>
+            <button type="button" className="store-logout" onClick={handleLogout}>
+              Sair
+            </button>
+          </div>
+        ) : (
+          <Link className="store-login" to="/entrar">
+            <UserIcon size={27} />
+            Entrar
+          </Link>
+        )}
       </header>
 
       <section className="store-intro">

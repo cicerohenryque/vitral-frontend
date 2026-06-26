@@ -23,6 +23,9 @@ api.interceptors.response.use(
       localStorage.removeItem(TOKEN_KEY)
       localStorage.removeItem('vitral_account')
       localStorage.removeItem('vitral_sebo_id')
+      import('../store/authStore').then(({ useAuthStore }) => {
+        useAuthStore.getState().forceLogout()
+      })
     }
     return Promise.reject(error)
   },

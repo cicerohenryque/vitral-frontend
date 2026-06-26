@@ -86,7 +86,7 @@ export function MeusProdutosPage() {
       autor: p.autor ?? '',
       descricao: p.descricao ?? '',
       preco: p.preco,
-      estoque: p.estoque ?? 0,
+      estoque: p.estoque ?? 1,
       condicao: p.condicao,
       fotoUrl: p.fotoUrl ?? '',
     })
@@ -108,7 +108,7 @@ export function MeusProdutosPage() {
       const payload: ProdutoRequest = {
         ...form,
         preco: Number(form.preco),
-        estoque: Number(form.estoque ?? 0),
+        estoque: Number(form.estoque ?? 1),
       }
       if (editingId) {
         await produtoService.atualizar(editingId, payload)
@@ -169,8 +169,8 @@ export function MeusProdutosPage() {
             value={form.autor ?? ''} onChange={(e) => update('autor', e.target.value)} />
           <Input id="preco" label="Preço (R$)" type="number" step="0.01" min="0" required
             value={form.preco} onChange={(e) => update('preco', Number(e.target.value))} />
-          <Input id="estoque" label="Estoque" type="number" step="1" min="0"
-            value={form.estoque ?? 0} onChange={(e) => update('estoque', Number(e.target.value))} />
+          <Input id="estoque" label="Estoque" type="number" step="1" min="1"
+            value={form.estoque ?? 1} onChange={(e) => update('estoque', Number(e.target.value))} />
           <label className="vit-input-wrapper">
             <span className="vit-input-label">Categoria</span>
             <select

@@ -42,6 +42,31 @@
   justify-self: end;
 }
 
+.store-login-actions {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.store-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: inherit;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+  width: fit-content;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
 .store-logo-link {
   display: block;
   border-radius: 50%;
