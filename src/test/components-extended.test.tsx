@@ -6,6 +6,8 @@ import { ProductCard } from '../components/ProductCard'
 import { ProductCarousel } from '../components/ProductCarousel'
 import { SideMenu } from '../components/SideMenu'
 import { TopBar } from '../components/TopBar'
+import { ImageUploadField } from '../components/ui/ImageUploadField'
+import { uploadService } from '../services/uploadService'
 import {
   UserIcon,
   SearchIcon,
@@ -169,5 +171,30 @@ describe('componentes pequenos e interações', () => {
     )
     expect(screen.getByRole('link', { name: 'Meu Sebo' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Carrinho' })).not.toBeInTheDocument()
+  })
+
+  it('envia imagem e mostra preview no campo de upload', async () => {
+    const onChange = vi.fn()
+    vi.spyOn(uploadService, 'uploadImage').mockResolvedValue({ url: '/api/v1/uploads/images/foto.jpg' })
+    const file = new File(['foto'], 'foto.jpg', { type: 'image/jpeg' })
+
+    render(<ImageUploadField id="foto" label="Foto" value={null} onChange={onChange} />)
+    await userEvent.upload(screen.getByLabelText('Foto'), file)
+
+    expect(uploadService.uploadImage).toHaveBeenCalledWith(file)
+    expect(onChange).toHaveBeenCalledWith('/api/v1/uploads/images/foto.jpg')
+  })
+
+  it('rejeita arquivo que nao e imagem aceita', async () => {
+    const onChange = vi.fn()
+    const uploadSpy = vi.spyOn(uploadService, 'uploadImage')
+    const file = new File(['texto'], 'arquivo.txt', { type: 'text/plain' })
+
+    render(<ImageUploadField id="foto" label="Foto" value={null} onChange={onChange} />)
+    await userEvent.upload(screen.getByLabelText('Foto'), file, { applyAccept: false })
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Use uma imagem JPG, PNG ou WEBP.')
+    expect(uploadSpy).not.toHaveBeenCalled()
+    expect(onChange).not.toHaveBeenCalled()
   })
 })

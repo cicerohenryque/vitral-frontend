@@ -360,7 +360,7 @@ describe('MeuSeboPage — branch sem account e sem seboId', () => {
 
     renderPage(<MeuSeboPage />)
     expect(await screen.findByDisplayValue('Desc')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('http://foto.png')).toBeInTheDocument()
+    expect(screen.getByAltText('Preview da imagem selecionada')).toHaveAttribute('src', 'http://foto.png')
   })
 
   it('popula o formulario com string vazia para campos opcionais null', async () => {

@@ -10,6 +10,7 @@ export type Account = {
   name: string
   email: string
   type: AccountType
+  fotoUrl?: string | null
   emailVerificado?: boolean
 }
 

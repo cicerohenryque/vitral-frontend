@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { TopBar } from '../components/TopBar'
 import { Button } from '../components/ui/Button'
+import { ImageUploadField } from '../components/ui/ImageUploadField'
 import { Input } from '../components/ui/Input'
 import { usuarioService } from '../services/usuarioService'
 import { extractErrorMessage } from '../services/api'
@@ -15,6 +16,7 @@ export function PerfilPage() {
   const setAccount = useAuthStore((s) => s.setAccount)
 
   const [name, setName] = useState(account?.name ?? '')
+  const [fotoUrl, setFotoUrl] = useState(account?.fotoUrl ?? '')
   const [busy, setBusy] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [sucesso, setSucesso] = useState<string | null>(null)
@@ -25,8 +27,9 @@ export function PerfilPage() {
     setSucesso(null)
     setBusy(true)
     try {
-      const updated = await usuarioService.atualizarPerfil({ name })
+      const updated = await usuarioService.atualizarPerfil({ name, fotoUrl: fotoUrl || undefined })
       setAccount(updated)
+      setFotoUrl(updated.fotoUrl ?? '')
       setSucesso('Perfil atualizado com sucesso.')
     } catch (err) {
       setErro(extractErrorMessage(err, 'Falha ao atualizar perfil'))
@@ -54,6 +57,12 @@ export function PerfilPage() {
           <p className="perfil-email">
             <strong>E-mail:</strong> {account?.email}
           </p>
+          <ImageUploadField
+            id="perfil-foto"
+            label="Foto do perfil"
+            value={fotoUrl}
+            onChange={setFotoUrl}
+          />
           <div className="form-actions">
             <Button type="submit" disabled={busy}>
               {busy ? 'Salvando...' : 'Salvar'}

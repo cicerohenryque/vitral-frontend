@@ -18,14 +18,13 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<ApiError>) => {
+  async (error: AxiosError<ApiError>) => {
     if (error.response?.status === 401) {
       localStorage.removeItem(TOKEN_KEY)
       localStorage.removeItem('vitral_account')
       localStorage.removeItem('vitral_sebo_id')
-      import('../store/authStore').then(({ useAuthStore }) => {
-        useAuthStore.getState().forceLogout()
-      })
+      const { useAuthStore } = await import('../store/authStore')
+      useAuthStore.getState().forceLogout()
     }
     return Promise.reject(error)
   },
