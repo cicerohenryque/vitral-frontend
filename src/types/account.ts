@@ -26,6 +26,15 @@ export type LoginRequest = {
   password: string
 }
 
+export type ForgotPasswordRequest = {
+  email: string
+}
+
+export type ResetPasswordRequest = {
+  token: string
+  password: string
+}
+
 export type AuthResponse = {
   token: string
   expiresIn: number

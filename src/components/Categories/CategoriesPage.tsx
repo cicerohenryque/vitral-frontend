@@ -98,7 +98,7 @@ export function CategoriesPage() {
       </form>
 
       {loadingCategories ? (
-        <StoreStatus title="Carregando categorias" description="Buscando categorias cadastradas no backend." busy />
+        <StoreStatus title="Carregando categorias" description="Preparando as categorias do acervo." busy />
       ) : error ? (
         <StoreStatus title="Erro ao carregar categorias" description={error} tone="error" />
       ) : filteredCategories.length === 0 ? (

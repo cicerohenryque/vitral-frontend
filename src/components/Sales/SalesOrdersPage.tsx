@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { StorePage, StoreStatus } from '../Layout/StorePage'
+import { Pagination } from '../ui/Pagination'
 import { extractErrorMessage } from '../../services/api'
 import { pedidoService } from '../../services/pedidoService'
 import { StatusPedido, type Pedido } from '../../types/pedido'
@@ -9,14 +10,17 @@ export function SalesOrdersPage() {
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
 
   useEffect(() => {
     let active = true
     pedidoService
-      .listarVendas()
-      .then((page) => {
+      .listarVendas(page, 10, StatusPedido.AGUARDANDO_CONFIRMACAO)
+      .then((result) => {
         if (!active) return
-        setPedidos(page.content.filter((pedido) => pedido.status === StatusPedido.AGUARDANDO_CONFIRMACAO))
+        setPedidos(result.content.filter((pedido) => pedido.status === StatusPedido.AGUARDANDO_CONFIRMACAO))
+        setTotalPages(result.totalPages)
         setError(null)
       })
       .catch((err) => {
@@ -29,7 +33,7 @@ export function SalesOrdersPage() {
     return () => {
       active = false
     }
-  }, [])
+  }, [page])
 
   return (
     <StorePage title="Compras recebidas" subtitle="Pedidos aguardando confirmação do seu sebo.">
@@ -66,6 +70,7 @@ export function SalesOrdersPage() {
               </div>
             </article>
           ))}
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label="Páginas de compras" />
         </section>
       )}
     </StorePage>

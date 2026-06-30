@@ -140,6 +140,38 @@
   min-height: 420px;
 }
 
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 28px 0 8px;
+}
+
+.pagination button {
+  min-width: 104px;
+  border: 1px solid #74482d;
+  border-radius: 999px;
+  padding: 9px 16px;
+  color: #5d351f;
+  background: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.pagination span {
+  min-width: 120px;
+  text-align: center;
+  color: #5d351f;
+  font-weight: 700;
+}
+
 .store-product-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(150px, 1fr));

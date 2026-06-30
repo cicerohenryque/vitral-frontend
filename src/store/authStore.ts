@@ -26,9 +26,11 @@ type AuthState = {
   token: string | null
   account: Account | null
   seboId: number | null
+  sessionMessage: string | null
   login: (token: string, account: Account) => void
   logout: () => void
-  forceLogout: () => void
+  forceLogout: (message?: string) => void
+  clearSessionMessage: () => void
   setAccount: (account: Account) => void
   setSeboId: (seboId: number) => void
 }
@@ -37,12 +39,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   token: localStorage.getItem(TOKEN_KEY),
   account: readAccount(),
   seboId: readSeboId(),
+  sessionMessage: null,
 
   login: (token, account) => {
     localStorage.setItem(TOKEN_KEY, token)
     localStorage.setItem(ACCOUNT_KEY, JSON.stringify(account))
     localStorage.removeItem(SEBO_ID_KEY)
-    set({ token, account, seboId: null })
+    set({ token, account, seboId: null, sessionMessage: null })
   },
 
   logout: () => {
@@ -50,12 +53,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(ACCOUNT_KEY)
     localStorage.removeItem(SEBO_ID_KEY)
-    set({ token: null, account: null, seboId: null })
+    set({ token: null, account: null, seboId: null, sessionMessage: null })
   },
 
-  forceLogout: () => {
-    set({ token: null, account: null, seboId: null })
+  forceLogout: (message) => {
+    set({ token: null, account: null, seboId: null, sessionMessage: message ?? null })
   },
+
+  clearSessionMessage: () => set({ sessionMessage: null }),
 
   setAccount: (account) => {
     localStorage.setItem(ACCOUNT_KEY, JSON.stringify(account))

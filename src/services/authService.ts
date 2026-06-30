@@ -1,5 +1,5 @@
 import { api } from './api'
-import type { Account, AuthResponse, LoginRequest, MensagemResponse, RegisterRequest } from '../types/account'
+import type { Account, AuthResponse, ForgotPasswordRequest, LoginRequest, MensagemResponse, RegisterRequest, ResetPasswordRequest } from '../types/account'
 
 export const authService = {
   async register(payload: RegisterRequest): Promise<MensagemResponse> {
@@ -18,6 +18,16 @@ export const authService = {
 
   async confirmarEmail(token: string): Promise<MensagemResponse> {
     const { data } = await api.get<MensagemResponse>('/auth/confirmar', { params: { token } })
+    return data
+  },
+
+  async solicitarRecuperacao(payload: ForgotPasswordRequest): Promise<MensagemResponse> {
+    const { data } = await api.post<MensagemResponse>('/auth/recuperar-senha', payload)
+    return data
+  },
+
+  async redefinirSenha(payload: ResetPasswordRequest): Promise<MensagemResponse> {
+    const { data } = await api.post<MensagemResponse>('/auth/redefinir-senha', payload)
     return data
   },
 

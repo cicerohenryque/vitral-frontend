@@ -116,7 +116,7 @@ export function ProductPage() {
       <StorePage title="Produto indisponivel" subtitle="Nao foi possivel carregar este item.">
         <StoreStatus
           title="Produto nao encontrado"
-          description={error ?? 'Nao encontramos este produto no backend.'}
+          description={error ?? 'Não encontramos este produto no acervo.'}
           tone="error"
           action={<Link to="/busca">Voltar para busca</Link>}
         />

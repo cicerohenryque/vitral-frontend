@@ -34,7 +34,7 @@ export function OffersPage() {
   return (
     <StorePage title="Ofertas" subtitle="Itens em promoção publicados pelos sebos.">
       {loading ? (
-        <StoreStatus title="Carregando ofertas" description="Buscando ofertas ativas no backend." busy />
+        <StoreStatus title="Carregando ofertas" description="Buscando as ofertas disponíveis agora." busy />
       ) : error ? (
         <StoreStatus title="Erro ao carregar ofertas" description={error} tone="error" />
       ) : offers.length === 0 ? (

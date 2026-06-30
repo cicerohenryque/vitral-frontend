@@ -83,7 +83,7 @@ export function CartPage() {
   return (
     <StorePage
       title="Carrinho"
-      subtitle="Itens persistidos na sua cesta de compras."
+      subtitle="Confira os itens guardados na sua cesta de compras."
       searchPlaceholder="Pesquisar no acervo"
     >
       {loading ? (

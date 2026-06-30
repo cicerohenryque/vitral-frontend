@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { StorePage, StoreStatus } from '../Layout/StorePage'
+import { Pagination } from '../ui/Pagination'
 import { extractErrorMessage } from '../../services/api'
+import { fetchAllPages } from '../../services/pagination'
 import { pedidoService } from '../../services/pedidoService'
 import { StatusPedido, type Pedido } from '../../types/pedido'
 
@@ -15,14 +17,15 @@ export function SalesHistoryPage() {
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(0)
+  const pageSize = 10
 
   useEffect(() => {
     let active = true
-    pedidoService
-      .listarVendas()
-      .then((page) => {
+    fetchAllPages((nextPage, size) => pedidoService.listarVendas(nextPage, size))
+      .then((items) => {
         if (!active) return
-        setPedidos(page.content.filter((pedido) => pedido.status !== StatusPedido.AGUARDANDO_CONFIRMACAO))
+        setPedidos(items.filter((pedido) => pedido.status !== StatusPedido.AGUARDANDO_CONFIRMACAO))
         setError(null)
       })
       .catch((err) => {
@@ -37,10 +40,13 @@ export function SalesHistoryPage() {
     }
   }, [])
 
+  const visiblePedidos = pedidos.slice(page * pageSize, (page + 1) * pageSize)
+  const totalPages = Math.ceil(pedidos.length / pageSize)
+
   return (
     <StorePage title="Histórico de vendas" subtitle="Pedidos confirmados ou cancelados pelo seu sebo.">
       {loading ? (
-        <StoreStatus title="Carregando histórico" description="Buscando vendas processadas no backend." busy />
+        <StoreStatus title="Carregando histórico" description="Buscando as vendas já processadas." busy />
       ) : error ? (
         <StoreStatus title="Erro ao carregar histórico" description={error} tone="error" />
       ) : pedidos.length === 0 ? (
@@ -51,7 +57,7 @@ export function SalesHistoryPage() {
         />
       ) : (
         <section className="store-list" aria-label="Histórico de vendas">
-          {pedidos.map((pedido) => (
+          {visiblePedidos.map((pedido) => (
             <article className="store-order-card" key={pedido.id}>
               <header className="store-order-header">
                 <div>
@@ -69,6 +75,7 @@ export function SalesHistoryPage() {
               </ul>
             </article>
           ))}
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label="Páginas de vendas" />
         </section>
       )}
     </StorePage>

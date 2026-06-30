@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ProductCard } from '../ProductCard'
 import { StorePage, StoreStatus } from '../Layout/StorePage'
+import { Pagination } from '../ui/Pagination'
 import { produtoService } from '../../services/produtoService'
 import { seboService } from '../../services/seboService'
 import { extractErrorMessage } from '../../services/api'
@@ -17,6 +18,9 @@ export function SellerPage() {
   const [products, setProducts] = useState<Produto[]>([])
   const [loading, setLoading] = useState(!invalidSellerId)
   const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalProducts, setTotalProducts] = useState(0)
 
   useEffect(() => {
     let active = true
@@ -24,12 +28,14 @@ export function SellerPage() {
 
     Promise.all([
       seboService.buscarPorId(numericSellerId),
-      produtoService.listarPorSebo(numericSellerId, 0, 20),
+      produtoService.listarPorSebo(numericSellerId, page, 20),
     ])
       .then(([sellerData, productPage]) => {
         if (!active) return
         setSeller(sellerData)
         setProducts(productPage.content)
+        setTotalPages(productPage.totalPages)
+        setTotalProducts(productPage.totalElements)
       })
       .catch((err) => {
         if (active) setError(extractErrorMessage(err, 'Nao foi possivel carregar este sebo.'))
@@ -41,7 +47,7 @@ export function SellerPage() {
     return () => {
       active = false
     }
-  }, [invalidSellerId, numericSellerId])
+  }, [invalidSellerId, numericSellerId, page])
 
   if (invalidSellerId) {
     return (
@@ -84,7 +90,7 @@ export function SellerPage() {
               <dl>
                 <div><dt>Localizacao</dt><dd>{seller.cidade ? `${seller.cidade}${seller.uf ? `, ${seller.uf}` : ''}` : 'Nao informada'}</dd></div>
                 <div><dt>Contato</dt><dd>{seller.telefone ?? seller.email}</dd></div>
-                <div><dt>Itens carregados</dt><dd>{products.length}</dd></div>
+                <div><dt>Itens disponíveis</dt><dd>{totalProducts}</dd></div>
               </dl>
             </div>
             <div className="seller-actions">
@@ -99,13 +105,13 @@ export function SellerPage() {
             <header>
               <div>
                 <h2>Itens de {seller.nome}</h2>
-                <p>Produtos retornados por /produtos/sebo/{seller.id}.</p>
+                <p>Conheça os produtos disponíveis neste sebo.</p>
               </div>
             </header>
             {products.length === 0 ? (
               <StoreStatus
                 title="Nenhum produto cadastrado"
-                description="Este sebo existe no backend, mas ainda nao possui produtos publicados."
+                description="Este sebo ainda não possui produtos publicados."
                 action={<Link to="/busca">Voltar para busca</Link>}
               />
             ) : (
@@ -115,6 +121,12 @@ export function SellerPage() {
                 ))}
               </div>
             )}
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              label="Páginas de produtos do sebo"
+            />
           </section>
         </>
       ) : null}

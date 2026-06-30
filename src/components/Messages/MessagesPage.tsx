@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { StorePage, StoreStatus } from '../Layout/StorePage'
+import { Pagination } from '../ui/Pagination'
 import { useAuth } from '../../hooks/useAuth'
 import { extractErrorMessage } from '../../services/api'
 import { mensagemService } from '../../services/mensagemService'
+import { fetchAllPages } from '../../services/pagination'
 import type { Mensagem } from '../../types/mensagem'
 
 type ConversaResumo = {
@@ -33,6 +35,8 @@ export function MessagesPage() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [sendError, setSendError] = useState<string | null>(null)
+  const [conversationPage, setConversationPage] = useState(0)
+  const conversationsPerPage = 10
 
   const conversations = useMemo<ConversaResumo[]>(() => {
     const map = new Map<number, ConversaResumo>()
@@ -50,14 +54,18 @@ export function MessagesPage() {
     }
     return Array.from(map.values())
   }, [account?.id, messages])
+  const visibleConversations = conversations.slice(
+    conversationPage * conversationsPerPage,
+    (conversationPage + 1) * conversationsPerPage,
+  )
+  const totalConversationPages = Math.ceil(conversations.length / conversationsPerPage)
 
   useEffect(() => {
     let active = true
-    mensagemService
-      .listar()
-      .then((page) => {
+    fetchAllPages((page, size) => page === 0 ? mensagemService.listar() : mensagemService.listar(page, size))
+      .then((items) => {
         if (!active) return
-        setMessages(page.content)
+        setMessages(items)
         setError(null)
       })
       .catch((err) => {
@@ -78,11 +86,12 @@ export function MessagesPage() {
       return
     }
 
-    mensagemService
-      .listarConversa(selectedAccountId)
-      .then((page) => {
+    fetchAllPages((page, size) => page === 0
+      ? mensagemService.listarConversa(selectedAccountId)
+      : mensagemService.listarConversa(selectedAccountId, page, size))
+      .then((items) => {
         if (!active) return
-        setConversation(page.content.slice().reverse())
+        setConversation(items.slice().reverse())
         setSendError(null)
       })
       .catch((err) => {
@@ -128,7 +137,7 @@ export function MessagesPage() {
   return (
     <StorePage title="Mensagens" subtitle="Converse diretamente com vendedores e compradores.">
       {loading ? (
-        <StoreStatus title="Carregando mensagens" description="Buscando suas conversas no backend." busy />
+        <StoreStatus title="Carregando mensagens" description="Buscando suas conversas." busy />
       ) : error ? (
         <StoreStatus title="Erro ao carregar mensagens" description={error} tone="error" />
       ) : conversations.length === 0 && !selectedAccountId ? (
@@ -140,7 +149,7 @@ export function MessagesPage() {
       ) : (
         <section className="store-messages" aria-label="Mensagens">
           <aside className="store-message-list">
-            {conversations.map((item) => (
+            {visibleConversations.map((item) => (
               <button
                 className={item.accountId === selectedAccountId ? 'is-selected' : ''}
                 key={item.accountId}
@@ -151,12 +160,18 @@ export function MessagesPage() {
                 <span>{item.ultimaMensagem}</span>
               </button>
             ))}
+            <Pagination
+              page={conversationPage}
+              totalPages={totalConversationPages}
+              onPageChange={setConversationPage}
+              label="Páginas de conversas"
+            />
           </aside>
 
           <article className="store-message-panel">
             <header>
               <h2>{selectedName || 'Nova conversa'}</h2>
-              {selectedAccountId ? <p>Conta #{selectedAccountId}</p> : null}
+              {selectedAccountId ? <p>Conversa particular</p> : null}
             </header>
 
             {conversationLoading ? (

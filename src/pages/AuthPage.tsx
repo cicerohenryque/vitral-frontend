@@ -12,7 +12,7 @@ import './AuthPage.css'
 
 export function AuthPage() {
   const navigate = useNavigate()
-  const { login, setSeboId } = useAuth()
+  const { login, setSeboId, sessionMessage, clearSessionMessage } = useAuth()
 
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
@@ -88,6 +88,12 @@ export function AuthPage() {
 
       <div className="auth-grid">
         <form className="auth-card" onSubmit={handleLogin}>
+          {sessionMessage ? (
+            <div className="flash error" role="alert">
+              {sessionMessage}
+              <button type="button" className="auth-message-dismiss" onClick={clearSessionMessage}>Fechar</button>
+            </div>
+          ) : null}
           {loginError ? <div className="flash error" role="alert">{loginError}</div> : null}
           <Input
             id="login-email"
@@ -108,6 +114,7 @@ export function AuthPage() {
           <Button type="submit" disabled={loginBusy}>
             {loginBusy ? 'Entrando...' : 'Entrar'}
           </Button>
+          <Link to="/auth/recuperar-senha" className="auth-forgot-link">Esqueci minha senha</Link>
         </form>
 
         {regSuccess ? (

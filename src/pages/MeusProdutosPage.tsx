@@ -6,6 +6,7 @@ import { StoreStatus } from '../components/Layout/StorePage'
 import { Button } from '../components/ui/Button'
 import { ImageUploadField } from '../components/ui/ImageUploadField'
 import { Input } from '../components/ui/Input'
+import { Pagination } from '../components/ui/Pagination'
 import { categoriaService } from '../services/categoriaService'
 import { produtoService } from '../services/produtoService'
 import { extractErrorMessage } from '../services/api'
@@ -36,6 +37,9 @@ export function MeusProdutosPage() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalProducts, setTotalProducts] = useState(0)
 
   const load = useCallback(() => {
     if (!seboId) {
@@ -44,14 +48,18 @@ export function MeusProdutosPage() {
     }
     setLoading(true)
     produtoService
-      .listarPorSebo(seboId, 0, 50)
-      .then((page) => setProdutos(page.content))
+      .listarPorSebo(seboId, page, 10)
+      .then((result) => {
+        setProdutos(result.content)
+        setTotalPages(result.totalPages)
+        setTotalProducts(result.totalElements)
+      })
       .catch((err) => {
         setProdutos([])
         setError(extractErrorMessage(err, 'Erro ao listar produtos'))
       })
       .finally(() => setLoading(false))
-  }, [seboId])
+  }, [page, seboId])
 
   useEffect(() => {
     // Reload the catalog when the authenticated sebo changes.
@@ -215,21 +223,22 @@ export function MeusProdutosPage() {
           </div>
         </form>
 
-        <h2 className="section-title">Catálogo ({produtos.length})</h2>
+        <h2 className="section-title">Catálogo ({totalProducts})</h2>
         {loading ? (
           <StoreStatus
             title="Carregando catálogo"
-            description="Buscando os produtos cadastrados no backend."
+            description="Buscando os produtos do seu catálogo."
             busy
           />
         ) : produtos.length === 0 ? (
           <StoreStatus
             title="Nenhum produto cadastrado"
-            description="Adicione o primeiro item usando o formulário acima. Ele será salvo no backend do sebo."
+            description="Adicione o primeiro item usando o formulário acima para começar seu catálogo."
           />
         ) : (
-          <div className="produto-table-scroll">
-            <table className="produto-table">
+          <>
+            <div className="produto-table-scroll">
+              <table className="produto-table">
               <thead>
                 <tr>
                   <th scope="col">Título</th>
@@ -257,8 +266,15 @@ export function MeusProdutosPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+              </table>
+            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              label="Páginas do catálogo"
+            />
+          </>
         )}
       </main>
     </div>

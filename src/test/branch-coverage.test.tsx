@@ -396,7 +396,7 @@ describe('cobertura de branches restantes', () => {
     renderWithParams('/busca?tab=produtos&condicao=NOVO&seboId=7&precoMin=10&precoMax=50', <BuscaPage />)
     const condicaoSelect = await screen.findByLabelText('Condição')
     await userEvent.selectOptions(condicaoSelect, '')
-    await userEvent.clear(screen.getByLabelText('ID do sebo'))
+    await userEvent.clear(screen.getByLabelText('Código do sebo (opcional)'))
     await userEvent.clear(screen.getByLabelText('Preço mín. (R$)'))
     await userEvent.clear(screen.getByLabelText('Preço máx. (R$)'))
     await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
@@ -425,7 +425,7 @@ describe('cobertura de branches restantes', () => {
     expect(await screen.findByText('Resultados para:')).toBeInTheDocument()
 
     await userEvent.selectOptions(screen.getByLabelText('Condição'), CondicaoProduto.NOVO)
-    await userEvent.type(screen.getByLabelText('ID do sebo'), '7')
+    await userEvent.type(screen.getByLabelText('Código do sebo (opcional)'), '7')
     await userEvent.type(screen.getByLabelText('Preço mín. (R$)'), '10')
     await userEvent.type(screen.getByLabelText('Preço máx. (R$)'), '50')
     await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))

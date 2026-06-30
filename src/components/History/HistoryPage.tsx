@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { StorePage, StoreStatus } from '../Layout/StorePage'
+import { Pagination } from '../ui/Pagination'
 import { extractErrorMessage } from '../../services/api'
 import { pedidoService } from '../../services/pedidoService'
 import { StatusPedido, type Pedido } from '../../types/pedido'
@@ -16,14 +17,17 @@ export function HistoryPage() {
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
 
   useEffect(() => {
     let active = true
     pedidoService
-      .listarMeusPedidos()
-      .then((page) => {
+      .listarMeusPedidos(page, 10)
+      .then((result) => {
         if (!active) return
-        setPedidos(page.content)
+        setPedidos(result.content)
+        setTotalPages(result.totalPages)
         setError(null)
       })
       .catch((err) => {
@@ -36,7 +40,7 @@ export function HistoryPage() {
     return () => {
       active = false
     }
-  }, [])
+  }, [page])
 
   async function cancelarPedido(id: number) {
     setBusyId(id)
@@ -54,7 +58,7 @@ export function HistoryPage() {
   return (
     <StorePage title="Histórico" subtitle="Pedidos feitos com os sebos do Vitral.">
       {loading ? (
-        <StoreStatus title="Carregando histórico" description="Buscando seus pedidos no backend." busy />
+        <StoreStatus title="Carregando histórico" description="Buscando seus pedidos anteriores." busy />
       ) : error ? (
         <StoreStatus title="Erro ao carregar histórico" description={error} tone="error" />
       ) : pedidos.length === 0 ? (
@@ -95,6 +99,7 @@ export function HistoryPage() {
               ) : null}
             </article>
           ))}
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label="Páginas do histórico" />
         </section>
       )}
     </StorePage>

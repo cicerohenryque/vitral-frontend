@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { Header } from '../components/Header'
 import { TopBar } from '../components/TopBar'
 import { ProductCard } from '../components/ProductCard'
+import { Pagination } from '../components/ui/Pagination'
 import { extractErrorMessage } from '../services/api'
 import { buscaService } from '../services/buscaService'
 import type { Produto } from '../types/produto'
@@ -23,6 +24,8 @@ export function BuscaPage() {
   const appliedPrecoMax = searchParams.get('precoMax') ?? ''
   const appliedCidade = searchParams.get('cidade') ?? ''
   const appliedUf = searchParams.get('uf') ?? ''
+  const requestedPage = Number(searchParams.get('page') ?? '1')
+  const currentPage = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage - 1 : 0
 
   const [inputQ, setInputQ] = useState(q)
   const [condicao, setCondicao] = useState(appliedCondicao)
@@ -40,6 +43,8 @@ export function BuscaPage() {
   const [errorSebos, setErrorSebos] = useState<string | null>(null)
   const [totalProdutos, setTotalProdutos] = useState(0)
   const [totalSebos, setTotalSebos] = useState(0)
+  const [totalPaginasProdutos, setTotalPaginasProdutos] = useState(0)
+  const [totalPaginasSebos, setTotalPaginasSebos] = useState(0)
 
   useEffect(() => {
     // Keep the editable input aligned with browser navigation.
@@ -62,20 +67,24 @@ export function BuscaPage() {
       precoMax: appliedPrecoMax ? Number(appliedPrecoMax) : undefined,
     }
 
-    buscaService
-      .buscarProdutos(params)
+    const request = currentPage === 0
+      ? buscaService.buscarProdutos(params)
+      : buscaService.buscarProdutos(params, currentPage)
+    request
       .then((page) => {
         setErrorProdutos(null)
         setProdutos(page.content)
         setTotalProdutos(page.totalElements)
+        setTotalPaginasProdutos(page.totalPages)
       })
       .catch((err) => {
         setErrorProdutos(extractErrorMessage(err, 'Nao foi possivel carregar os produtos.'))
         setProdutos([])
         setTotalProdutos(0)
+        setTotalPaginasProdutos(0)
       })
       .finally(() => setLoadingProdutos(false))
-  }, [q, appliedSeboId, appliedCondicao, appliedPrecoMin, appliedPrecoMax])
+  }, [q, appliedSeboId, appliedCondicao, appliedPrecoMin, appliedPrecoMax, currentPage])
 
   useEffect(() => {
     const params = {
@@ -84,20 +93,24 @@ export function BuscaPage() {
       uf: appliedUf || undefined,
     }
 
-    buscaService
-      .buscarSebos(params)
+    const request = currentPage === 0
+      ? buscaService.buscarSebos(params)
+      : buscaService.buscarSebos(params, currentPage)
+    request
       .then((page) => {
         setErrorSebos(null)
         setSebos(page.content)
         setTotalSebos(page.totalElements)
+        setTotalPaginasSebos(page.totalPages)
       })
       .catch((err) => {
         setErrorSebos(extractErrorMessage(err, 'Nao foi possivel carregar os sebos.'))
         setSebos([])
         setTotalSebos(0)
+        setTotalPaginasSebos(0)
       })
       .finally(() => setLoadingSebos(false))
-  }, [q, appliedCidade, appliedUf])
+  }, [q, appliedCidade, appliedUf, currentPage])
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -107,6 +120,7 @@ export function BuscaPage() {
     } else {
       next.delete('q')
     }
+    next.delete('page')
     if (next.toString() === searchParams.toString()) return
     setLoadingProdutos(true)
     setLoadingSebos(true)
@@ -118,12 +132,14 @@ export function BuscaPage() {
   function setTab(t: Tab) {
     const next = new URLSearchParams(searchParams)
     next.set('tab', t)
+    next.delete('page')
     setSearchParams(next)
   }
 
   function aplicarFiltros(e: React.FormEvent) {
     e.preventDefault()
     const next = new URLSearchParams(searchParams)
+    next.delete('page')
     if (tab === 'produtos') {
       if (condicao) next.set('condicao', condicao)
       else next.delete('condicao')
@@ -166,6 +182,16 @@ export function BuscaPage() {
     setErrorSebos(null)
   }
 
+  function mudarPagina(page: number) {
+    const next = new URLSearchParams(searchParams)
+    if (page <= 0) next.delete('page')
+    else next.set('page', String(page + 1))
+    if (tab === 'produtos') setLoadingProdutos(true)
+    else setLoadingSebos(true)
+    setSearchParams(next)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
     <div className="page busca-page">
       <TopBar />
@@ -200,7 +226,7 @@ export function BuscaPage() {
                     </select>
                   </label>
                   <label className="busca-filtro-label">
-                    ID do sebo
+                    Código do sebo (opcional)
                     <input
                       type="number"
                       min={1}
@@ -332,6 +358,22 @@ export function BuscaPage() {
                 ))}
               </div>
             )}
+            {tab === 'produtos' && !loadingProdutos && !errorProdutos ? (
+              <Pagination
+                page={currentPage}
+                totalPages={totalPaginasProdutos}
+                onPageChange={mudarPagina}
+                label="Páginas de produtos"
+              />
+            ) : null}
+            {tab === 'sebos' && !loadingSebos && !errorSebos ? (
+              <Pagination
+                page={currentPage}
+                totalPages={totalPaginasSebos}
+                onPageChange={mudarPagina}
+                label="Páginas de sebos"
+              />
+            ) : null}
           </section>
         </div>
       </main>

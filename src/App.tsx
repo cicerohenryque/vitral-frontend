@@ -20,6 +20,8 @@ import { AuthPage } from './pages/AuthPage'
 import { BuscaPage } from './pages/BuscaPage'
 import { ConfirmarEmailPage } from './pages/ConfirmarEmailPage'
 import { HomePage } from './pages/HomePage'
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
+import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { MeuSeboPage } from './pages/MeuSeboPage'
 import { MeusProdutosPage } from './pages/MeusProdutosPage'
 import { NotFoundPage } from './pages/NotFoundPage'
@@ -35,6 +37,8 @@ function App() {
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/entrar" element={<AuthPage />} />
         <Route path="/auth/confirmar" element={<ConfirmarEmailPage />} />
+        <Route path="/auth/recuperar-senha" element={<ForgotPasswordPage />} />
+        <Route path="/auth/redefinir-senha" element={<ResetPasswordPage />} />
         <Route path="/busca" element={<BuscaPage />} />
         <Route path="/buscar" element={<BuscaPage />} />
 

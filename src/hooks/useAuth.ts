@@ -7,6 +7,8 @@ export function useAuth() {
   const login = useAuthStore((s) => s.login)
   const logout = useAuthStore((s) => s.logout)
   const setSeboId = useAuthStore((s) => s.setSeboId)
+  const sessionMessage = useAuthStore((s) => s.sessionMessage)
+  const clearSessionMessage = useAuthStore((s) => s.clearSessionMessage)
 
   return {
     token,
@@ -18,5 +20,7 @@ export function useAuth() {
     login,
     logout,
     setSeboId,
+    sessionMessage,
+    clearSessionMessage,
   }
 }

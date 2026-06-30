@@ -148,4 +148,115 @@ test.describe.serial('frontend integrado ao backend real', () => {
     await page.goto('/vendas/historico')
     await expect(page.locator('article.store-order-card').filter({ hasText: `Pedido #${orderId}` })).toContainText('Confirmado')
   })
+
+  test('cadastra uma conta e confirma um e-mail pela interface', async ({ page }) => {
+    await page.goto('/auth')
+    await page.getByLabel('Usuário:').fill('Nova Pessoa E2E')
+    await page.getByLabel('Email:').fill('nova.pessoa.e2e@vitral.test')
+    await page.locator('#reg-password').fill('senha1234')
+    await page.getByLabel('Confirme sua senha:').fill('senha1234')
+    await page.getByRole('button', { name: 'Cadastrar' }).click()
+    await expect(page.getByRole('status')).toContainText('Verifique seu e-mail')
+
+    await page.goto('/auth/confirmar?token=11111111-1111-1111-1111-111111111111')
+    await expect(page.getByRole('heading', { name: 'E-mail confirmado!' })).toBeVisible()
+    await page.getByRole('link', { name: 'Ir para o login agora' }).click()
+    await login(page, 'confirmacao.e2e@vitral.test')
+  })
+
+  test('cliente e sebo trocam mensagens reais', async ({ page }) => {
+    await login(page, 'cliente.e2e@vitral.test')
+    await page.goto('/vendedor/1')
+    await page.getByRole('link', { name: 'Enviar mensagem' }).click()
+    await page.getByRole('textbox', { name: 'Mensagem' }).fill('Olá, esta é uma mensagem E2E.')
+    await page.getByRole('button', { name: 'Enviar' }).click()
+    await expect(page.getByText('Olá, esta é uma mensagem E2E.').last()).toBeVisible()
+
+    await login(page, 'sebo.e2e@vitral.test')
+    await page.goto('/mensagens')
+    await page.locator('.store-message-list button').filter({ hasText: 'Olá, esta é uma mensagem E2E.' }).click()
+    await expect(page.locator('.store-message-thread')).toContainText('Olá, esta é uma mensagem E2E.')
+    await page.getByRole('textbox', { name: 'Mensagem' }).fill('Resposta E2E do sebo.')
+    await page.getByRole('button', { name: 'Enviar' }).click()
+    await expect(page.locator('.store-message-thread')).toContainText('Resposta E2E do sebo.')
+  })
+
+  test('pagina o catálogo do sebo sem esconder produtos', async ({ page, request }) => {
+    const loginResponse = await request.post('http://127.0.0.1:8081/api/v1/auth/login', {
+      data: { email: 'sebo.e2e@vitral.test', password: 'senha1234' },
+    })
+    const { token } = await loginResponse.json()
+    for (let index = 1; index <= 11; index += 1) {
+      const response = await request.post('http://127.0.0.1:8081/api/v1/produtos', {
+        headers: { Authorization: `Bearer ${token}` },
+        data: {
+          titulo: `Produto paginado ${index}`,
+          preco: 10 + index,
+          estoque: 1,
+          condicao: 'USADO',
+        },
+      })
+      expect(response.ok()).toBeTruthy()
+    }
+
+    await login(page, 'sebo.e2e@vitral.test')
+    await page.goto('/painel/produtos')
+    await expect(page.getByLabel('Páginas do catálogo')).toBeVisible()
+    await page.getByRole('button', { name: 'Próxima' }).click()
+    await expect(page.getByText('Página 2 de 2')).toBeVisible()
+    await expect(page.locator('.produto-table tbody tr')).not.toHaveCount(0)
+  })
+
+  test('redefine a senha e aceita uma nova solicitação de recuperação', async ({ page }) => {
+    await page.goto('/auth/redefinir-senha?token=22222222-2222-2222-2222-222222222222')
+    await page.getByLabel('Nova senha:', { exact: true }).fill('senhaNova123')
+    await page.getByLabel('Confirme a nova senha:').fill('senhaNova123')
+    await page.getByRole('button', { name: 'Redefinir senha' }).click()
+    await expect(page.getByRole('status')).toContainText('Senha redefinida com sucesso')
+
+    await page.goto('/auth')
+    await page.getByLabel('Usuário ou E-mail:').fill('cliente.e2e@vitral.test')
+    await page.locator('#login-password').fill('senhaNova123')
+    await page.getByRole('button', { name: 'Entrar' }).click()
+    await expect(page).toHaveURL('/')
+
+    await page.goto('/auth/recuperar-senha')
+    await page.getByLabel('E-mail:').fill('cliente.e2e@vitral.test')
+    await page.getByRole('button', { name: 'Enviar link' }).click()
+    await expect(page.getByRole('status')).toContainText('Se o e-mail estiver cadastrado')
+  })
+
+  test('faz CRUD do sebo e exclui a conta descartável', async ({ page }) => {
+    await login(page, 'descartavel.e2e@vitral.test')
+    await page.goto('/painel/sebo')
+    await expect(page.getByRole('heading', { name: 'Cadastrar perfil do sebo' })).toBeVisible()
+    await page.getByLabel('Descrição').fill('Perfil descartável E2E')
+    await page.getByLabel('Cidade').fill('Fortaleza')
+    await page.getByLabel('UF').fill('CE')
+    await page.getByRole('button', { name: 'Cadastrar' }).click()
+    await expect(page.getByRole('status')).toContainText('Sebo cadastrado com sucesso')
+
+    await page.getByLabel('Descrição').fill('Perfil atualizado E2E')
+    await page.getByRole('button', { name: 'Atualizar' }).click()
+    await expect(page.getByRole('status')).toContainText('Sebo atualizado com sucesso')
+
+    await page.goto('/painel/produtos')
+    await page.getByLabel('Título').fill('Produto descartável E2E')
+    await page.getByLabel('Preço (R$)').fill('25')
+    await page.getByRole('button', { name: 'Adicionar produto' }).click()
+    await expect(page.getByRole('status')).toContainText('Produto cadastrado')
+    const row = page.locator('.produto-table tbody tr').filter({ hasText: 'Produto descartável E2E' })
+    await row.getByRole('button', { name: 'Editar' }).click()
+    await page.getByLabel('Título').fill('Produto editado E2E')
+    await page.getByRole('button', { name: 'Atualizar produto' }).click()
+    await expect(page.getByRole('status')).toContainText('Produto atualizado')
+    page.once('dialog', (dialog) => dialog.accept())
+    await page.locator('.produto-table tbody tr').filter({ hasText: 'Produto editado E2E' }).getByRole('button', { name: 'Remover' }).click()
+    await expect(page.getByText('Produto editado E2E')).toHaveCount(0)
+
+    await page.goto('/conta/excluir')
+    await page.getByLabel('Confirmação').fill('EXCLUIR')
+    await page.getByRole('button', { name: 'Excluir conta' }).click()
+    await expect(page).toHaveURL('/auth')
+  })
 })

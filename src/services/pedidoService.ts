@@ -20,16 +20,16 @@ export const pedidoService = {
     return data
   },
 
-  async listarMeusPedidos(page = 0, size = 20): Promise<Page<Pedido>> {
+  async listarMeusPedidos(page = 0, size = 20, status?: StatusPedido): Promise<Page<Pedido>> {
     const { data } = await api.get<Page<Pedido>>('/pedidos/meus-pedidos', {
-      params: { page, size },
+      params: { page, size, status },
     })
     return data
   },
 
-  async listarVendas(page = 0, size = 20): Promise<Page<Pedido>> {
+  async listarVendas(page = 0, size = 20, status?: StatusPedido): Promise<Page<Pedido>> {
     const { data } = await api.get<Page<Pedido>>('/pedidos/vendas', {
-      params: { page, size },
+      params: { page, size, status },
     })
     return data
   },
