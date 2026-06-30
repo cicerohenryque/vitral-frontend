@@ -115,12 +115,19 @@ export function AuthPage() {
             {loginBusy ? 'Entrando...' : 'Entrar'}
           </Button>
           <Link to="/auth/recuperar-senha" className="auth-forgot-link">Esqueci minha senha</Link>
+          <Link to="/auth/reenviar-confirmacao" className="auth-forgot-link">Reenviar confirmação</Link>
         </form>
 
         {regSuccess ? (
           <div className="auth-card auth-success-card">
             <div className="flash success" role="status">{regSuccess}</div>
             <p className="auth-card-subtitle">Verifique sua caixa de entrada e clique no link de confirmação para ativar sua conta.</p>
+            <Link
+              to={`/auth/reenviar-confirmacao?email=${encodeURIComponent(regEmail)}`}
+              className="auth-forgot-link"
+            >
+              Não recebeu? Reenviar confirmação
+            </Link>
             <Button type="button" onClick={() => setRegSuccess(null)}>
               Cadastrar outra conta
             </Button>

@@ -81,6 +81,7 @@ export function ConfirmarEmailPage() {
               O link pode ter expirado ou já ter sido utilizado.
             </p>
             <Link to="/auth" className="confirmar-email-btn">Voltar para o login</Link>
+            <Link to="/auth/reenviar-confirmacao" className="confirmar-email-btn">Solicitar novo link</Link>
           </>
         )}
       </div>

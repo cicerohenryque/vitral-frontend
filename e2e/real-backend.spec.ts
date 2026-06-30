@@ -157,6 +157,9 @@ test.describe.serial('frontend integrado ao backend real', () => {
     await page.getByLabel('Confirme sua senha:').fill('senha1234')
     await page.getByRole('button', { name: 'Cadastrar' }).click()
     await expect(page.getByRole('status')).toContainText('Verifique seu e-mail')
+    await page.getByRole('link', { name: 'Não recebeu? Reenviar confirmação' }).click()
+    await page.getByRole('button', { name: 'Reenviar link' }).click()
+    await expect(page.getByRole('status')).toContainText('conta estiver pendente')
 
     await page.goto('/auth/confirmar?token=11111111-1111-1111-1111-111111111111')
     await expect(page.getByRole('heading', { name: 'E-mail confirmado!' })).toBeVisible()
@@ -207,12 +210,22 @@ test.describe.serial('frontend integrado ao backend real', () => {
     await expect(page.locator('.produto-table tbody tr')).not.toHaveCount(0)
   })
 
-  test('redefine a senha e aceita uma nova solicitação de recuperação', async ({ page }) => {
+  test('redefine a senha, invalida a sessão antiga e aceita nova recuperação', async ({ page, request }) => {
+    const oldLogin = await request.post('http://127.0.0.1:8081/api/v1/auth/login', {
+      data: { email: 'cliente.e2e@vitral.test', password: 'senha1234' },
+    })
+    const { token: oldToken } = await oldLogin.json()
+
     await page.goto('/auth/redefinir-senha?token=22222222-2222-2222-2222-222222222222')
     await page.getByLabel('Nova senha:', { exact: true }).fill('senhaNova123')
     await page.getByLabel('Confirme a nova senha:').fill('senhaNova123')
     await page.getByRole('button', { name: 'Redefinir senha' }).click()
     await expect(page.getByRole('status')).toContainText('Senha redefinida com sucesso')
+
+    const expiredSession = await request.get('http://127.0.0.1:8081/api/v1/auth/me', {
+      headers: { Authorization: `Bearer ${oldToken}` },
+    })
+    expect(expiredSession.status()).toBe(403)
 
     await page.goto('/auth')
     await page.getByLabel('Usuário ou E-mail:').fill('cliente.e2e@vitral.test')

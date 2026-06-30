@@ -31,6 +31,11 @@ export const authService = {
     return data
   },
 
+  async reenviarConfirmacao(payload: ForgotPasswordRequest): Promise<MensagemResponse> {
+    const { data } = await api.post<MensagemResponse>('/auth/reenviar-confirmacao', payload)
+    return data
+  },
+
   async me(): Promise<Account> {
     const { data } = await api.get<Account>('/auth/me')
     return data

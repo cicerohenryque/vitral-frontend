@@ -22,6 +22,7 @@ import { ConfirmarEmailPage } from './pages/ConfirmarEmailPage'
 import { HomePage } from './pages/HomePage'
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
+import { ResendConfirmationPage } from './pages/ResendConfirmationPage'
 import { MeuSeboPage } from './pages/MeuSeboPage'
 import { MeusProdutosPage } from './pages/MeusProdutosPage'
 import { NotFoundPage } from './pages/NotFoundPage'
@@ -39,6 +40,7 @@ function App() {
         <Route path="/auth/confirmar" element={<ConfirmarEmailPage />} />
         <Route path="/auth/recuperar-senha" element={<ForgotPasswordPage />} />
         <Route path="/auth/redefinir-senha" element={<ResetPasswordPage />} />
+        <Route path="/auth/reenviar-confirmacao" element={<ResendConfirmationPage />} />
         <Route path="/busca" element={<BuscaPage />} />
         <Route path="/buscar" element={<BuscaPage />} />
 
