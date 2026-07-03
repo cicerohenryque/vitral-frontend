@@ -1,10 +1,10 @@
 import { api } from './api'
 import type { Page } from '../types/common'
-import type { Pedido, StatusPedido } from '../types/pedido'
+import type { ConfirmarPedidoRequest, Pedido, StatusPedido } from '../types/pedido'
 
 export const pedidoService = {
-  async confirmarPedido(): Promise<Pedido> {
-    const { data } = await api.post<Pedido>('/pedidos')
+  async confirmarPedido(payload: ConfirmarPedidoRequest): Promise<Pedido> {
+    const { data } = await api.post<Pedido>('/pedidos', payload)
     return data
   },
 

@@ -25,6 +25,7 @@ import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { ResendConfirmationPage } from './pages/ResendConfirmationPage'
 import { MeuSeboPage } from './pages/MeuSeboPage'
 import { MeusProdutosPage } from './pages/MeusProdutosPage'
+import { MinhasOfertasPage } from './pages/MinhasOfertasPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { PerfilPage } from './pages/PerfilPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
@@ -65,6 +66,14 @@ function App() {
           element={
             <ProtectedRoute requireRole={AccountType.SEBO}>
               <MeusProdutosPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/painel/ofertas"
+          element={
+            <ProtectedRoute requireRole={AccountType.SEBO}>
+              <MinhasOfertasPage />
             </ProtectedRoute>
           }
         />

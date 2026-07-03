@@ -24,6 +24,7 @@ const userItems = [
 const seboItems = [
   { label: 'Compras recebidas', to: '/vendas' },
   { label: 'Histórico de vendas', to: '/vendas/historico' },
+  { label: 'Mensagens', to: '/mensagens' },
 ]
 
 export function SideMenu({ onClose }: Props) {
@@ -46,6 +47,9 @@ export function SideMenu({ onClose }: Props) {
                 </li>
                 <li>
                   <Link to="/painel/produtos" onClick={onClose}>Meus Produtos</Link>
+                </li>
+                <li>
+                  <Link to="/painel/ofertas" onClick={onClose}>Minhas Ofertas</Link>
                 </li>
               </>
             ) : (

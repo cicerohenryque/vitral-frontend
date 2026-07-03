@@ -22,7 +22,7 @@ describe('contratos completos dos servicos', () => {
 
   it('cobre autenticacao e busca', async () => {
     await authService.register({ name: 'R', email: 'r@t.com', password: '12345678', type: AccountType.USUARIO })
-    await authService.login({ email: 'r@t.com', password: '12345678' })
+    await authService.login({ login: 'r@t.com', password: '12345678' })
     await authService.logout()
     await authService.confirmarEmail('abc')
     await authService.me()

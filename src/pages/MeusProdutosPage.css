@@ -47,6 +47,17 @@
   font-size: 13px;
 }
 
+.vit-checkbox-wrapper {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.vit-checkbox-wrapper input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary, #7a5c3e);
+}
+
 @media (max-width: 760px) {
   .produto-table-scroll {
     padding-bottom: 6px;

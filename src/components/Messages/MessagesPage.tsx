@@ -91,7 +91,7 @@ export function MessagesPage() {
       : mensagemService.listarConversa(selectedAccountId, page, size))
       .then((items) => {
         if (!active) return
-        setConversation(items.slice().reverse())
+        setConversation(items)
         setSendError(null)
       })
       .catch((err) => {

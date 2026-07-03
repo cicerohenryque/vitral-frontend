@@ -14,7 +14,7 @@ export function AuthPage() {
   const navigate = useNavigate()
   const { login, setSeboId, sessionMessage, clearSessionMessage } = useAuth()
 
-  const [loginEmail, setLoginEmail] = useState('')
+  const [loginIdentifier, setLoginIdentifier] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
   const [loginError, setLoginError] = useState<string | null>(null)
   const [loginBusy, setLoginBusy] = useState(false)
@@ -33,7 +33,7 @@ export function AuthPage() {
     setLoginError(null)
     setLoginBusy(true)
     try {
-      const res = await authService.login({ email: loginEmail, password: loginPassword })
+      const res = await authService.login({ login: loginIdentifier, password: loginPassword })
       login(res.token, res.account)
       if (res.account.type === AccountType.SEBO) {
         try {
@@ -96,11 +96,11 @@ export function AuthPage() {
           ) : null}
           {loginError ? <div className="flash error" role="alert">{loginError}</div> : null}
           <Input
-            id="login-email"
+            id="login-identifier"
             label="Usuário ou E-mail:"
-            type="email"
-            value={loginEmail}
-            onChange={(e) => setLoginEmail(e.target.value)}
+            type="text"
+            value={loginIdentifier}
+            onChange={(e) => setLoginIdentifier(e.target.value)}
             required
           />
           <Input

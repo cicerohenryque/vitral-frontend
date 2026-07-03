@@ -28,7 +28,14 @@ export function ProductCard({ produto }: Props) {
       <div className="product-card-info">
         <strong>{produto.titulo}</strong>
         {produto.categoriaNome ? <small>{produto.categoriaNome}</small> : null}
-        <span>R$ {Number(produto.preco).toFixed(2)}</span>
+        {produto.precoPromocional != null && Number(produto.precoPromocional) < Number(produto.preco) ? (
+          <span>
+            <s style={{ opacity: 0.6, marginRight: 6 }}>R$ {Number(produto.preco).toFixed(2)}</s>
+            R$ {Number(produto.precoPromocional).toFixed(2)}
+          </span>
+        ) : (
+          <span>R$ {Number(produto.preco).toFixed(2)}</span>
+        )}
       </div>
     </Link>
   )

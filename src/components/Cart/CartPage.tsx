@@ -117,7 +117,16 @@ export function CartPage() {
                   <p>{item.autor ?? 'Autor nao informado'} · {item.condicao}</p>
                   <p>Estoque disponível: {item.estoqueDisponivel}</p>
                   <strong className="store-list-price">
-                    R$ {Number(item.subtotal).toFixed(2)}
+                    {item.precoOriginal != null && Number(item.precoOriginal) > Number(item.preco) ? (
+                      <>
+                        <s style={{ opacity: 0.6, marginRight: 6, fontWeight: 400 }}>
+                          R$ {(Number(item.precoOriginal) * item.quantidade).toFixed(2)}
+                        </s>
+                        R$ {Number(item.subtotal).toFixed(2)}
+                      </>
+                    ) : (
+                      <>R$ {Number(item.subtotal).toFixed(2)}</>
+                    )}
                   </strong>
                 </div>
                 <div className="store-list-actions">

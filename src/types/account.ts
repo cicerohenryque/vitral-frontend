@@ -22,7 +22,7 @@ export type RegisterRequest = {
 }
 
 export type LoginRequest = {
-  email: string
+  login: string
   password: string
 }
 

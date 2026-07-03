@@ -59,13 +59,14 @@ Já usam endpoints reais do backend:
 - favoritos do usuário;
 - cesta/carrinho persistido;
 - quantidade de itens na cesta;
-- confirmação de pedido a partir da cesta;
+- confirmação de pedido a partir da cesta, com pagamento simulado (mock) e escolha da forma de pagamento;
 - cancelamento de pedido pelo usuário enquanto aguarda confirmação;
 - histórico de pedidos do usuário;
 - compras recebidas pelo sebo;
 - confirmação ou recusa de vendas pelo sebo;
 - histórico de vendas do sebo;
-- ofertas ativas;
+- ofertas ativas (vitrine pública);
+- gestão de ofertas pelo sebo (criar, editar, desativar e listar as próprias ofertas);
 - lançamentos;
 - mensagens entre contas;
 - estoque e categoria no cadastro de produtos;

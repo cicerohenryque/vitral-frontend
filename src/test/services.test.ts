@@ -61,7 +61,7 @@ describe('contratos dos servicos com o backend', () => {
     const put = vi.spyOn(api, 'put').mockResolvedValue({ data: pedido })
     const get = vi.spyOn(api, 'get').mockResolvedValue({ data: page })
 
-    await pedidoService.confirmarPedido()
+    await pedidoService.confirmarPedido({ formaPagamento: 'PIX' })
     await pedidoService.cancelarPedido(11)
     await pedidoService.atualizarStatus(11, StatusPedido.CONFIRMADO)
     await pedidoService.listarMeusPedidos()

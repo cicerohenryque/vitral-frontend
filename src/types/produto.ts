@@ -26,6 +26,7 @@ export type Produto = {
   autor: string | null
   descricao: string | null
   preco: number
+  precoPromocional?: number | null
   estoque: number | null
   condicao: CondicaoProduto
   fotoUrl: string | null

@@ -148,7 +148,16 @@ export function ProductPage() {
         <article className="product-information">
           <span className="product-category">{produto.categoriaNome ?? produto.condicao}</span>
           <h2>{produto.titulo}</h2>
-          <p className="product-price">R$ {Number(produto.preco).toFixed(2)}</p>
+          {produto.precoPromocional != null && Number(produto.precoPromocional) < Number(produto.preco) ? (
+            <p className="product-price">
+              <s style={{ opacity: 0.6, marginRight: 8, fontWeight: 400 }}>
+                R$ {Number(produto.preco).toFixed(2)}
+              </s>
+              R$ {Number(produto.precoPromocional).toFixed(2)}
+            </p>
+          ) : (
+            <p className="product-price">R$ {Number(produto.preco).toFixed(2)}</p>
+          )}
           <p className="product-description">
             {produto.descricao || 'Consulte o vendedor para combinar pagamento, entrega ou retirada.'}
           </p>

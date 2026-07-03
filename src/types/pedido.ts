@@ -6,6 +6,27 @@ export const StatusPedido = {
 
 export type StatusPedido = (typeof StatusPedido)[keyof typeof StatusPedido]
 
+export const FormaPagamento = {
+  CARTAO: 'CARTAO',
+  PIX: 'PIX',
+  BOLETO: 'BOLETO',
+} as const
+
+export type FormaPagamento = (typeof FormaPagamento)[keyof typeof FormaPagamento]
+
+export const StatusPagamento = {
+  PENDENTE: 'PENDENTE',
+  APROVADO: 'APROVADO',
+  RECUSADO: 'RECUSADO',
+} as const
+
+export type StatusPagamento = (typeof StatusPagamento)[keyof typeof StatusPagamento]
+
+export type ConfirmarPedidoRequest = {
+  formaPagamento: FormaPagamento
+  numeroCartao?: string
+}
+
 export type PedidoItem = {
   id: number
   produtoId: number
@@ -19,6 +40,8 @@ export type Pedido = {
   accountId: number
   seboId: number
   status: StatusPedido
+  formaPagamento?: FormaPagamento | null
+  statusPagamento?: StatusPagamento
   total: number
   createdAt: string
   itens: PedidoItem[]

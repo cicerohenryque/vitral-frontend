@@ -10,6 +10,13 @@ export const ofertaService = {
     return data
   },
 
+  async listarMinhas(page = 0, size = 20): Promise<Page<Oferta>> {
+    const { data } = await api.get<Page<Oferta>>('/ofertas/minhas', {
+      params: { page, size },
+    })
+    return data
+  },
+
   async criar(payload: OfertaRequest): Promise<Oferta> {
     const { data } = await api.post<Oferta>('/ofertas', payload)
     return data

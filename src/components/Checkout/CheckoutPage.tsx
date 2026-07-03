@@ -5,7 +5,7 @@ import { extractErrorMessage } from '../../services/api'
 import { cestaService } from '../../services/cestaService'
 import { pedidoService } from '../../services/pedidoService'
 import type { CestaItem } from '../../types/cesta'
-import type { Pedido } from '../../types/pedido'
+import { FormaPagamento, type Pedido } from '../../types/pedido'
 
 export function CheckoutPage() {
   const [items, setItems] = useState<CestaItem[]>([])
@@ -13,6 +13,8 @@ export function CheckoutPage() {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [formaPagamento, setFormaPagamento] = useState<FormaPagamento>(FormaPagamento.PIX)
+  const [numeroCartao, setNumeroCartao] = useState('')
 
   const total = useMemo(
     () => items.reduce((sum, item) => sum + Number(item.subtotal), 0),
@@ -48,7 +50,10 @@ export function CheckoutPage() {
     setBusy(true)
     setError(null)
     try {
-      const criado = await pedidoService.confirmarPedido()
+      const criado = await pedidoService.confirmarPedido({
+        formaPagamento,
+        numeroCartao: formaPagamento === FormaPagamento.CARTAO ? numeroCartao : undefined,
+      })
       setPedido(criado)
       setItems([])
     } catch (err) {
@@ -65,7 +70,7 @@ export function CheckoutPage() {
       ) : pedido ? (
         <StoreStatus
           title={`Pedido #${pedido.id} enviado`}
-          description="Seu pedido foi enviado ao sebo e está aguardando confirmação."
+          description="Pagamento aprovado. Seu pedido foi enviado ao sebo e está aguardando confirmação."
           tone="success"
           action={<Link to="/reservas">Acompanhar pedido</Link>}
         />
@@ -85,13 +90,40 @@ export function CheckoutPage() {
       ) : (
         <>
           {error ? <div className="flash error" role="alert">{error}</div> : null}
-          <section className="store-summary" aria-label="Resumo do pedido">
+          <section className="store-summary" aria-label="Resumo e pagamento">
             <div>
-              <p>{totalItems} {totalItems === 1 ? 'item' : 'itens'} para confirmar</p>
+              <p>{totalItems} {totalItems === 1 ? 'item' : 'itens'} para pagar</p>
               <strong>R$ {total.toFixed(2)}</strong>
             </div>
+            <div className="store-payment">
+              <label className="store-payment-field">
+                <span>Forma de pagamento</span>
+                <select
+                  value={formaPagamento}
+                  onChange={(e) => setFormaPagamento(e.target.value as FormaPagamento)}
+                >
+                  <option value={FormaPagamento.PIX}>PIX</option>
+                  <option value={FormaPagamento.CARTAO}>Cartão de crédito</option>
+                  <option value={FormaPagamento.BOLETO}>Boleto</option>
+                </select>
+              </label>
+              {formaPagamento === FormaPagamento.CARTAO ? (
+                <label className="store-payment-field">
+                  <span>Número do cartão</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    placeholder="0000 0000 0000 0000"
+                    value={numeroCartao}
+                    onChange={(e) => setNumeroCartao(e.target.value)}
+                  />
+                </label>
+              ) : null}
+              <p className="store-payment-note">Pagamento simulado para fins de demonstração (MVP).</p>
+            </div>
             <button className="primary" type="button" disabled={busy} onClick={confirmarPedido}>
-              {busy ? 'Confirmando...' : 'Confirmar pedido'}
+              {busy ? 'Processando pagamento...' : 'Pagar e confirmar'}
             </button>
           </section>
 
