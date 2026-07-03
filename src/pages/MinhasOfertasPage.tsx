@@ -36,7 +36,12 @@ const EMPTY: OfertaForm = {
 }
 
 function toInputValue(iso: string | null): string {
-  return iso ? iso.slice(0, 16) : ''
+  if (!iso) return ''
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+    + `T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
 function toIsoOrUndefined(value: string): string | undefined {
@@ -63,6 +68,7 @@ export function MinhasOfertasPage() {
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [totalOfertas, setTotalOfertas] = useState(0)
+  const [originalInicioEm, setOriginalInicioEm] = useState('')
 
   const load = useCallback(() => {
     setLoading(true)
@@ -108,14 +114,16 @@ export function MinhasOfertasPage() {
 
   function startEdit(oferta: Oferta) {
     setEditingId(oferta.id)
+    const inicioEm = toInputValue(oferta.inicioEm)
     setForm({
       produtoId: oferta.produtoId,
       precoPromocional: oferta.precoPromocional,
       descricao: oferta.descricao ?? '',
-      inicioEm: toInputValue(oferta.inicioEm),
+      inicioEm,
       fimEm: toInputValue(oferta.fimEm),
       ativa: oferta.ativa,
     })
+    setOriginalInicioEm(inicioEm)
     setError(null)
     setSuccess(null)
   }
@@ -123,6 +131,7 @@ export function MinhasOfertasPage() {
   function resetForm() {
     setEditingId(null)
     setForm(EMPTY)
+    setOriginalInicioEm('')
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -136,6 +145,19 @@ export function MinhasOfertasPage() {
     }
     if (Number(form.precoPromocional) <= 0) {
       setError('O preço promocional deve ser maior que zero.')
+      return
+    }
+    if (form.inicioEm && form.inicioEm !== originalInicioEm) {
+      const inicio = new Date(form.inicioEm)
+      const agora = new Date()
+      agora.setSeconds(0, 0)
+      if (inicio < agora) {
+        setError('O início da oferta não pode ser no passado.')
+        return
+      }
+    }
+    if (form.inicioEm && form.fimEm && new Date(form.fimEm) < new Date(form.inicioEm)) {
+      setError('O fim da oferta deve ser depois do início.')
       return
     }
 
