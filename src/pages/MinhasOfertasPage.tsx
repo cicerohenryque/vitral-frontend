@@ -4,6 +4,7 @@ import { Header } from '../components/Header'
 import { TopBar } from '../components/TopBar'
 import { StoreStatus } from '../components/Layout/StorePage'
 import { Button } from '../components/ui/Button'
+import { CurrencyInput } from '../components/ui/CurrencyInput'
 import { DateTimeField } from '../components/ui/DateTimeField'
 import { Input } from '../components/ui/Input'
 import { Pagination } from '../components/ui/Pagination'
@@ -217,15 +218,12 @@ export function MinhasOfertasPage() {
               ))}
             </select>
           </label>
-          <Input
+          <CurrencyInput
             id="precoPromocional"
             label="Preço promocional (R$)"
-            type="number"
-            step="0.01"
-            min="0"
             required
             value={form.precoPromocional}
-            onChange={(e) => update('precoPromocional', Number(e.target.value))}
+            onChange={(value) => update('precoPromocional', value)}
           />
           <DateTimeField
             id="inicioEm"

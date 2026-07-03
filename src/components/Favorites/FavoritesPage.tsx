@@ -73,7 +73,18 @@ export function FavoritesPage() {
               <div className="store-list-copy">
                 <h2>{item.titulo}</h2>
                 <p>{item.autor ?? 'Autor nao informado'} · {item.condicao}</p>
-                <strong className="store-list-price">R$ {Number(item.preco).toFixed(2)}</strong>
+                <strong className="store-list-price">
+                  {item.precoPromocional != null && Number(item.precoPromocional) < Number(item.preco) ? (
+                    <>
+                      <s style={{ opacity: 0.6, marginRight: 6, fontWeight: 400 }}>
+                        R$ {Number(item.preco).toFixed(2)}
+                      </s>
+                      R$ {Number(item.precoPromocional).toFixed(2)}
+                    </>
+                  ) : (
+                    <>R$ {Number(item.preco).toFixed(2)}</>
+                  )}
+                </strong>
               </div>
               <div className="store-list-actions">
                 <Link to={`/produto/${item.produtoId}`} className="primary">Ver produto</Link>

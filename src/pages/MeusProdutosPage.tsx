@@ -4,6 +4,7 @@ import { Header } from '../components/Header'
 import { TopBar } from '../components/TopBar'
 import { StoreStatus } from '../components/Layout/StorePage'
 import { Button } from '../components/ui/Button'
+import { CurrencyInput } from '../components/ui/CurrencyInput'
 import { ImageUploadField } from '../components/ui/ImageUploadField'
 import { Input } from '../components/ui/Input'
 import { Pagination } from '../components/ui/Pagination'
@@ -176,8 +177,8 @@ export function MeusProdutosPage() {
             value={form.titulo} onChange={(e) => update('titulo', e.target.value)} />
           <Input id="autor" label="Autor"
             value={form.autor ?? ''} onChange={(e) => update('autor', e.target.value)} />
-          <Input id="preco" label="Preço (R$)" type="number" step="0.01" min="0" required
-            value={form.preco} onChange={(e) => update('preco', Number(e.target.value))} />
+          <CurrencyInput id="preco" label="Preço (R$)" required
+            value={form.preco} onChange={(value) => update('preco', value)} />
           <Input id="estoque" label="Estoque" type="number" step="1" min="1"
             value={form.estoque ?? 1} onChange={(e) => update('estoque', Number(e.target.value))} />
           <label className="vit-input-wrapper">

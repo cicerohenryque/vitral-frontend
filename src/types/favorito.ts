@@ -6,6 +6,7 @@ export type Favorito = {
   titulo: string
   autor: string | null
   preco: number
+  precoPromocional?: number | null
   condicao: CondicaoProduto
   fotoUrl: string | null
 }
