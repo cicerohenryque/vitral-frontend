@@ -30,10 +30,12 @@ import { NotFoundPage } from './pages/NotFoundPage'
 import { PerfilPage } from './pages/PerfilPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { AccountType } from './types/account'
+import { GlobalNavigation } from './components/GlobalNavigation'
 
 function App() {
   return (
     <BrowserRouter>
+      <GlobalNavigation />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/auth" element={<AuthPage />} />

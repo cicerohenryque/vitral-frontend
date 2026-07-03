@@ -8,7 +8,7 @@
 
 .help-header {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr 1fr;
   align-items: center;
 }
 
@@ -33,7 +33,7 @@
 .help-content {
   display: grid;
   gap: 86px;
-  margin-top: 76px;
+  margin-top: 24px;
 }
 
 .help-item {

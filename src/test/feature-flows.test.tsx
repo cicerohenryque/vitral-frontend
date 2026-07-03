@@ -8,7 +8,7 @@ import { CartPage } from '../components/Cart/CartPage'
 import { DeleteAccountPage } from '../components/DeleteAccount/DeleteAccountPage'
 import { FavoritesPage } from '../components/Favorites/FavoritesPage'
 import { HistoryPage } from '../components/History/HistoryPage'
-import { Header } from '../components/Header'
+import { GlobalNavigation } from '../components/GlobalNavigation'
 import { MessagesPage } from '../components/Messages/MessagesPage'
 import { ProductPage } from '../components/Product/ProductPage'
 import { ReservationsPage } from '../components/Reservations/ReservationsPage'
@@ -227,20 +227,23 @@ describe('funcionalidades principais do front', () => {
   })
 
   it('mostra o menu correto para usuario e sebo no cabecalho', async () => {
-    const guestRender = renderRoute('/', '/', <Header />)
+    const guestRender = renderRoute('/', '/', <GlobalNavigation />)
     expect(screen.getByRole('link', { name: /Entrar/ })).toBeInTheDocument()
     guestRender.unmount()
 
     authenticate(AccountType.USUARIO)
-    const userRender = renderRoute('/', '/', <Header />)
+    const userRender = renderRoute('/', '/', <GlobalNavigation />)
     expect(screen.getByRole('link', { name: 'Meu Perfil' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir menu' }))
     expect(screen.getByRole('link', { name: 'Favoritos' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Sair' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Fechar menu' })).toBeInTheDocument()
     userRender.unmount()
 
     authenticate(AccountType.SEBO, 3)
-    const seboRender = renderRoute('/', '/', <Header />)
+    const seboRender = renderRoute('/', '/', <GlobalNavigation />)
     expect(screen.getByRole('link', { name: 'Meu Sebo' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir menu' }))
     expect(screen.queryByRole('link', { name: 'Favoritos' })).not.toBeInTheDocument()
     seboRender.unmount()
   })

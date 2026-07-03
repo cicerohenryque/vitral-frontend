@@ -1,22 +1,53 @@
 .sidemenu-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(23, 23, 19, 0.32);
-  z-index: 10;
-  backdrop-filter: blur(4px);
+  background: rgba(23, 23, 19, 0.42);
+  z-index: 100;
+  backdrop-filter: blur(3px);
 }
 .sidemenu {
   position: fixed;
-  top: 14px;
-  left: 14px;
-  width: min(310px, calc(100vw - 28px));
-  height: calc(100vh - 28px);
+  top: 82px;
+  bottom: 0;
+  left: 0;
+  width: min(320px, calc(100vw - 32px));
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  z-index: 20;
+  border-left: 0;
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  padding: 18px;
+  z-index: 110;
   box-shadow: var(--shadow-md);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.sidemenu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 0 4px 12px 12px;
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-sans);
+  font-size: 17px;
+}
+.sidemenu-close {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0 0 3px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  color: var(--color-text);
+  background: var(--color-bg);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+.sidemenu-close:hover {
+  background: var(--color-accent-soft);
 }
 .sidemenu ul {
   list-style: none;
@@ -24,7 +55,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
 }
 .sidemenu li a {
   border-radius: 12px;
@@ -32,7 +63,7 @@
   font-size: 15px;
   font-weight: 700;
   display: block;
-  padding: 12px 14px;
+  padding: 10px 12px;
 }
 .sidemenu li a:hover { background: var(--color-accent-soft); }
 .sidemenu li a.disabled {
@@ -40,3 +71,11 @@
   cursor: not-allowed;
 }
 .sidemenu li a.disabled:hover { text-decoration: none; }
+
+@media (max-width: 560px) {
+  .sidemenu {
+    top: 70px;
+    width: min(290px, calc(100vw - 24px));
+    padding: 14px;
+  }
+}

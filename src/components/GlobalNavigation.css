@@ -1,0 +1,125 @@
+.global-navigation {
+  position: relative;
+  width: 100%;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.global-navigation-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 82px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.global-navigation-start,
+.global-navigation-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.global-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 9px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.global-action:hover {
+  background: var(--color-accent-soft);
+}
+
+.global-menu-button {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.global-menu-button span {
+  width: 23px;
+  height: 2px;
+  margin: 0 auto;
+  border-radius: 4px;
+  background: var(--color-text);
+}
+
+.global-logo {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+}
+
+.global-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 8px 18px rgba(45, 43, 34, 0.08);
+}
+
+@media (max-width: 560px) {
+  .global-navigation-inner {
+    gap: 10px;
+    min-height: 70px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+
+  .global-menu-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .global-menu-button span {
+    width: 20px;
+    height: 2px;
+  }
+
+  .global-logo {
+    width: 54px;
+    height: 54px;
+  }
+
+  .global-navigation-start,
+  .global-navigation-actions {
+    gap: 7px;
+  }
+
+  .global-action {
+    min-height: 40px;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .global-back span {
+    display: none;
+  }
+}

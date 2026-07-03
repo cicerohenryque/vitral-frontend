@@ -7,7 +7,6 @@ import { seboService } from '../services/seboService'
 import { extractErrorMessage } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
 import { AccountType } from '../types/account'
-import logo from '../assets/vitral-sebo-icon.svg'
 import './AuthPage.css'
 
 export function AuthPage() {
@@ -80,12 +79,6 @@ export function AuthPage() {
 
   return (
     <div className="page auth-page">
-      <div className="auth-top">
-        <Link to="/" className="auth-back">↶ Voltar</Link>
-        <img src={logo} alt="Vitral" className="auth-logo" />
-        <div className="auth-spacer" />
-      </div>
-
       <div className="auth-grid">
         <form className="auth-card" onSubmit={handleLogin}>
           {sessionMessage ? (

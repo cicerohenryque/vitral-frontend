@@ -1,12 +1,8 @@
-import { Link } from 'react-router-dom'
-import { BrandLogo } from '../Layout/BrandLogo'
 import {
-  BackIcon,
   CardIcon,
   HeartIcon,
   InfoIcon,
   MinusCircleIcon,
-  UserIcon,
 } from '../Layout/Icons'
 import './HelpPage.css'
 
@@ -39,18 +35,6 @@ const helpItems = [
 export function HelpPage() {
   return (
     <main className="help-page">
-      <header className="help-header">
-        <Link className="help-back" to="/">
-          <BackIcon size={35} />
-          Voltar
-        </Link>
-        <BrandLogo size={200} />
-        <Link className="help-login" to="/entrar">
-          <UserIcon size={28} />
-          Entrar
-        </Link>
-      </header>
-
       <section className="help-content" aria-label="Como usar o Vitral">
         {helpItems.map((item, index) => (
           <article className="help-item" key={index}>

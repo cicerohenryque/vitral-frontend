@@ -34,6 +34,12 @@ export function SideMenu({ onClose }: Props) {
     <>
       <div className="sidemenu-backdrop" onClick={onClose} />
       <aside className="sidemenu" id="main-side-menu" aria-label="Menu principal">
+        <div className="sidemenu-header">
+          <strong>Menu</strong>
+          <button type="button" className="sidemenu-close" onClick={onClose} aria-label="Fechar menu">
+            ×
+          </button>
+        </div>
         <nav aria-label="Navegação principal">
           <ul>
             {!isAuthenticated ? (

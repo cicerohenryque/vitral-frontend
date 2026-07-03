@@ -1,10 +1,8 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { extractErrorMessage } from '../services/api'
 import { authService } from '../services/authService'
-import logo from '../assets/vitral-sebo-icon.svg'
 import './AuthPage.css'
 
 export function ForgotPasswordPage() {
@@ -29,11 +27,6 @@ export function ForgotPasswordPage() {
 
   return (
     <div className="page auth-page">
-      <div className="auth-top">
-        <Link to="/auth" className="auth-back">↶ Voltar</Link>
-        <img src={logo} alt="Vitral" className="auth-logo" />
-        <div className="auth-spacer" />
-      </div>
       <div className="auth-grid auth-grid-single">
         <form className="auth-card" onSubmit={submit}>
           <h1 className="auth-card-title">Recuperar senha</h1>
