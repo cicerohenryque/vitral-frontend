@@ -93,8 +93,7 @@ describe('fluxos integrados do front', () => {
     vi.spyOn(produtoService, 'buscarPorId').mockResolvedValue(buildProduto({ estoque: 0, ativo: false }))
     vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({
       id: 3, accountId: 4, nome: 'Sebo', email: 'sebo@teste.com', descricao: null,
-      telefone: null, cep: null, logradouro: null, cidade: null, uf: null,
-      horarioFuncionamento: null, fotoUrl: null,
+      telefone: null, fotoUrl: null,
     })
     renderRoute('/produto/7', <ProductPage />)
 
@@ -120,8 +119,6 @@ describe('fluxos integrados do front', () => {
     authenticate(AccountType.USUARIO)
     vi.spyOn(usuarioService, 'excluirConta').mockResolvedValue({ mensagem: 'ok' })
     vi.spyOn(seboService, 'excluirConta').mockResolvedValue({ mensagem: 'ok' })
-    const logout = vi.fn()
-    useAuthStore.setState({ logout })
     renderRoute('/excluir-conta', <DeleteAccountPage />)
 
     await userEvent.type(screen.getByLabelText('Confirmação'), 'EXCLUIR')
@@ -129,7 +126,7 @@ describe('fluxos integrados do front', () => {
 
     await waitFor(() => expect(usuarioService.excluirConta).toHaveBeenCalled())
     expect(seboService.excluirConta).not.toHaveBeenCalled()
-    expect(logout).toHaveBeenCalled()
+    expect(useAuthStore.getState().token).toBeNull()
   })
 })
 

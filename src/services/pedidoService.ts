@@ -1,6 +1,6 @@
 import { api } from './api'
 import type { Page } from '../types/common'
-import type { ConfirmarPedidoRequest, Pedido, StatusPedido } from '../types/pedido'
+import type { ConfirmarPedidoRequest, FaturamentoMensal, Pedido, StatusPedido } from '../types/pedido'
 
 export const pedidoService = {
   async confirmarPedido(payload: ConfirmarPedidoRequest): Promise<Pedido> {
@@ -30,6 +30,13 @@ export const pedidoService = {
   async listarVendas(page = 0, size = 20, status?: StatusPedido): Promise<Page<Pedido>> {
     const { data } = await api.get<Page<Pedido>>('/pedidos/vendas', {
       params: { page, size, status },
+    })
+    return data
+  },
+
+  async buscarFaturamentoMensal(ano: number): Promise<FaturamentoMensal[]> {
+    const { data } = await api.get<FaturamentoMensal[]>('/pedidos/faturamento-mensal', {
+      params: { ano },
     })
     return data
   },

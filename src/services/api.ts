@@ -19,11 +19,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<ApiError>) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
       const hadSession = Boolean(localStorage.getItem(TOKEN_KEY))
-      localStorage.removeItem(TOKEN_KEY)
-      localStorage.removeItem('vitral_account')
-      localStorage.removeItem('vitral_sebo_id')
       const { useAuthStore } = await import('../store/authStore')
       useAuthStore.getState().forceLogout(
         hadSession ? 'Sua sessão expirou. Entre novamente para continuar.' : undefined,

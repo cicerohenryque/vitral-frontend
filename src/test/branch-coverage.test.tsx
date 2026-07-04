@@ -98,7 +98,7 @@ describe('cobertura de branches restantes', () => {
     renderPage(<CheckoutPage />)
     expect(await screen.findByText('Livro Checkout')).toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Confirmar pedido' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Pagar e confirmar' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Nao foi possivel confirmar o pedido.')
   })
 
@@ -310,11 +310,11 @@ describe('cobertura de branches restantes', () => {
 
   it('mostra resultados de sebos na busca e altera para produtos', async () => {
     vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
-    vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [{ id: 42, nome: 'Sebo do Teste', cidade: 'Recife', uf: 'PE', descricao: 'Raro', horarioFuncionamento: '9h', telefone: '3333', cep: '50000', logradouro: 'Rua X', accountId: 1, email: 'sebo@teste.com', fotoUrl: null }] })
+    vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [{ id: 42, nome: 'Sebo do Teste', descricao: 'Raro', telefone: '3333', accountId: 1, email: 'sebo@teste.com', fotoUrl: null }] })
     renderWithParams('/busca?q=teste&tab=sebos', <BuscaPage />)
 
     expect(await screen.findByRole('heading', { name: 'Sebo do Teste' })).toBeInTheDocument()
-    expect(screen.getByText('Recife - PE')).toBeInTheDocument()
+    expect(screen.getByText('Raro')).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('tab', { name: /Produtos/ }))
     expect(await screen.findByText('Nenhum produto encontrado.')).toBeInTheDocument()
@@ -336,35 +336,21 @@ describe('cobertura de branches restantes', () => {
     await waitFor(() => expect(buscaService.buscarProdutos).toHaveBeenLastCalledWith(expect.objectContaining({ q: 'abc' })))
   })
 
-  it('carrega filtro de cidade e uf diretamente da url na aba de sebos', async () => {
+  it('ignora filtros físicos antigos na busca de sebos', async () => {
     vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
     const buscarSebosSpy = vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })
 
     renderWithParams('/busca?tab=sebos&cidade=Campina%20Grande&uf=PB', <BuscaPage />)
     expect(await screen.findByText('Nenhum sebo encontrado.')).toBeInTheDocument()
 
-    expect(buscarSebosSpy).toHaveBeenLastCalledWith(expect.objectContaining({ cidade: 'Campina Grande', uf: 'PB' }))
-  })
-
-  it('aplica filtros de busca na aba de sebos', async () => {
-    vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
-    const buscarSebosSpy = vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })
-
-    renderWithParams('/busca?tab=sebos', <BuscaPage />)
-    expect(await screen.findByText('Nenhum sebo encontrado.')).toBeInTheDocument()
-
-    await userEvent.type(screen.getByLabelText('Cidade'), 'Campina Grande')
-    await userEvent.type(screen.getByLabelText('Estado (UF)'), 'pb')
-    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
-
-    expect(buscarSebosSpy).toHaveBeenLastCalledWith(expect.objectContaining({ cidade: 'Campina Grande', uf: 'PB' }))
+    expect(buscarSebosSpy).toHaveBeenLastCalledWith({ q: undefined })
   })
 
   it('mostra sebo com foto quando a busca retorna fotoUrl', async () => {
     vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
     vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({
       ...emptyPage,
-      content: [{ id: 99, nome: 'Sebo com Imagem', cidade: 'São Paulo', uf: 'SP', descricao: 'Detalhes', horarioFuncionamento: '9h - 18h', telefone: '1111-2222', cep: '12345', logradouro: 'Rua das Flores', accountId: 1, email: 'img@sebo.com', fotoUrl: 'https://image.test/sebo.jpg' }],
+      content: [{ id: 99, nome: 'Sebo com Imagem', descricao: 'Detalhes', telefone: '1111-2222', accountId: 1, email: 'img@sebo.com', fotoUrl: 'https://image.test/sebo.jpg' }],
     })
 
     renderWithParams('/busca?tab=sebos', <BuscaPage />)
@@ -404,17 +390,12 @@ describe('cobertura de branches restantes', () => {
     await waitFor(() => expect(buscarProdutosSpy).toHaveBeenLastCalledWith(expect.objectContaining({ condicao: undefined, seboId: undefined, precoMin: undefined, precoMax: undefined })))
   })
 
-  it('remove filtros vazios ao aplicar em sebos', async () => {
+  it('explica a busca virtual na aba de sebos', async () => {
     vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
-    const buscarSebosSpy = vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })
+    vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })
 
     renderWithParams('/busca?tab=sebos&cidade=Campina%20Grande&uf=PB', <BuscaPage />)
-    expect(await screen.findByDisplayValue('Campina Grande')).toBeInTheDocument()
-    await userEvent.clear(screen.getByLabelText('Cidade'))
-    await userEvent.clear(screen.getByLabelText('Estado (UF)'))
-    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
-
-    await waitFor(() => expect(buscarSebosSpy).toHaveBeenLastCalledWith(expect.objectContaining({ cidade: undefined, uf: undefined })))
+    expect(await screen.findByText('Busque sebos virtuais pelo nome ou descrição.')).toBeInTheDocument()
   })
 
   it('aplica filtros de busca de produtos e limpa corretamente', async () => {
@@ -438,13 +419,11 @@ describe('cobertura de branches restantes', () => {
 
   it('aplica filtros de busc a de sebos e limpa corretamente', async () => {
     vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
-    vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [{ id: 99, nome: 'Sebo sem cidade', cidade: '', uf: '', descricao: '', horarioFuncionamento: '', telefone: '', cep: '12345', logradouro: 'Rua V', accountId: 1, email: 's@teste.com', fotoUrl: null }] })
+    vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [{ id: 99, nome: 'Sebo virtual', descricao: '', telefone: '', accountId: 1, email: 's@teste.com', fotoUrl: null }] })
     const { container } = renderWithParams('/busca?q=teste&tab=sebos', <BuscaPage />)
 
-    expect(await screen.findByRole('heading', { name: 'Sebo sem cidade' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Sebo virtual' })).toBeInTheDocument()
     expect(container.querySelector('.busca-sebo-foto-placeholder')).toBeInTheDocument()
-    expect(container.querySelector('.busca-sebo-local')).not.toBeInTheDocument()
-    expect(container.querySelector('.busca-sebo-horario')).not.toBeInTheDocument()
   })
 
   it('mostra cadastro de sebo mesmo sem conta autenticada', async () => {

@@ -32,3 +32,8 @@ export type Produto = {
   fotoUrl: string | null
   ativo: boolean
 }
+
+export type VendaFisicaResponse = {
+  mensagem: string
+  estoqueAtual?: number
+}

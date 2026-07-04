@@ -22,6 +22,12 @@ function readSeboId(): number | null {
   return Number.isFinite(parsed) ? parsed : null
 }
 
+function clearStoredSession() {
+  localStorage.removeItem(TOKEN_KEY)
+  localStorage.removeItem(ACCOUNT_KEY)
+  localStorage.removeItem(SEBO_ID_KEY)
+}
+
 type AuthState = {
   token: string | null
   account: Account | null
@@ -50,13 +56,12 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: () => {
     api.post('/auth/logout').catch(() => {})
-    localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem(ACCOUNT_KEY)
-    localStorage.removeItem(SEBO_ID_KEY)
+    clearStoredSession()
     set({ token: null, account: null, seboId: null, sessionMessage: null })
   },
 
   forceLogout: (message) => {
+    clearStoredSession()
     set({ token: null, account: null, seboId: null, sessionMessage: message ?? null })
   },
 

@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Header } from '../components/Header'
+import { GlobalNavigation } from '../components/GlobalNavigation'
 import { ProductCarousel } from '../components/ProductCarousel'
 import { ProductPage } from '../components/Product/ProductPage'
 import { SellerPage } from '../components/Seller/SellerPage'
@@ -20,7 +21,7 @@ import { CondicaoProduto } from '../types/produto'
 
 const emptyPage = { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20, first: true, last: true }
 const produto = { id: 7, seboId: 3, categoriaId: null, categoriaNome: null, titulo: 'Livro', autor: null, descricao: null, preco: 25, estoque: 2, condicao: CondicaoProduto.USADO, fotoUrl: 'https://img.test/livro.jpg', ativo: true }
-const sebo = { id: 3, accountId: 8, nome: 'Sebo Central', email: 'sebo@teste.com', descricao: null, telefone: null, cep: null, logradouro: null, cidade: null, uf: null, horarioFuncionamento: null, fotoUrl: null }
+const sebo = { id: 3, accountId: 8, nome: 'Sebo Central', email: 'sebo@teste.com', descricao: null, telefone: null, fotoUrl: null }
 
 describe('ramos alternativos e interacoes', () => {
   beforeEach(() => useAuthStore.setState({ token: null, account: null, seboId: null }))
@@ -73,7 +74,7 @@ describe('ramos alternativos e interacoes', () => {
     failed.unmount()
     renderRoute('/vendedor/3', '/vendedor/:sellerId', <SellerPage />)
     expect(await screen.findByText('Nenhum produto cadastrado')).toBeInTheDocument()
-    expect(screen.getByText('Nao informada')).toBeInTheDocument()
+    expect(screen.getByText('sebo@teste.com')).toBeInTheDocument()
     expect(screen.getByText('sebo@teste.com')).toBeInTheDocument()
   })
 
@@ -104,7 +105,7 @@ describe('ramos alternativos e interacoes', () => {
     authenticate(AccountType.USUARIO)
     const logout = vi.fn()
     useAuthStore.setState({ logout })
-    renderRoute('/', '*', <><Header /><Routes><Route path="/busca" element={<p>Busca aberta</p>} /></Routes></>)
+    renderRoute('/', '*', <><GlobalNavigation /><Header /><Routes><Route path="/busca" element={<p>Busca aberta</p>} /></Routes></>)
     await userEvent.type(screen.getByLabelText('Pesquisar produtos'), ' livro raro ')
     await userEvent.click(screen.getByRole('button', { name: 'Buscar' }))
     expect(await screen.findByText('Busca aberta')).toBeInTheDocument()

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MinusCircleIcon } from '../Layout/Icons'
 import { StorePage } from '../Layout/StorePage'
-import { useAuth } from '../../hooks/useAuth'
+import { useAuthStore } from '../../store/authStore'
 import { extractErrorMessage } from '../../services/api'
 import { seboService } from '../../services/seboService'
 import { usuarioService } from '../../services/usuarioService'
@@ -10,7 +10,9 @@ import './DeleteAccountPage.css'
 
 export function DeleteAccountPage() {
   const navigate = useNavigate()
-  const { account, isSebo, logout } = useAuth()
+  const account = useAuthStore((state) => state.account)
+  const isSebo = account?.type === 'SEBO'
+  const forceLogout = useAuthStore((state) => state.forceLogout)
   const [confirmation, setConfirmation] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -27,7 +29,7 @@ export function DeleteAccountPage() {
       } else {
         await usuarioService.excluirConta()
       }
-      logout()
+      forceLogout()
       navigate('/auth')
     } catch (err) {
       setError(extractErrorMessage(err, 'Nao foi possivel excluir sua conta.'))

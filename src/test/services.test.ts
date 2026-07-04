@@ -67,7 +67,7 @@ describe('contratos dos servicos com o backend', () => {
     await pedidoService.listarMeusPedidos()
     await pedidoService.listarVendas()
 
-    expect(post).toHaveBeenCalledWith('/pedidos')
+    expect(post).toHaveBeenCalledWith('/pedidos', { formaPagamento: 'PIX' })
     expect(put).toHaveBeenCalledWith('/pedidos/11/cancelar')
     expect(put).toHaveBeenCalledWith('/pedidos/11/status', null, {
       params: { status: StatusPedido.CONFIRMADO },

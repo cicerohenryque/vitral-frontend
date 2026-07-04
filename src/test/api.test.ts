@@ -37,6 +37,22 @@ describe('autenticacao da API', () => {
     expect(localStorage.getItem('vitral_account')).toBeNull()
     expect(localStorage.getItem('vitral_sebo_id')).toBeNull()
   })
+
+  it('encerra a sessao quando uma conta desativada recebe 403', async () => {
+    localStorage.setItem(TOKEN_KEY, 'desativado')
+    localStorage.setItem('vitral_account', '{"id":1}')
+    localStorage.setItem('vitral_sebo_id', '3')
+    api.defaults.adapter = async (config) => {
+      const result = response(config, 403)
+      throw new AxiosError('Forbidden', 'ERR_BAD_REQUEST', config, undefined, result)
+    }
+
+    await expect(api.get('/protegido')).rejects.toBeInstanceOf(AxiosError)
+
+    expect(localStorage.getItem(TOKEN_KEY)).toBeNull()
+    expect(localStorage.getItem('vitral_account')).toBeNull()
+    expect(localStorage.getItem('vitral_sebo_id')).toBeNull()
+  })
 })
 
 function response(config: InternalAxiosRequestConfig, status = 200): AxiosResponse {

@@ -88,7 +88,6 @@ export function SellerPage() {
               <h2>{seller.nome}</h2>
               {seller.descricao ? <p>{seller.descricao}</p> : null}
               <dl>
-                <div><dt>Localizacao</dt><dd>{seller.cidade ? `${seller.cidade}${seller.uf ? `, ${seller.uf}` : ''}` : 'Nao informada'}</dd></div>
                 <div><dt>Contato</dt><dd>{seller.telefone ?? seller.email}</dd></div>
                 <div><dt>Itens disponíveis</dt><dd>{totalProducts}</dd></div>
               </dl>

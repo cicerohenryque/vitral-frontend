@@ -41,6 +41,7 @@ export function MeusProdutosPage() {
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [totalProducts, setTotalProducts] = useState(0)
+  const [sellingId, setSellingId] = useState<number | null>(null)
 
   const load = useCallback(() => {
     if (!seboId) {
@@ -143,6 +144,34 @@ export function MeusProdutosPage() {
       load()
     } catch (err) {
       setError(extractErrorMessage(err, 'Erro ao remover produto'))
+    }
+  }
+
+  async function handlePhysicalSale(p: Produto) {
+    const raw = prompt(`Quantidade vendida de "${p.titulo}":`, '1')
+    if (raw === null) return
+    const quantidade = Number(raw)
+    if (!Number.isInteger(quantidade) || quantidade < 1) {
+      setError('Informe uma quantidade inteira maior que zero.')
+      return
+    }
+    if (quantidade > (p.estoque ?? 0)) {
+      setError('A quantidade informada é maior que o estoque disponível.')
+      return
+    }
+    setSellingId(p.id)
+    setError(null)
+    setSuccess(null)
+    try {
+      const response = await produtoService.registrarVendaFisica(p.id, quantidade)
+      setProdutos((current) => current.map((item) => item.id === p.id
+        ? { ...item, estoque: response.estoqueAtual ?? Math.max((item.estoque ?? 0) - quantidade, 0) }
+        : item))
+      setSuccess(response.mensagem || 'Venda física registrada com sucesso.')
+    } catch (err) {
+      setError(extractErrorMessage(err, 'Não foi possível registrar a venda física.'))
+    } finally {
+      setSellingId(null)
     }
   }
 
@@ -261,6 +290,14 @@ export function MeusProdutosPage() {
                     <td>{p.estoque ?? 0}</td>
                     <td>{p.condicao}</td>
                     <td className="produto-table-actions">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        disabled={(p.estoque ?? 0) === 0 || sellingId === p.id}
+                        onClick={() => handlePhysicalSale(p)}
+                      >
+                        {sellingId === p.id ? 'Registrando...' : 'Registrar venda física'}
+                      </Button>
                       <Button type="button" variant="ghost" onClick={() => startEdit(p)}>Editar</Button>
                       <Button type="button" variant="danger" onClick={() => handleRemove(p)}>Remover</Button>
                     </td>

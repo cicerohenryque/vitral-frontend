@@ -14,8 +14,6 @@ export type BuscaProdutosParams = {
 
 export type BuscaSebosParams = {
   q?: string
-  cidade?: string
-  uf?: string
 }
 
 export const buscaService = {

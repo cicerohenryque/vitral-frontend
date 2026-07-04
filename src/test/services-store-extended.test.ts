@@ -5,6 +5,7 @@ import { buscaService } from '../services/buscaService'
 import { categoriaService } from '../services/categoriaService'
 import { cestaService } from '../services/cestaService'
 import { produtoService } from '../services/produtoService'
+import { pedidoService } from '../services/pedidoService'
 import { seboService } from '../services/seboService'
 import { usuarioService } from '../services/usuarioService'
 import { useAuthStore } from '../store/authStore'
@@ -27,7 +28,7 @@ describe('contratos completos dos servicos', () => {
     await authService.confirmarEmail('abc')
     await authService.me()
     await buscaService.buscarProdutos({ q: 'livro' }, 2, 5)
-    await buscaService.buscarSebos({ cidade: 'Fortaleza' }, 1, 8)
+    await buscaService.buscarSebos({ q: 'Fortaleza' }, 1, 8)
     expect(api.get).toHaveBeenCalledWith('/auth/confirmar', { params: { token: 'abc' } })
     expect(api.get).toHaveBeenCalledWith('/busca/produtos', { params: { q: 'livro', page: 2, size: 5 } })
   })
@@ -39,12 +40,16 @@ describe('contratos completos dos servicos', () => {
     await produtoService.atualizar(7, { titulo: 'Novo' } as never)
     await produtoService.remover(7)
     await produtoService.listarPorSebo(3)
-    await seboService.criar({ cidade: 'Fortaleza' })
-    await seboService.atualizarMeu({ cidade: 'Recife' })
+    await produtoService.registrarVendaFisica(7, 2)
+    await pedidoService.buscarFaturamentoMensal(2026)
+    await seboService.criar({ descricao: 'Livros' })
+    await seboService.atualizarMeu({ descricao: 'Livros raros' })
     await usuarioService.atualizarPerfil({ name: 'Novo' })
     await usuarioService.excluirConta()
     expect(api.post).toHaveBeenCalledWith('/cesta/7', null, { params: { quantidade: 2 } })
     expect(api.put).toHaveBeenCalledWith('/produtos/7', { titulo: 'Novo' })
+    expect(api.post).toHaveBeenCalledWith('/produtos/7/venda-fisica', { quantidade: 2 })
+    expect(api.get).toHaveBeenCalledWith('/pedidos/faturamento-mensal', { params: { ano: 2026 } })
   })
 
   it('localiza sebo por conta, email ou retorna nulo', async () => {

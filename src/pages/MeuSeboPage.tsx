@@ -6,21 +6,21 @@ import { Button } from '../components/ui/Button'
 import { ImageUploadField } from '../components/ui/ImageUploadField'
 import { Input } from '../components/ui/Input'
 import { seboService } from '../services/seboService'
+import { pedidoService } from '../services/pedidoService'
 import { extractErrorMessage } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
 import type { Sebo, SeboRequest } from '../types/sebo'
+import type { FaturamentoMensal } from '../types/pedido'
 import './FormPage.css'
 
 const EMPTY: SeboRequest = {
   descricao: '',
   telefone: '',
-  cep: '',
-  logradouro: '',
-  cidade: '',
-  uf: '',
-  horarioFuncionamento: '',
   fotoUrl: '',
 }
+
+const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+const formatBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 
 export function MeuSeboPage() {
   const { account, seboId, setSeboId } = useAuth()
@@ -30,6 +30,10 @@ export function MeuSeboPage() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [ano, setAno] = useState(new Date().getFullYear())
+  const [faturamento, setFaturamento] = useState<FaturamentoMensal[]>([])
+  const [loadingFaturamento, setLoadingFaturamento] = useState(true)
+  const [faturamentoError, setFaturamentoError] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
@@ -51,11 +55,6 @@ export function MeuSeboPage() {
         setForm({
           descricao: sebo.descricao ?? '',
           telefone: sebo.telefone ?? '',
-          cep: sebo.cep ?? '',
-          logradouro: sebo.logradouro ?? '',
-          cidade: sebo.cidade ?? '',
-          uf: sebo.uf ?? '',
-          horarioFuncionamento: sebo.horarioFuncionamento ?? '',
           fotoUrl: sebo.fotoUrl ?? '',
         })
       })
@@ -70,6 +69,27 @@ export function MeuSeboPage() {
     }
   }, [account, seboId, setSeboId])
 
+  useEffect(() => {
+    let active = true
+    // Reset the visible request state whenever the selected year changes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoadingFaturamento(true)
+    setFaturamentoError(null)
+    pedidoService.buscarFaturamentoMensal(ano)
+      .then((data) => {
+        if (active) setFaturamento(data)
+      })
+      .catch((err) => {
+        if (!active) return
+        setFaturamento([])
+        setFaturamentoError(extractErrorMessage(err, 'Não foi possível carregar o faturamento.'))
+      })
+      .finally(() => {
+        if (active) setLoadingFaturamento(false)
+      })
+    return () => { active = false }
+  }, [ano])
+
   function update<K extends keyof SeboRequest>(key: K, value: SeboRequest[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
@@ -80,10 +100,7 @@ export function MeuSeboPage() {
     setSuccess(null)
     setBusy(true)
     try {
-      const payload: SeboRequest = {
-        ...form,
-        uf: form.uf ? form.uf.toUpperCase() : undefined,
-      }
+      const payload: SeboRequest = { ...form }
       const saved = existing
         ? await seboService.atualizarMeu(payload)
         : await seboService.criar(payload)
@@ -126,17 +143,6 @@ export function MeuSeboPage() {
             value={form.descricao ?? ''} onChange={(e) => update('descricao', e.target.value)} />
           <Input id="telefone" label="Telefone"
             value={form.telefone ?? ''} onChange={(e) => update('telefone', e.target.value)} />
-          <Input id="cep" label="CEP"
-            value={form.cep ?? ''} onChange={(e) => update('cep', e.target.value)} />
-          <Input id="logradouro" label="Endereço"
-            value={form.logradouro ?? ''} onChange={(e) => update('logradouro', e.target.value)} />
-          <Input id="cidade" label="Cidade"
-            value={form.cidade ?? ''} onChange={(e) => update('cidade', e.target.value)} />
-          <Input id="uf" label="UF" maxLength={2}
-            value={form.uf ?? ''} onChange={(e) => update('uf', e.target.value.toUpperCase())} />
-          <Input id="horario" label="Horário de funcionamento"
-            value={form.horarioFuncionamento ?? ''}
-            onChange={(e) => update('horarioFuncionamento', e.target.value)} />
           <ImageUploadField
             id="fotoUrl"
             label="Foto do sebo"
@@ -149,6 +155,53 @@ export function MeuSeboPage() {
             </Button>
           </div>
         </form>
+
+        <section className="billing-section" aria-labelledby="billing-title">
+          <div className="billing-heading">
+            <div>
+              <h2 id="billing-title">Faturamento mensal</h2>
+              <p>Acompanhe as vendas confirmadas do seu sebo.</p>
+            </div>
+            <label>
+              Ano
+              <select value={ano} onChange={(e) => setAno(Number(e.target.value))}>
+                {Array.from({ length: 5 }, (_, index) => new Date().getFullYear() - index).map((value) => (
+                  <option key={value} value={value}>{value}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {loadingFaturamento ? (
+            <StoreStatus title="Carregando faturamento" description="Consultando os valores mensais." busy />
+          ) : faturamentoError ? (
+            <div className="flash error" role="alert">{faturamentoError}</div>
+          ) : (() => {
+            const valores = MESES.map((_, index) => faturamento.find((item) => item.mes === index + 1)?.total ?? 0)
+            const total = valores.reduce((sum, value) => sum + Number(value), 0)
+            const max = Math.max(...valores, 1)
+            return (
+              <>
+                <p className="billing-total">Total em {ano}: <strong>{formatBRL.format(total)}</strong></p>
+                {faturamento.length === 0 ? <p className="billing-empty">Nenhum faturamento registrado neste ano.</p> : null}
+                <div className="billing-chart" aria-label={`Faturamento mensal de ${ano}`}>
+                  {valores.map((value, index) => (
+                    <div className="billing-bar-column" key={MESES[index]}>
+                      <span className="billing-value">{formatBRL.format(value)}</span>
+                      <span className="billing-bar" style={{ height: `${Math.max((value / max) * 140, value ? 4 : 0)}px` }} />
+                      <span>{MESES[index]}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="billing-table-scroll">
+                  <table className="billing-table">
+                    <thead><tr><th>Mês</th><th>Valor</th></tr></thead>
+                    <tbody>{valores.map((value, index) => <tr key={MESES[index]}><td>{MESES[index]}</td><td>{formatBRL.format(value)}</td></tr>)}</tbody>
+                  </table>
+                </div>
+              </>
+            )
+          })()}
+        </section>
       </main>
     </div>
   )

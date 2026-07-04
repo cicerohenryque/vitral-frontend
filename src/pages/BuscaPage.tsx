@@ -22,8 +22,6 @@ export function BuscaPage() {
   const appliedSeboId = searchParams.get('seboId') ?? ''
   const appliedPrecoMin = searchParams.get('precoMin') ?? ''
   const appliedPrecoMax = searchParams.get('precoMax') ?? ''
-  const appliedCidade = searchParams.get('cidade') ?? ''
-  const appliedUf = searchParams.get('uf') ?? ''
   const requestedPage = Number(searchParams.get('page') ?? '1')
   const currentPage = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage - 1 : 0
 
@@ -32,8 +30,6 @@ export function BuscaPage() {
   const [seboId, setSeboId] = useState(appliedSeboId)
   const [precoMin, setPrecoMin] = useState(appliedPrecoMin)
   const [precoMax, setPrecoMax] = useState(appliedPrecoMax)
-  const [cidade, setCidade] = useState(appliedCidade)
-  const [uf, setUf] = useState(appliedUf)
 
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [sebos, setSebos] = useState<Sebo[]>([])
@@ -54,9 +50,7 @@ export function BuscaPage() {
     setSeboId(appliedSeboId)
     setPrecoMin(appliedPrecoMin)
     setPrecoMax(appliedPrecoMax)
-    setCidade(appliedCidade)
-    setUf(appliedUf)
-  }, [q, appliedCondicao, appliedSeboId, appliedPrecoMin, appliedPrecoMax, appliedCidade, appliedUf])
+  }, [q, appliedCondicao, appliedSeboId, appliedPrecoMin, appliedPrecoMax])
 
   useEffect(() => {
     const params = {
@@ -87,11 +81,7 @@ export function BuscaPage() {
   }, [q, appliedSeboId, appliedCondicao, appliedPrecoMin, appliedPrecoMax, currentPage])
 
   useEffect(() => {
-    const params = {
-      q: q || undefined,
-      cidade: appliedCidade || undefined,
-      uf: appliedUf || undefined,
-    }
+    const params = { q: q || undefined }
 
     const request = currentPage === 0
       ? buscaService.buscarSebos(params)
@@ -110,7 +100,7 @@ export function BuscaPage() {
         setTotalPaginasSebos(0)
       })
       .finally(() => setLoadingSebos(false))
-  }, [q, appliedCidade, appliedUf, currentPage])
+  }, [q, currentPage])
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -152,15 +142,7 @@ export function BuscaPage() {
       if (next.toString() === searchParams.toString()) return
       setLoadingProdutos(true)
       setErrorProdutos(null)
-    } else {
-      if (cidade) next.set('cidade', cidade)
-      else next.delete('cidade')
-      if (uf) next.set('uf', uf)
-      else next.delete('uf')
-      if (next.toString() === searchParams.toString()) return
-      setLoadingSebos(true)
-      setErrorSebos(null)
-    }
+    } else return
     setSearchParams(next)
   }
 
@@ -174,8 +156,6 @@ export function BuscaPage() {
     setSeboId('')
     setPrecoMin('')
     setPrecoMax('')
-    setCidade('')
-    setUf('')
     setLoadingProdutos(true)
     setLoadingSebos(true)
     setErrorProdutos(null)
@@ -258,30 +238,8 @@ export function BuscaPage() {
                     />
                   </label>
                 </>
-              ) : (
-                <>
-                  <label className="busca-filtro-label">
-                    Cidade
-                    <input
-                      type="text"
-                      value={cidade}
-                      onChange={(e) => setCidade(e.target.value)}
-                      placeholder="ex: Campina Grande"
-                    />
-                  </label>
-                  <label className="busca-filtro-label">
-                    Estado (UF)
-                    <input
-                      type="text"
-                      maxLength={2}
-                      value={uf}
-                      onChange={(e) => setUf(e.target.value.toUpperCase())}
-                      placeholder="ex: PB"
-                    />
-                  </label>
-                </>
-              )}
-              <button type="submit" className="busca-filtro-btn">Aplicar</button>
+              ) : <p className="busca-filtro-hint">Busque sebos virtuais pelo nome ou descrição.</p>}
+              {tab === 'produtos' ? <button type="submit" className="busca-filtro-btn">Aplicar</button> : null}
               <button type="button" className="busca-filtro-btn busca-filtro-btn-ghost" onClick={limparFiltros}>
                 Limpar
               </button>
@@ -345,13 +303,7 @@ export function BuscaPage() {
                     )}
                     <div className="busca-sebo-info">
                       <h3>{s.nome}</h3>
-                      {s.cidade ? (
-                        <p className="busca-sebo-local">{s.cidade}{s.uf ? ` - ${s.uf}` : ''}</p>
-                      ) : null}
                       {s.descricao ? <p className="busca-sebo-desc">{s.descricao}</p> : null}
-                      {s.horarioFuncionamento ? (
-                        <p className="busca-sebo-horario">{s.horarioFuncionamento}</p>
-                      ) : null}
                       {s.telefone ? <p className="busca-sebo-tel">{s.telefone}</p> : null}
                     </div>
                   </Link>

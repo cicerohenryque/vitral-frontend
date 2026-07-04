@@ -42,8 +42,7 @@ describe('funcionalidades principais do front', () => {
   it('exibe perfil publico real do sebo e seus produtos', async () => {
     vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({
       id: 3, accountId: 8, nome: 'Sebo Central', email: 'sebo@teste.com',
-      descricao: 'Livros raros', telefone: '9999-0000', cep: null, logradouro: null,
-      cidade: 'Fortaleza', uf: 'CE', horarioFuncionamento: null, fotoUrl: null,
+      descricao: 'Livros raros', telefone: '9999-0000', fotoUrl: null,
     })
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue({
       ...emptyPage, content: [produto()],
@@ -52,7 +51,7 @@ describe('funcionalidades principais do front', () => {
     renderRoute('/vendedor/3', '/vendedor/:sellerId', <SellerPage />)
 
     expect(await screen.findByRole('heading', { name: 'Sebo Central' })).toBeInTheDocument()
-    expect(screen.getByText('Fortaleza, CE')).toBeInTheDocument()
+    expect(screen.getByText('Livros raros')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Livro Teste, R$ 25.00' })).toHaveAttribute('href', '/produto/7')
     expect(seboService.buscarPorId).toHaveBeenCalledWith(3)
     expect(produtoService.listarPorSebo).toHaveBeenCalledWith(3, 0, 20)
@@ -65,8 +64,8 @@ describe('funcionalidades principais do front', () => {
     vi.spyOn(pedidoService, 'confirmarPedido').mockResolvedValue(created)
     renderPage(<CheckoutPage />)
 
-    expect(await screen.findByText('2 itens para confirmar')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Confirmar pedido' }))
+    expect(await screen.findByText('2 itens para pagar')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Pagar e confirmar' }))
 
     expect(pedidoService.confirmarPedido).toHaveBeenCalled()
     expect(await screen.findByText('Pedido #11 enviado')).toBeInTheDocument()
@@ -169,8 +168,7 @@ describe('funcionalidades principais do front', () => {
     })
     vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({
       id: 3, accountId: 8, nome: 'Sebo Central', email: 'sebo@teste.com',
-      descricao: 'Livros raros', telefone: '9999-0000', cep: null, logradouro: null,
-      cidade: 'Fortaleza', uf: 'CE', horarioFuncionamento: null, fotoUrl: null,
+      descricao: 'Livros raros', telefone: '9999-0000', fotoUrl: null,
     })
     renderRoute('/produto/7', '/produto/:productId', <ProductPage />)
 
@@ -252,8 +250,6 @@ describe('funcionalidades principais do front', () => {
     authenticate(AccountType.SEBO)
     vi.spyOn(seboService, 'excluirConta').mockResolvedValue({ mensagem: 'ok' })
     vi.spyOn(usuarioService, 'excluirConta').mockResolvedValue({ mensagem: 'ok' })
-    const logout = vi.fn()
-    useAuthStore.setState({ logout })
     renderRoute('/conta/excluir', '/conta/excluir', <DeleteAccountPage />)
 
     await userEvent.type(screen.getByLabelText('Confirmação'), 'EXCLUIR')
@@ -261,7 +257,7 @@ describe('funcionalidades principais do front', () => {
 
     await waitFor(() => expect(seboService.excluirConta).toHaveBeenCalled())
     expect(usuarioService.excluirConta).not.toHaveBeenCalled()
-    expect(logout).toHaveBeenCalled()
+    expect(useAuthStore.getState().token).toBeNull()
   })
 
   it('cadastra produto com estoque e categoria no painel do sebo', async () => {
@@ -276,7 +272,7 @@ describe('funcionalidades principais do front', () => {
     await screen.findByText('Nenhum produto cadastrado')
     await userEvent.type(screen.getByLabelText('Título'), 'Novo livro')
     await userEvent.clear(screen.getByLabelText('Preço (R$)'))
-    await userEvent.type(screen.getByLabelText('Preço (R$)'), '35')
+    await userEvent.type(screen.getByLabelText('Preço (R$)'), '3500')
     await userEvent.clear(screen.getByLabelText('Estoque'))
     await userEvent.type(screen.getByLabelText('Estoque'), '5')
     await userEvent.selectOptions(screen.getByLabelText('Categoria'), '4')

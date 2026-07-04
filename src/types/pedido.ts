@@ -46,3 +46,9 @@ export type Pedido = {
   createdAt: string
   itens: PedidoItem[]
 }
+
+export type FaturamentoMensal = {
+  ano: number
+  mes: number
+  total: number
+}

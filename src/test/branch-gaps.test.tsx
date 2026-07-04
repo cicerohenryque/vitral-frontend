@@ -295,12 +295,15 @@ describe('SaleConfirmationPage — branches adicionais', () => {
 })
 
 describe('MeuSeboPage — branches adicionais', () => {
-  beforeEach(() => vi.restoreAllMocks())
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    vi.spyOn(pedidoService, 'buscarFaturamentoMensal').mockResolvedValue([])
+  })
 
-  it('cadastra novo sebo com UF vazio', async () => {
+  it('cadastra novo sebo apenas com dados virtuais', async () => {
     useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
     vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(null)
-    const novoSebo = { id: 10, accountId: 1, nome: 'Rute', email: 'rute@teste.com', descricao: 'Desc', telefone: '99', cep: '60000', logradouro: 'Rua A', cidade: 'Fortaleza', uf: '', horarioFuncionamento: '8h', fotoUrl: null }
+    const novoSebo = { id: 10, accountId: 1, nome: 'Rute', email: 'rute@teste.com', descricao: 'Desc', telefone: '99', fotoUrl: null }
     vi.spyOn(seboService, 'criar').mockResolvedValue(novoSebo)
     vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(novoSebo)
 
@@ -308,21 +311,22 @@ describe('MeuSeboPage — branches adicionais', () => {
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
     expect(await screen.findByRole('status')).toHaveTextContent('Sebo cadastrado com sucesso!')
-    expect(seboService.criar).toHaveBeenCalledWith(expect.objectContaining({ uf: undefined }))
+    expect(seboService.criar).toHaveBeenCalledWith({ descricao: '', telefone: '', fotoUrl: '' })
   })
 
-  it('envia UF em maiusculo quando preenchido', async () => {
+  it('envia descricao e telefone do sebo virtual', async () => {
     useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
     vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(null)
-    const novoSebo = { id: 11, accountId: 1, nome: 'Rute', email: 'rute@teste.com', descricao: 'x', telefone: '99', cep: '60000', logradouro: 'Rua A', cidade: 'Fortaleza', uf: 'CE', horarioFuncionamento: '8h', fotoUrl: null }
+    const novoSebo = { id: 11, accountId: 1, nome: 'Rute', email: 'rute@teste.com', descricao: 'x', telefone: '99', fotoUrl: null }
     vi.spyOn(seboService, 'criar').mockResolvedValue(novoSebo)
     vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(novoSebo)
 
     renderPage(<MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
-    await userEvent.type(screen.getByLabelText('UF'), 'ce')
+    await userEvent.type(screen.getByLabelText('Descrição'), 'x')
+    await userEvent.type(screen.getByLabelText('Telefone'), '99')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
-    await waitFor(() => expect(seboService.criar).toHaveBeenCalledWith(expect.objectContaining({ uf: 'CE' })))
+    await waitFor(() => expect(seboService.criar).toHaveBeenCalledWith(expect.objectContaining({ descricao: 'x', telefone: '99' })))
   })
 
   it('mostra erro ao salvar sebo quando o backend falha', async () => {

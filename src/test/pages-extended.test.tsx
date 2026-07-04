@@ -19,6 +19,7 @@ import { buscaService } from '../services/buscaService'
 import { categoriaService } from '../services/categoriaService'
 import { ofertaService } from '../services/ofertaService'
 import { produtoService } from '../services/produtoService'
+import { pedidoService } from '../services/pedidoService'
 import { seboService } from '../services/seboService'
 import { usuarioService } from '../services/usuarioService'
 import { useAuthStore } from '../store/authStore'
@@ -27,11 +28,14 @@ import { CondicaoProduto } from '../types/produto'
 
 const emptyPage = { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20, first: true, last: true }
 const account = { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.USUARIO }
-const sebo = { id: 3, accountId: 1, nome: 'Sebo Central', email: 'rute@teste.com', descricao: 'Raros', telefone: '9999', cep: '60000', logradouro: 'Rua A', cidade: 'Fortaleza', uf: 'CE', horarioFuncionamento: '8h', fotoUrl: null }
+const sebo = { id: 3, accountId: 1, nome: 'Sebo Central', email: 'rute@teste.com', descricao: 'Raros', telefone: '9999', fotoUrl: null }
 const produto = { id: 7, seboId: 3, categoriaId: 2, categoriaNome: 'Romance', titulo: 'Livro Teste', autor: 'Autor', descricao: 'Descrição', preco: 25, estoque: 2, condicao: CondicaoProduto.USADO, fotoUrl: null, ativo: true }
 
 describe('paginas principais', () => {
-  beforeEach(() => useAuthStore.setState({ token: null, account: null, seboId: null }))
+  beforeEach(() => {
+    useAuthStore.setState({ token: null, account: null, seboId: null })
+    vi.spyOn(pedidoService, 'buscarFaturamentoMensal').mockResolvedValue([])
+  })
 
   it('valida cadastro e conclui novo cadastro', async () => {
     vi.spyOn(authService, 'register').mockResolvedValue({ mensagem: 'Confira seu e-mail' })
@@ -151,11 +155,10 @@ describe('paginas principais', () => {
     vi.spyOn(seboService, 'criar').mockResolvedValue(sebo)
     renderAt('/meu-sebo', <MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
-    await userEvent.type(screen.getByLabelText('Cidade'), 'Fortaleza')
-    await userEvent.type(screen.getByLabelText('UF'), 'ce')
+    await userEvent.type(screen.getByLabelText('Descrição'), 'Livros virtuais')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
     expect(await screen.findByText('Sebo cadastrado com sucesso!')).toBeInTheDocument()
-    expect(seboService.criar).toHaveBeenCalledWith(expect.objectContaining({ cidade: 'Fortaleza', uf: 'CE' }))
+    expect(seboService.criar).toHaveBeenCalledWith(expect.objectContaining({ descricao: 'Livros virtuais' }))
   })
 
   it('atualiza perfil do sebo existente com sucesso', async () => {
@@ -183,8 +186,7 @@ describe('paginas principais', () => {
 
     renderAt('/meu-sebo', <MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
-    await userEvent.type(screen.getByLabelText('Cidade'), 'Fortaleza')
-    await userEvent.type(screen.getByLabelText('UF'), 'ce')
+    await userEvent.type(screen.getByLabelText('Descrição'), 'Livros virtuais')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Erro ao salvar o sebo')
