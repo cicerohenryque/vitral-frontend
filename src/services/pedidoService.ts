@@ -20,6 +20,11 @@ export const pedidoService = {
     return data
   },
 
+  async reembolsar(id: number): Promise<Pedido> {
+    const { data } = await api.put<Pedido>(`/pedidos/${id}/reembolsar`)
+    return data
+  },
+
   async listarMeusPedidos(page = 0, size = 20, status?: StatusPedido): Promise<Page<Pedido>> {
     const { data } = await api.get<Page<Pedido>>('/pedidos/meus-pedidos', {
       params: { page, size, status },

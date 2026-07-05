@@ -2,6 +2,7 @@ export const StatusPedido = {
   AGUARDANDO_CONFIRMACAO: 'AGUARDANDO_CONFIRMACAO',
   CONFIRMADO: 'CONFIRMADO',
   CANCELADO: 'CANCELADO',
+  REEMBOLSADO: 'REEMBOLSADO',
 } as const
 
 export type StatusPedido = (typeof StatusPedido)[keyof typeof StatusPedido]
@@ -44,6 +45,10 @@ export type Pedido = {
   statusPagamento?: StatusPagamento
   total: number
   createdAt: string
+  confirmadoEm?: string | null
+  pagoEm?: string | null
+  canceladoEm?: string | null
+  reembolsadoEm?: string | null
   itens: PedidoItem[]
 }
 

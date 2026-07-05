@@ -7,6 +7,7 @@ import { pedidoService } from '../../services/pedidoService'
 import { StatusPedido, type Pedido } from '../../types/pedido'
 
 function statusLabel(status: string) {
+  if (status === StatusPedido.REEMBOLSADO) return 'Reembolsado'
   if (status === StatusPedido.AGUARDANDO_CONFIRMACAO) return 'Aguardando confirmação'
   if (status === StatusPedido.CONFIRMADO) return 'Confirmado'
   return 'Cancelado'
@@ -85,6 +86,12 @@ export function HistoryPage() {
                   </li>
                 ))}
               </ul>
+              <dl className="product-metadata">
+                <div><dt>Pagamento</dt><dd>{pedido.pagoEm ? new Date(pedido.pagoEm).toLocaleString('pt-BR') : '—'}</dd></div>
+                <div><dt>Confirmação</dt><dd>{pedido.confirmadoEm ? new Date(pedido.confirmadoEm).toLocaleString('pt-BR') : '—'}</dd></div>
+                <div><dt>Cancelamento</dt><dd>{pedido.canceladoEm ? new Date(pedido.canceladoEm).toLocaleString('pt-BR') : '—'}</dd></div>
+                <div><dt>Reembolso</dt><dd>{pedido.reembolsadoEm ? new Date(pedido.reembolsadoEm).toLocaleString('pt-BR') : '—'}</dd></div>
+              </dl>
               {pedido.status === StatusPedido.AGUARDANDO_CONFIRMACAO ? (
                 <div className="store-list-actions">
                   <button

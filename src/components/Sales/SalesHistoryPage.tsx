@@ -8,6 +8,7 @@ import { pedidoService } from '../../services/pedidoService'
 import { StatusPedido, type Pedido } from '../../types/pedido'
 
 function statusLabel(status: string) {
+  if (status === StatusPedido.REEMBOLSADO) return 'Reembolsado'
   if (status === StatusPedido.CONFIRMADO) return 'Confirmado'
   if (status === StatusPedido.CANCELADO) return 'Cancelado'
   return 'Aguardando confirmação'
@@ -18,6 +19,7 @@ export function SalesHistoryPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(0)
+  const [busyId, setBusyId] = useState<number | null>(null)
   const pageSize = 10
 
   useEffect(() => {
@@ -42,6 +44,13 @@ export function SalesHistoryPage() {
 
   const visiblePedidos = pedidos.slice(page * pageSize, (page + 1) * pageSize)
   const totalPages = Math.ceil(pedidos.length / pageSize)
+  async function refund(pedido: Pedido) {
+    if (!confirm(`Confirma o reembolso integral do pedido #${pedido.id}?`)) return
+    setBusyId(pedido.id); setError(null)
+    try { const updated = await pedidoService.reembolsar(pedido.id); setPedidos((items) => items.map((item) => item.id === pedido.id ? updated : item)) }
+    catch (err) { setError(extractErrorMessage(err, 'Não foi possível reembolsar o pedido.')) }
+    finally { setBusyId(null) }
+  }
 
   return (
     <StorePage title="Histórico de vendas" subtitle="Pedidos confirmados ou cancelados pelo seu sebo.">
@@ -73,6 +82,13 @@ export function SalesHistoryPage() {
                   </li>
                 ))}
               </ul>
+              <dl className="product-metadata">
+                <div><dt>Pagamento</dt><dd>{pedido.pagoEm ? new Date(pedido.pagoEm).toLocaleString('pt-BR') : '—'}</dd></div>
+                <div><dt>Confirmação</dt><dd>{pedido.confirmadoEm ? new Date(pedido.confirmadoEm).toLocaleString('pt-BR') : '—'}</dd></div>
+                <div><dt>Cancelamento</dt><dd>{pedido.canceladoEm ? new Date(pedido.canceladoEm).toLocaleString('pt-BR') : '—'}</dd></div>
+                <div><dt>Reembolso</dt><dd>{pedido.reembolsadoEm ? new Date(pedido.reembolsadoEm).toLocaleString('pt-BR') : '—'}</dd></div>
+              </dl>
+              {pedido.status === StatusPedido.CONFIRMADO ? <div className="store-list-actions"><button className="danger" type="button" disabled={busyId === pedido.id} onClick={() => refund(pedido)}>{busyId === pedido.id ? 'Reembolsando...' : 'Reembolsar pedido'}</button></div> : null}
             </article>
           ))}
           <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label="Páginas de vendas" />

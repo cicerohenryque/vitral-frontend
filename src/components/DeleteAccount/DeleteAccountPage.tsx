@@ -43,12 +43,12 @@ export function DeleteAccountPage() {
       <section className="delete-account">
         <div className="delete-warning">
           <MinusCircleIcon size={52} />
-          <h2>Esta ação é permanente.</h2>
-          <p>Ao excluir sua conta, você perderá acesso aos dados associados ao Vitral.</p>
+          <h2>Sua conta será desativada.</h2>
+          <p>Seus dados pessoais serão anonimizados e você perderá o acesso ao Vitral.</p>
           <ul>
             <li>Favoritos, cesta e informações pessoais serão removidos.</li>
             {isSebo ? <li>Produtos, perfil do sebo e dados vinculados ao sebo serão excluídos.</li> : null}
-            <li>Pedidos podem ser mantidos quando necessário para integridade do histórico.</li>
+            <li>Pedidos, movimentações de estoque e registros financeiros serão preservados para integridade e auditoria.</li>
           </ul>
         </div>
 
