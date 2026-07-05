@@ -27,6 +27,7 @@ export function ProductCard({ produto }: Props) {
       )}
       <div className="product-card-info">
         <strong>{produto.titulo}</strong>
+        {produto.seboVerificado ? <small>✓ Sebo verificado</small> : null}
         {produto.categoriaNome ? <small>{produto.categoriaNome}</small> : null}
         {produto.precoPromocional != null && Number(produto.precoPromocional) < Number(produto.preco) ? (
           <span>

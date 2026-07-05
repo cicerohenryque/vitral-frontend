@@ -11,14 +11,18 @@ import { Pagination } from '../components/ui/Pagination'
 import { categoriaService } from '../services/categoriaService'
 import { produtoService } from '../services/produtoService'
 import { extractErrorMessage } from '../services/api'
+import { seboService } from '../services/seboService'
 import { useAuth } from '../hooks/useAuth'
 import type { Categoria } from '../types/categoria'
+import { StatusVerificacao, type StatusVerificacao as VerificationStatus } from '../types/sebo'
 import { CondicaoProduto } from '../types/produto'
 import type { Produto, ProdutoRequest } from '../types/produto'
 import './FormPage.css'
 import './MeusProdutosPage.css'
+import { isValidIsbn, normalizeIsbn } from '../utils/isbn'
 
 const EMPTY: ProdutoRequest = {
+  isbn: '',
   titulo: '',
   autor: '',
   descricao: '',
@@ -42,6 +46,7 @@ export function MeusProdutosPage() {
   const [totalPages, setTotalPages] = useState(0)
   const [totalProducts, setTotalProducts] = useState(0)
   const [sellingId, setSellingId] = useState<number | null>(null)
+  const [verification, setVerification] = useState<VerificationStatus | null>(null)
 
   const load = useCallback(() => {
     if (!seboId) {
@@ -85,6 +90,11 @@ export function MeusProdutosPage() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!seboId) return
+    seboService.buscarPorId(seboId).then((item) => setVerification(item.statusVerificacao ?? null)).catch(() => setVerification(null))
+  }, [seboId])
+
   function update<K extends keyof ProdutoRequest>(key: K, value: ProdutoRequest[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
@@ -92,6 +102,7 @@ export function MeusProdutosPage() {
   function startEdit(p: Produto) {
     setEditingId(p.id)
     setForm({
+      isbn: p.isbn ?? '',
       titulo: p.titulo,
       categoriaId: p.categoriaId ?? undefined,
       autor: p.autor ?? '',
@@ -116,8 +127,13 @@ export function MeusProdutosPage() {
     setSuccess(null)
     setBusy(true)
     try {
+      if (form.isbn && !isValidIsbn(form.isbn)) {
+        setError('Informe um ISBN-10 ou ISBN-13 válido.')
+        return
+      }
       const payload: ProdutoRequest = {
         ...form,
+        isbn: form.isbn ? normalizeIsbn(form.isbn) : undefined,
         preco: Number(form.preco),
         estoque: Number(form.estoque ?? 1),
       }
@@ -192,6 +208,10 @@ export function MeusProdutosPage() {
     )
   }
 
+  if (verification && verification !== StatusVerificacao.VERIFICADO) {
+    return <div className="page"><TopBar /><Header /><main className="container form-page"><StoreStatus title="Sebo ainda não verificado" description="Cadastro de produtos e vendas serão liberados após a aprovação dos documentos." tone={verification === StatusVerificacao.REJEITADO ? 'error' : 'neutral'} action={<Link to="/painel/sebo/documentos">Gerenciar documentos</Link>} /></main></div>
+  }
+
   return (
     <div className="page">
       <TopBar />
@@ -202,6 +222,8 @@ export function MeusProdutosPage() {
         {success ? <div className="flash success" role="status">{success}</div> : null}
 
         <form className="form-grid" onSubmit={handleSubmit}>
+          <Input id="isbn" label="ISBN (opcional)" maxLength={20}
+            value={form.isbn ?? ''} onChange={(e) => update('isbn', e.target.value)} />
           <Input id="titulo" label="Título" required
             value={form.titulo} onChange={(e) => update('titulo', e.target.value)} />
           <Input id="autor" label="Autor"

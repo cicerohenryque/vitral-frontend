@@ -1,6 +1,6 @@
 import { api } from './api'
 import type { Page } from '../types/common'
-import type { Produto, ProdutoRequest, VendaFisicaResponse } from '../types/produto'
+import type { Produto, ProdutoRequest, ProdutoVendedor, VendaFisicaResponse } from '../types/produto'
 
 export const produtoService = {
   async criar(payload: ProdutoRequest): Promise<Produto> {
@@ -26,6 +26,11 @@ export const produtoService = {
 
   async buscarPorId(id: number): Promise<Produto> {
     const { data } = await api.get<Produto>(`/produtos/${id}`)
+    return data
+  },
+
+  async listarVendedores(id: number): Promise<ProdutoVendedor[]> {
+    const { data } = await api.get<ProdutoVendedor[]>(`/produtos/${id}/vendedores`)
     return data
   },
 
