@@ -1,4 +1,13 @@
+export const StatusVerificacao = {
+  PENDENTE: 'PENDENTE',
+  VERIFICADO: 'VERIFICADO',
+  REJEITADO: 'REJEITADO',
+} as const
+
+export type StatusVerificacao = (typeof StatusVerificacao)[keyof typeof StatusVerificacao]
+
 export type SeboRequest = {
+  cnpj: string
   descricao?: string
   telefone?: string
   fotoUrl?: string
@@ -9,7 +18,20 @@ export type Sebo = {
   accountId: number
   nome: string
   email: string
+  cnpj?: string
+  statusVerificacao?: StatusVerificacao
+  motivoRejeicao?: string | null
   descricao: string | null
   telefone: string | null
   fotoUrl: string | null
 }
+
+export const TipoDocumentoSebo = {
+  CARTAO_CNPJ: 'CARTAO_CNPJ', CONTRATO_SOCIAL: 'CONTRATO_SOCIAL',
+  DOCUMENTO_RESPONSAVEL: 'DOCUMENTO_RESPONSAVEL', COMPROVANTE_BANCARIO: 'COMPROVANTE_BANCARIO',
+} as const
+export type TipoDocumentoSebo = (typeof TipoDocumentoSebo)[keyof typeof TipoDocumentoSebo]
+export const StatusDocumentoSebo = { PENDENTE: 'PENDENTE', APROVADO: 'APROVADO', REJEITADO: 'REJEITADO' } as const
+export type StatusDocumentoSebo = (typeof StatusDocumentoSebo)[keyof typeof StatusDocumentoSebo]
+export type DocumentoSebo = { id: number; tipoDocumento: TipoDocumentoSebo; arquivoUrl: string; status: StatusDocumentoSebo; enviadoEm: string; analisadoEm: string | null; analisadoPorId: number | null; motivoRejeicao: string | null }
+export type AuditoriaSebo = { id: number; analisadoPorId: number; statusAnterior: StatusVerificacao; novoStatus: StatusVerificacao; motivo: string | null; criadoEm: string }

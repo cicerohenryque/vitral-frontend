@@ -1,6 +1,6 @@
 import { api } from './api'
 import type { MensagemResponse } from '../types/account'
-import type { Sebo, SeboRequest } from '../types/sebo'
+import type { AuditoriaSebo, DocumentoSebo, Sebo, SeboRequest, StatusVerificacao, TipoDocumentoSebo } from '../types/sebo'
 import type { Page } from '../types/common'
 import { fetchAllPages } from './pagination'
 
@@ -22,6 +22,37 @@ export const seboService = {
 
   async buscarMeu(): Promise<Sebo> {
     const { data } = await api.get<Sebo>('/sebos/me')
+    return data
+  },
+
+  async listarPendentes(page = 0, size = 20): Promise<Page<Sebo>> {
+    const { data } = await api.get<Page<Sebo>>('/sebos/verificacao/pendentes', {
+      params: { page, size },
+    })
+    return data
+  },
+
+  async atualizarVerificacao(id: number, status: StatusVerificacao, motivo?: string): Promise<Sebo> {
+    const { data } = await api.put<Sebo>(`/sebos/${id}/verificacao`, null, {
+      params: { status, motivo },
+    })
+    return data
+  },
+
+  async enviarDocumento(tipoDocumento: TipoDocumentoSebo, arquivoUrl: string): Promise<DocumentoSebo> {
+    const { data } = await api.post<DocumentoSebo>('/sebos/me/documentos', { tipoDocumento, arquivoUrl })
+    return data
+  },
+  async listarMeusDocumentos(): Promise<DocumentoSebo[]> {
+    const { data } = await api.get<DocumentoSebo[]>('/sebos/me/documentos')
+    return data
+  },
+  async listarDocumentos(id: number): Promise<DocumentoSebo[]> {
+    const { data } = await api.get<DocumentoSebo[]>(`/sebos/${id}/documentos`)
+    return data
+  },
+  async listarAuditoria(id: number): Promise<AuditoriaSebo[]> {
+    const { data } = await api.get<AuditoriaSebo[]>(`/sebos/${id}/verificacao/auditoria`)
     return data
   },
 

@@ -28,7 +28,7 @@ const seboItems = [
 ]
 
 export function SideMenu({ onClose }: Props) {
-  const { isAuthenticated, isSebo } = useAuth()
+  const { isAuthenticated, isSebo, isAdmin } = useAuth()
 
   return (
     <>
@@ -46,6 +46,8 @@ export function SideMenu({ onClose }: Props) {
               <li>
                 <Link to="/auth" onClick={onClose}>Entrar</Link>
               </li>
+            ) : isAdmin ? (
+              <li><Link to="/admin/sebos" onClick={onClose}>Verificar Sebos</Link></li>
             ) : isSebo ? (
               <>
                 <li>
@@ -57,6 +59,8 @@ export function SideMenu({ onClose }: Props) {
                 <li>
                   <Link to="/painel/ofertas" onClick={onClose}>Minhas Ofertas</Link>
                 </li>
+                <li><Link to="/painel/estoque" onClick={onClose}>Estoque e vendas físicas</Link></li>
+                <li><Link to="/painel/sebo/documentos" onClick={onClose}>Documentos do sebo</Link></li>
               </>
             ) : (
               <li>

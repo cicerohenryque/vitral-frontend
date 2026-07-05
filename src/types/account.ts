@@ -1,6 +1,7 @@
 export const AccountType = {
   SEBO: 'SEBO',
   USUARIO: 'USUARIO',
+  ADMIN: 'ADMIN',
 } as const
 
 export type AccountType = (typeof AccountType)[keyof typeof AccountType]

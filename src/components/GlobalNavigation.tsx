@@ -8,7 +8,7 @@ import './GlobalNavigation.css'
 
 export function GlobalNavigation() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const { isAuthenticated, isSebo, logout } = useAuth()
+  const { isAuthenticated, isSebo, isAdmin, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -66,9 +66,9 @@ export function GlobalNavigation() {
         <div className="global-navigation-actions">
           {isAuthenticated ? (
             <>
-              <Link className="global-action" to={isSebo ? '/painel/sebo' : '/painel/perfil'}>
+              <Link className="global-action" to={isAdmin ? '/admin/sebos' : isSebo ? '/painel/sebo' : '/painel/perfil'}>
                 <UserIcon size={22} />
-                <span>{isSebo ? 'Meu Sebo' : 'Meu Perfil'}</span>
+                <span>{isAdmin ? 'Administração' : isSebo ? 'Meu Sebo' : 'Meu Perfil'}</span>
               </Link>
               <button type="button" className="global-action" onClick={handleLogout}>Sair</button>
             </>

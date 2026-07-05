@@ -17,6 +17,7 @@ export function useAuth() {
     isAuthenticated: Boolean(token),
     isSebo: account?.type === 'SEBO',
     isUsuario: account?.type === 'USUARIO',
+    isAdmin: account?.type === 'ADMIN',
     login,
     logout,
     setSeboId,

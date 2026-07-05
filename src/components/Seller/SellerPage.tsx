@@ -8,6 +8,7 @@ import { seboService } from '../../services/seboService'
 import { extractErrorMessage } from '../../services/api'
 import type { Produto } from '../../types/produto'
 import type { Sebo } from '../../types/sebo'
+import { StatusVerificacao } from '../../types/sebo'
 import './SellerPage.css'
 
 export function SellerPage() {
@@ -84,7 +85,7 @@ export function SellerPage() {
           <section className="seller-profile">
             <div className="seller-avatar">{seller.nome.slice(0, 2).toUpperCase()}</div>
             <div className="seller-copy">
-              <span>Sebo cadastrado</span>
+              <span>{seller.statusVerificacao === StatusVerificacao.VERIFICADO ? '✓ Sebo verificado' : 'Sebo cadastrado'}</span>
               <h2>{seller.nome}</h2>
               {seller.descricao ? <p>{seller.descricao}</p> : null}
               <dl>

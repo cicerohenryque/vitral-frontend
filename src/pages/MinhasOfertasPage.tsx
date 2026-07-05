@@ -11,9 +11,11 @@ import { Pagination } from '../components/ui/Pagination'
 import { ofertaService } from '../services/ofertaService'
 import { produtoService } from '../services/produtoService'
 import { extractErrorMessage } from '../services/api'
+import { seboService } from '../services/seboService'
 import { useAuth } from '../hooks/useAuth'
 import type { Produto } from '../types/produto'
 import type { Oferta, OfertaRequest } from '../types/oferta'
+import { StatusVerificacao, type StatusVerificacao as VerificationStatus } from '../types/sebo'
 import './FormPage.css'
 import './MeusProdutosPage.css'
 
@@ -69,6 +71,7 @@ export function MinhasOfertasPage() {
   const [totalPages, setTotalPages] = useState(0)
   const [totalOfertas, setTotalOfertas] = useState(0)
   const [originalInicioEm, setOriginalInicioEm] = useState('')
+  const [verification, setVerification] = useState<VerificationStatus | null>(null)
 
   const load = useCallback(() => {
     setLoading(true)
@@ -108,8 +111,17 @@ export function MinhasOfertasPage() {
     }
   }, [seboId])
 
+  useEffect(() => {
+    if (!seboId) return
+    seboService.buscarPorId(seboId).then((item) => setVerification(item.statusVerificacao ?? null)).catch(() => setVerification(null))
+  }, [seboId])
+
   function update<K extends keyof OfertaForm>(key: K, value: OfertaForm[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  if (verification && verification !== StatusVerificacao.VERIFICADO) {
+    return <div className="page"><TopBar /><Header /><main className="container form-page"><StoreStatus title="Sebo ainda não verificado" description="As ofertas serão liberadas após a aprovação dos documentos." tone={verification === StatusVerificacao.REJEITADO ? 'error' : 'neutral'} action={<Link to="/painel/sebo/documentos">Gerenciar documentos</Link>} /></main></div>
   }
 
   function startEdit(oferta: Oferta) {

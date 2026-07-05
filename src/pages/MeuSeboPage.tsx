@@ -9,14 +9,24 @@ import { seboService } from '../services/seboService'
 import { pedidoService } from '../services/pedidoService'
 import { extractErrorMessage } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
-import type { Sebo, SeboRequest } from '../types/sebo'
+import { StatusVerificacao, type Sebo, type SeboRequest } from '../types/sebo'
 import type { FaturamentoMensal } from '../types/pedido'
 import './FormPage.css'
 
 const EMPTY: SeboRequest = {
+  cnpj: '',
   descricao: '',
   telefone: '',
   fotoUrl: '',
+}
+
+function formatCnpj(value: string) {
+  const digits = value.replace(/\D/g, '').slice(0, 14)
+  return digits
+    .replace(/^(\d{2})(\d)/, '$1.$2')
+    .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1/$2')
+    .replace(/(\d{4})(\d)/, '$1-$2')
 }
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
@@ -31,6 +41,7 @@ export function MeuSeboPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [ano, setAno] = useState(new Date().getFullYear())
+  const [mes, setMes] = useState(new Date().getMonth() + 1)
   const [faturamento, setFaturamento] = useState<FaturamentoMensal[]>([])
   const [loadingFaturamento, setLoadingFaturamento] = useState(true)
   const [faturamentoError, setFaturamentoError] = useState<string | null>(null)
@@ -53,6 +64,7 @@ export function MeuSeboPage() {
         setExisting(sebo)
         setSeboId(sebo.id)
         setForm({
+          cnpj: sebo.cnpj ?? '',
           descricao: sebo.descricao ?? '',
           telefone: sebo.telefone ?? '',
           fotoUrl: sebo.fotoUrl ?? '',
@@ -98,6 +110,10 @@ export function MeuSeboPage() {
     e.preventDefault()
     setError(null)
     setSuccess(null)
+    if (!/^\d{14}$/.test(form.cnpj)) {
+      setError('O CNPJ deve conter exatamente 14 números.')
+      return
+    }
     setBusy(true)
     try {
       const payload: SeboRequest = { ...form }
@@ -136,9 +152,25 @@ export function MeuSeboPage() {
       <Header />
       <main className="container form-page">
         <h1 className="form-page-title">{existing ? 'Editar perfil do sebo' : 'Cadastrar perfil do sebo'}</h1>
+        {existing ? (
+          <div className={`verification-status verification-${(existing.statusVerificacao ?? StatusVerificacao.PENDENTE).toLowerCase()}`} role="status">
+            {existing.statusVerificacao === StatusVerificacao.VERIFICADO ? (
+              <><strong>✓ Sebo verificado</strong><span>Seu sebo está habilitado para vender no Vitral.</span></>
+            ) : existing.statusVerificacao === StatusVerificacao.REJEITADO ? (
+              <><strong>Verificação recusada</strong><span>{existing.motivoRejeicao ? `Motivo: ${existing.motivoRejeicao}` : 'Revise o CNPJ e os documentos cadastrados antes de solicitar uma nova análise.'}</span></>
+            ) : (
+              <><strong>Cadastro em análise</strong><span>As ações comerciais serão liberadas após a verificação.</span></>
+            )}
+          </div>
+        ) : null}
         {error ? <div className="flash error" role="alert">{error}</div> : null}
         {success ? <div className="flash success" role="status">{success}</div> : null}
         <form className="form-grid" onSubmit={handleSubmit}>
+          <Input id="cnpj" label="CNPJ" required inputMode="numeric" maxLength={18}
+            value={formatCnpj(form.cnpj)}
+            onChange={(e) => update('cnpj', e.target.value.replace(/\D/g, '').slice(0, 14))}
+            pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}"
+            title="Informe os 14 números do CNPJ" />
           <Input id="descricao" label="Descrição"
             value={form.descricao ?? ''} onChange={(e) => update('descricao', e.target.value)} />
           <Input id="telefone" label="Telefone"
@@ -170,6 +202,12 @@ export function MeuSeboPage() {
                 ))}
               </select>
             </label>
+            <label>
+              Mês
+              <select value={mes} onChange={(e) => setMes(Number(e.target.value))}>
+                {MESES.map((label, index) => <option key={label} value={index + 1}>{label}</option>)}
+              </select>
+            </label>
           </div>
           {loadingFaturamento ? (
             <StoreStatus title="Carregando faturamento" description="Consultando os valores mensais." busy />
@@ -182,6 +220,7 @@ export function MeuSeboPage() {
             return (
               <>
                 <p className="billing-total">Total em {ano}: <strong>{formatBRL.format(total)}</strong></p>
+                <p className="billing-total">Total de {MESES[mes - 1]}/{ano}: <strong>{formatBRL.format(valores[mes - 1])}</strong></p>
                 {faturamento.length === 0 ? <p className="billing-empty">Nenhum faturamento registrado neste ano.</p> : null}
                 <div className="billing-chart" aria-label={`Faturamento mensal de ${ano}`}>
                   {valores.map((value, index) => (

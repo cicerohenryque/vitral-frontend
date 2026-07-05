@@ -31,6 +31,9 @@ import { PerfilPage } from './pages/PerfilPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { AccountType } from './types/account'
 import { GlobalNavigation } from './components/GlobalNavigation'
+import { StockMovementsPage } from './pages/StockMovementsPage'
+import { SeboDocumentsPage } from './pages/SeboDocumentsPage'
+import { AdminSeboVerificationPage } from './pages/AdminSeboVerificationPage'
 
 function App() {
   return (
@@ -79,6 +82,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/painel/estoque" element={<ProtectedRoute requireRole={AccountType.SEBO}><StockMovementsPage /></ProtectedRoute>} />
+        <Route path="/painel/sebo/documentos" element={<ProtectedRoute requireRole={AccountType.SEBO}><SeboDocumentsPage /></ProtectedRoute>} />
+        <Route path="/admin/sebos" element={<ProtectedRoute requireRole={AccountType.ADMIN}><AdminSeboVerificationPage /></ProtectedRoute>} />
 
         <Route
           path="/conta"
