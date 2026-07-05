@@ -517,6 +517,7 @@ describe('cobertura de branches restantes', () => {
 
     renderPage(<MeuSeboPage />)
     expect(await screen.findByText('Editar perfil do sebo')).toBeInTheDocument()
+    await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
 
     await userEvent.clear(screen.getByLabelText('Descrição'))
     await userEvent.type(screen.getByLabelText('Descrição'), 'Novo nome')

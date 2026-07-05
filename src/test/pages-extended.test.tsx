@@ -155,6 +155,7 @@ describe('paginas principais', () => {
     vi.spyOn(seboService, 'criar').mockResolvedValue(sebo)
     renderAt('/meu-sebo', <MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.type(screen.getByLabelText('Descrição'), 'Livros virtuais')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
     expect(await screen.findByText('Sebo cadastrado com sucesso!')).toBeInTheDocument()
@@ -171,6 +172,7 @@ describe('paginas principais', () => {
     renderAt('/meu-sebo', <MeuSeboPage />)
     await waitFor(() => expect(buscarPorContaSpy).toHaveBeenCalled())
     expect(await screen.findByText('Editar perfil do sebo')).toBeInTheDocument()
+    await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.clear(screen.getByLabelText('Descrição'))
     await userEvent.type(screen.getByLabelText('Descrição'), 'Novo sebo')
     await userEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
@@ -186,6 +188,7 @@ describe('paginas principais', () => {
 
     renderAt('/meu-sebo', <MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.type(screen.getByLabelText('Descrição'), 'Livros virtuais')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
 

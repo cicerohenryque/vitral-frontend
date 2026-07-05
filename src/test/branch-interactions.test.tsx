@@ -39,6 +39,7 @@ describe('ramos alternativos e interacoes', () => {
 
   it('mostra acoes corretas para visitante e sebo autenticado', async () => {
     vi.spyOn(produtoService, 'buscarPorId').mockResolvedValue(produto)
+    vi.spyOn(produtoService, 'listarVendedores').mockResolvedValue([{ produtoId: 7, seboId: 3, seboNome: 'Sebo', preco: 25, precoPromocional: null, precoEfetivo: 25, estoque: 2, condicao: CondicaoProduto.USADO }])
     vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(sebo)
     const guest = renderRoute('/produto/7', '/produto/:productId', <ProductPage />)
     expect(await screen.findByRole('link', { name: 'Entrar para comprar' })).toBeInTheDocument()
@@ -52,6 +53,7 @@ describe('ramos alternativos e interacoes', () => {
   it('exibe falhas ao adicionar na cesta e favoritar', async () => {
     authenticate(AccountType.USUARIO)
     vi.spyOn(produtoService, 'buscarPorId').mockResolvedValue(produto)
+    vi.spyOn(produtoService, 'listarVendedores').mockResolvedValue([{ produtoId: 7, seboId: 3, seboNome: 'Sebo', preco: 25, precoPromocional: null, precoEfetivo: 25, estoque: 2, condicao: CondicaoProduto.USADO }])
     vi.spyOn(seboService, 'buscarPorId').mockRejectedValue(new Error('sem sebo'))
     vi.spyOn(cestaService, 'adicionar').mockRejectedValue(new Error('lotado'))
     vi.spyOn(favoritoService, 'favoritar').mockRejectedValue(new Error('falha'))
@@ -60,7 +62,7 @@ describe('ramos alternativos e interacoes', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Nao foi possivel adicionar à cesta.')
     await userEvent.click(screen.getByRole('button', { name: 'Favoritar' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Nao foi possivel favoritar o produto.')
-    expect(screen.getByText('Sebo #3')).toBeInTheDocument()
+    expect(screen.getAllByText('Sebo').length).toBeGreaterThan(0)
   })
 
   it('trata vendedor invalido, erro e catalogo vazio', async () => {

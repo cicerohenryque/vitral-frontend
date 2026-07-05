@@ -145,6 +145,7 @@ describe('funcionalidades principais do front', () => {
   it('adiciona produto disponivel na cesta e nos favoritos', async () => {
     authenticate(AccountType.USUARIO)
     vi.spyOn(produtoService, 'buscarPorId').mockResolvedValue(produto())
+    vi.spyOn(produtoService, 'listarVendedores').mockResolvedValue([{ produtoId: 7, seboId: 3, seboNome: 'Sebo', preco: 25, precoPromocional: null, precoEfetivo: 25, estoque: 2, condicao: CondicaoProduto.USADO }])
     vi.spyOn(seboService, 'buscarPorId').mockRejectedValue(new Error('sem perfil'))
     vi.spyOn(cestaService, 'adicionar').mockResolvedValue({ mensagem: 'Adicionado à cesta' })
     vi.spyOn(favoritoService, 'favoritar').mockResolvedValue({ mensagem: 'Favoritado' })

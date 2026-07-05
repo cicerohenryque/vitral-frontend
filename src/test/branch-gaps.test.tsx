@@ -309,9 +309,10 @@ describe('MeuSeboPage — branches adicionais', () => {
 
     renderPage(<MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
-    expect(await screen.findByRole('status')).toHaveTextContent('Sebo cadastrado com sucesso!')
-    expect(seboService.criar).toHaveBeenCalledWith({ descricao: '', telefone: '', fotoUrl: '' })
+    expect(await screen.findByText('Sebo cadastrado com sucesso!')).toBeInTheDocument()
+    expect(seboService.criar).toHaveBeenCalledWith({ cnpj: '12345678000199', descricao: '', telefone: '', fotoUrl: '' })
   })
 
   it('envia descricao e telefone do sebo virtual', async () => {
@@ -323,6 +324,7 @@ describe('MeuSeboPage — branches adicionais', () => {
 
     renderPage(<MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.type(screen.getByLabelText('Descrição'), 'x')
     await userEvent.type(screen.getByLabelText('Telefone'), '99')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
@@ -336,6 +338,7 @@ describe('MeuSeboPage — branches adicionais', () => {
 
     renderPage(<MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Erro ao salvar o sebo')
   })

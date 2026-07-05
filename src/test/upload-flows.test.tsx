@@ -85,6 +85,7 @@ describe('fluxos de upload de imagem', () => {
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
     const file = new File(['imagem'], 'sebo.webp', { type: 'image/webp' })
     await userEvent.upload(screen.getByLabelText('Foto do sebo'), file)
+    await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
 
     await waitFor(() => expect(seboService.criar).toHaveBeenCalledWith(
