@@ -1,6 +1,6 @@
 import { api } from './api'
 import type { MensagemResponse } from '../types/account'
-import type { AuditoriaSebo, DocumentoSebo, Sebo, SeboRequest, StatusVerificacao, TipoDocumentoSebo } from '../types/sebo'
+import type { AuditoriaSebo, ConsultaCnpjResponse, DocumentoSebo, Sebo, SeboRequest, StatusVerificacao, TipoDocumentoSebo } from '../types/sebo'
 import type { Page } from '../types/common'
 import { fetchAllPages } from './pagination'
 
@@ -22,6 +22,11 @@ export const seboService = {
 
   async buscarMeu(): Promise<Sebo> {
     const { data } = await api.get<Sebo>('/sebos/me')
+    return data
+  },
+
+  async consultarMeuCnpj(): Promise<ConsultaCnpjResponse> {
+    const { data } = await api.post<ConsultaCnpjResponse>('/sebos/me/verificacao/consultar-cnpj')
     return data
   },
 

@@ -9,7 +9,7 @@ import { seboService } from '../services/seboService'
 import { pedidoService } from '../services/pedidoService'
 import { extractErrorMessage } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
-import { StatusVerificacao, type Sebo, type SeboRequest } from '../types/sebo'
+import { StatusConsultaCnpj, StatusVerificacao, type Sebo, type SeboRequest } from '../types/sebo'
 import type { FaturamentoMensal } from '../types/pedido'
 import './FormPage.css'
 
@@ -45,6 +45,7 @@ export function MeuSeboPage() {
   const [faturamento, setFaturamento] = useState<FaturamentoMensal[]>([])
   const [loadingFaturamento, setLoadingFaturamento] = useState(true)
   const [faturamentoError, setFaturamentoError] = useState<string | null>(null)
+  const [consultingCnpj, setConsultingCnpj] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -130,6 +131,29 @@ export function MeuSeboPage() {
     }
   }
 
+  async function consultarCnpj() {
+    if (!existing) return
+    setConsultingCnpj(true)
+    setError(null)
+    setSuccess(null)
+    try {
+      const result = await seboService.consultarMeuCnpj()
+      setExisting((current) => current ? {
+        ...current,
+        cnpj: result.cnpj,
+        razaoSocialReceita: result.razaoSocial,
+        statusConsultaCnpj: result.status,
+        cnpjConsultadoEm: result.consultadoEm,
+        mensagemConsultaCnpj: result.mensagem,
+      } : current)
+      setSuccess('Consulta do CNPJ concluída.')
+    } catch (err) {
+      setError(extractErrorMessage(err, 'Não foi possível consultar o CNPJ.'))
+    } finally {
+      setConsultingCnpj(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="page">
@@ -162,6 +186,23 @@ export function MeuSeboPage() {
               <><strong>Cadastro em análise</strong><span>As ações comerciais serão liberadas após a verificação.</span></>
             )}
           </div>
+        ) : null}
+        {existing ? (
+          <section className={`cnpj-consultation cnpj-${(existing.statusConsultaCnpj ?? StatusConsultaCnpj.NAO_CONSULTADO).toLowerCase()}`} aria-labelledby="cnpj-consultation-title">
+            <div>
+              <h2 id="cnpj-consultation-title">Consulta automática do CNPJ</h2>
+              <p><strong>Status:</strong> {existing.statusConsultaCnpj ?? StatusConsultaCnpj.NAO_CONSULTADO}</p>
+              {existing.razaoSocialReceita ? <p><strong>Razão social na Receita:</strong> {existing.razaoSocialReceita}</p> : null}
+              {existing.cnpjConsultadoEm ? <p><strong>Última consulta:</strong> {new Date(existing.cnpjConsultadoEm).toLocaleString('pt-BR')}</p> : null}
+              {existing.mensagemConsultaCnpj ? <p>{existing.mensagemConsultaCnpj}</p> : null}
+              {existing.statusConsultaCnpj === StatusConsultaCnpj.ATIVA ? <p className="cnpj-guidance">CNPJ ativo. Confira se a razão social corresponde aos documentos enviados.</p> : null}
+              {existing.statusConsultaCnpj === StatusConsultaCnpj.INATIVA ? <p className="cnpj-guidance">O CNPJ consta como inativo e não poderá ser aprovado.</p> : null}
+              {existing.statusConsultaCnpj === StatusConsultaCnpj.INDISPONIVEL ? <p className="cnpj-guidance">A consulta externa está indisponível. Tente novamente mais tarde.</p> : null}
+            </div>
+            <Button type="button" variant="ghost" disabled={consultingCnpj} onClick={consultarCnpj}>
+              {consultingCnpj ? 'Consultando...' : 'Consultar CNPJ'}
+            </Button>
+          </section>
         ) : null}
         {error ? <div className="flash error" role="alert">{error}</div> : null}
         {success ? <div className="flash success" role="status">{success}</div> : null}

@@ -6,6 +6,22 @@ export const StatusVerificacao = {
 
 export type StatusVerificacao = (typeof StatusVerificacao)[keyof typeof StatusVerificacao]
 
+export const StatusConsultaCnpj = {
+  NAO_CONSULTADO: 'NAO_CONSULTADO',
+  ATIVA: 'ATIVA',
+  INATIVA: 'INATIVA',
+  INDISPONIVEL: 'INDISPONIVEL',
+} as const
+export type StatusConsultaCnpj = (typeof StatusConsultaCnpj)[keyof typeof StatusConsultaCnpj]
+
+export type ConsultaCnpjResponse = {
+  cnpj: string
+  razaoSocial: string | null
+  status: StatusConsultaCnpj
+  consultadoEm: string | null
+  mensagem: string | null
+}
+
 export type SeboRequest = {
   cnpj: string
   descricao?: string
@@ -21,6 +37,10 @@ export type Sebo = {
   cnpj?: string
   statusVerificacao?: StatusVerificacao
   motivoRejeicao?: string | null
+  razaoSocialReceita?: string | null
+  statusConsultaCnpj?: StatusConsultaCnpj
+  cnpjConsultadoEm?: string | null
+  mensagemConsultaCnpj?: string | null
   descricao: string | null
   telefone: string | null
   fotoUrl: string | null

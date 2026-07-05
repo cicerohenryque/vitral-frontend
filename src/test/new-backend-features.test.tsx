@@ -3,15 +3,18 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import { ProductPage } from '../components/Product/ProductPage'
+import { MeuSeboPage } from '../pages/MeuSeboPage'
 import { ProtectedRoute } from '../routes/ProtectedRoute'
 import { cestaService } from '../services/cestaService'
 import { movimentacaoService } from '../services/movimentacaoService'
 import { produtoService } from '../services/produtoService'
+import { pedidoService } from '../services/pedidoService'
 import { seboService } from '../services/seboService'
 import { api } from '../services/api'
 import { useAuthStore } from '../store/authStore'
 import { AccountType } from '../types/account'
 import { CondicaoProduto } from '../types/produto'
+import { StatusConsultaCnpj, StatusVerificacao } from '../types/sebo'
 import { isValidIsbn, normalizeIsbn } from '../utils/isbn'
 
 describe('novos contratos do backend', () => {
@@ -58,5 +61,23 @@ describe('novos contratos do backend', () => {
     render(<MemoryRouter initialEntries={['/admin']}><Routes><Route path="/" element={<p>Início</p>} /><Route path="/admin" element={<ProtectedRoute requireRole={AccountType.ADMIN}><p>Painel admin</p></ProtectedRoute>} /></Routes></MemoryRouter>)
     await waitFor(() => expect(screen.getByText('Início')).toBeInTheDocument())
     expect(screen.queryByText('Painel admin')).not.toBeInTheDocument()
+  })
+
+  it('consulta o CNPJ e exibe razão social e status retornados pelo backend', async () => {
+    useAuthStore.setState({ token: 'jwt', account: { id: 2, name: 'Sebo', email: 's@x.com', type: AccountType.SEBO }, seboId: 3 })
+    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({ id: 3, accountId: 2, nome: 'Sebo', email: 's@x.com', cnpj: '12345678000199', statusVerificacao: StatusVerificacao.PENDENTE, statusConsultaCnpj: StatusConsultaCnpj.NAO_CONSULTADO, motivoRejeicao: null, descricao: null, telefone: null, fotoUrl: null })
+    vi.spyOn(pedidoService, 'buscarFaturamentoMensal').mockResolvedValue([])
+    const consult = vi.spyOn(seboService, 'consultarMeuCnpj').mockResolvedValue({ cnpj: '12345678000199', razaoSocial: 'VITRAL LIVROS LTDA', status: StatusConsultaCnpj.ATIVA, consultadoEm: '2026-07-05T10:00:00Z', mensagem: 'Consulta realizada' })
+    render(<MemoryRouter><MeuSeboPage /></MemoryRouter>)
+    await userEvent.click(await screen.findByRole('button', { name: 'Consultar CNPJ' }))
+    await waitFor(() => expect(consult).toHaveBeenCalled())
+    expect(await screen.findByText('VITRAL LIVROS LTDA')).toBeInTheDocument()
+    expect(screen.getByText(/CNPJ ativo/)).toBeInTheDocument()
+  })
+
+  it('usa o endpoint de consulta sem body', async () => {
+    const post = vi.spyOn(api, 'post').mockResolvedValue({ data: { status: 'ATIVA' } })
+    await seboService.consultarMeuCnpj()
+    expect(post).toHaveBeenCalledWith('/sebos/me/verificacao/consultar-cnpj')
   })
 })
