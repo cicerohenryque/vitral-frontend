@@ -54,6 +54,7 @@
 .billing-total { margin: 26px 0 18px; font: 16px var(--font-sans); }
 .billing-total strong { font-size: 24px; }
 .billing-empty { color: var(--color-text-muted); font-family: var(--font-sans); }
+.billing-contract-note { color: var(--color-text-muted); font: 13px var(--font-sans); }
 .billing-chart { display: grid; grid-template-columns: repeat(12, minmax(44px, 1fr)); align-items: end; gap: 8px; min-height: 205px; padding: 16px 0; overflow-x: auto; }
 .billing-bar-column { display: flex; flex-direction: column; align-items: center; justify-content: end; gap: 6px; min-width: 44px; font: 12px var(--font-sans); }
 .billing-value { font-size: 10px; white-space: nowrap; writing-mode: vertical-rl; transform: rotate(180deg); max-height: 72px; }

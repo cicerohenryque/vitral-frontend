@@ -209,6 +209,7 @@ export function MeuSeboPage() {
               </select>
             </label>
           </div>
+          <p className="billing-contract-note">O relatório apresenta somente ano, mês e total fornecidos pelo backend.</p>
           {loadingFaturamento ? (
             <StoreStatus title="Carregando faturamento" description="Consultando os valores mensais." busy />
           ) : faturamentoError ? (
