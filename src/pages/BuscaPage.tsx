@@ -7,7 +7,7 @@ import { Pagination } from '../components/ui/Pagination'
 import { extractErrorMessage } from '../services/api'
 import { buscaService } from '../services/buscaService'
 import type { Produto } from '../types/produto'
-import type { Sebo } from '../types/sebo'
+import { TipoOperacaoSebo, type Sebo } from '../types/sebo'
 import { CondicaoProduto } from '../types/produto'
 import './BuscaPage.css'
 
@@ -22,6 +22,9 @@ export function BuscaPage() {
   const appliedSeboId = searchParams.get('seboId') ?? ''
   const appliedPrecoMin = searchParams.get('precoMin') ?? ''
   const appliedPrecoMax = searchParams.get('precoMax') ?? ''
+  const appliedTipoOperacao = searchParams.get('tipoOperacao') ?? ''
+  const appliedCidade = searchParams.get('cidade') ?? ''
+  const appliedUf = searchParams.get('uf') ?? ''
   const requestedPage = Number(searchParams.get('page') ?? '1')
   const currentPage = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage - 1 : 0
 
@@ -30,6 +33,9 @@ export function BuscaPage() {
   const [seboId, setSeboId] = useState(appliedSeboId)
   const [precoMin, setPrecoMin] = useState(appliedPrecoMin)
   const [precoMax, setPrecoMax] = useState(appliedPrecoMax)
+  const [tipoOperacao, setTipoOperacao] = useState(appliedTipoOperacao)
+  const [cidade, setCidade] = useState(appliedCidade)
+  const [uf, setUf] = useState(appliedUf)
 
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [sebos, setSebos] = useState<Sebo[]>([])
@@ -50,7 +56,10 @@ export function BuscaPage() {
     setSeboId(appliedSeboId)
     setPrecoMin(appliedPrecoMin)
     setPrecoMax(appliedPrecoMax)
-  }, [q, appliedCondicao, appliedSeboId, appliedPrecoMin, appliedPrecoMax])
+    setTipoOperacao(appliedTipoOperacao)
+    setCidade(appliedCidade)
+    setUf(appliedUf)
+  }, [q, appliedCondicao, appliedSeboId, appliedPrecoMin, appliedPrecoMax, appliedTipoOperacao, appliedCidade, appliedUf])
 
   useEffect(() => {
     const params = {
@@ -81,7 +90,12 @@ export function BuscaPage() {
   }, [q, appliedSeboId, appliedCondicao, appliedPrecoMin, appliedPrecoMax, currentPage])
 
   useEffect(() => {
-    const params = { q: q || undefined }
+    const params = {
+      q: q || undefined,
+      tipoOperacao: appliedTipoOperacao ? (appliedTipoOperacao as TipoOperacaoSebo) : undefined,
+      cidade: appliedCidade || undefined,
+      uf: appliedUf || undefined,
+    }
 
     const request = currentPage === 0
       ? buscaService.buscarSebos(params)
@@ -100,7 +114,7 @@ export function BuscaPage() {
         setTotalPaginasSebos(0)
       })
       .finally(() => setLoadingSebos(false))
-  }, [q, currentPage])
+  }, [q, appliedTipoOperacao, appliedCidade, appliedUf, currentPage])
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -142,7 +156,17 @@ export function BuscaPage() {
       if (next.toString() === searchParams.toString()) return
       setLoadingProdutos(true)
       setErrorProdutos(null)
-    } else return
+    } else {
+      if (tipoOperacao) next.set('tipoOperacao', tipoOperacao)
+      else next.delete('tipoOperacao')
+      if (cidade.trim()) next.set('cidade', cidade.trim())
+      else next.delete('cidade')
+      if (uf.trim()) next.set('uf', uf.trim().toUpperCase())
+      else next.delete('uf')
+      if (next.toString() === searchParams.toString()) return
+      setLoadingSebos(true)
+      setErrorSebos(null)
+    }
     setSearchParams(next)
   }
 
@@ -156,6 +180,9 @@ export function BuscaPage() {
     setSeboId('')
     setPrecoMin('')
     setPrecoMax('')
+    setTipoOperacao('')
+    setCidade('')
+    setUf('')
     setLoadingProdutos(true)
     setLoadingSebos(true)
     setErrorProdutos(null)
@@ -238,8 +265,28 @@ export function BuscaPage() {
                     />
                   </label>
                 </>
-              ) : <p className="busca-filtro-hint">Busque sebos virtuais pelo nome ou descrição.</p>}
-              {tab === 'produtos' ? <button type="submit" className="busca-filtro-btn">Aplicar</button> : null}
+              ) : (
+                <>
+                  <label className="busca-filtro-label">
+                    Modalidade
+                    <select value={tipoOperacao} onChange={(e) => setTipoOperacao(e.target.value)}>
+                      <option value="">Todas</option>
+                      <option value={TipoOperacaoSebo.VIRTUAL}>Virtual</option>
+                      <option value={TipoOperacaoSebo.FISICO}>Físico</option>
+                      <option value={TipoOperacaoSebo.HIBRIDO}>Híbrido</option>
+                    </select>
+                  </label>
+                  <label className="busca-filtro-label">
+                    Cidade
+                    <input value={cidade} onChange={(e) => setCidade(e.target.value)} placeholder="ex: Fortaleza" />
+                  </label>
+                  <label className="busca-filtro-label">
+                    UF
+                    <input maxLength={2} value={uf} onChange={(e) => setUf(e.target.value.toUpperCase().slice(0, 2))} placeholder="ex: CE" />
+                  </label>
+                </>
+              )}
+              <button type="submit" className="busca-filtro-btn">Aplicar</button>
               <button type="button" className="busca-filtro-btn busca-filtro-btn-ghost" onClick={limparFiltros}>
                 Limpar
               </button>
@@ -303,7 +350,9 @@ export function BuscaPage() {
                     )}
                     <div className="busca-sebo-info">
                       <h3>{s.nome}</h3>
+                      {s.tipoOperacao ? <p className="busca-sebo-tel">Modalidade: {s.tipoOperacao === TipoOperacaoSebo.VIRTUAL ? 'Virtual' : s.tipoOperacao === TipoOperacaoSebo.FISICO ? 'Físico' : 'Híbrido'}</p> : null}
                       {s.descricao ? <p className="busca-sebo-desc">{s.descricao}</p> : null}
+                      {s.tipoOperacao !== TipoOperacaoSebo.VIRTUAL && (s.cidade || s.uf) ? <p className="busca-sebo-tel">{[s.cidade, s.uf].filter(Boolean).join(' - ')}</p> : null}
                       {s.telefone ? <p className="busca-sebo-tel">{s.telefone}</p> : null}
                     </div>
                   </Link>

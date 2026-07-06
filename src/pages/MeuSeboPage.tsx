@@ -19,6 +19,11 @@ const EMPTY: SeboRequest = {
   telefone: '',
   fotoUrl: '',
   tipoOperacao: TipoOperacaoSebo.VIRTUAL,
+  cep: '',
+  logradouro: '',
+  cidade: '',
+  uf: '',
+  horarioFuncionamento: '',
 }
 
 function formatCnpj(value: string) {
@@ -32,6 +37,16 @@ function formatCnpj(value: string) {
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
 const formatBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+const modalidadeLabels: Record<TipoOperacaoSebo, string> = {
+  VIRTUAL: 'Totalmente virtual',
+  FISICO: 'Físico',
+  HIBRIDO: 'Híbrido',
+}
+const modalidadeDescricao: Record<TipoOperacaoSebo, string> = {
+  VIRTUAL: 'Atendimento e vendas totalmente online, sem endereço público ou retirada presencial.',
+  FISICO: 'Sebo com atendimento físico. Informe endereço e horário para clientes encontrarem a loja.',
+  HIBRIDO: 'Combina vendas online com atendimento físico/retirada presencial.',
+}
 
 export function MeuSeboPage() {
   const { account, seboId, setSeboId } = useAuth()
@@ -71,6 +86,11 @@ export function MeuSeboPage() {
           telefone: sebo.telefone ?? '',
           fotoUrl: sebo.fotoUrl ?? '',
           tipoOperacao: sebo.tipoOperacao ?? TipoOperacaoSebo.VIRTUAL,
+          cep: sebo.cep ?? '',
+          logradouro: sebo.logradouro ?? '',
+          cidade: sebo.cidade ?? '',
+          uf: sebo.uf ?? '',
+          horarioFuncionamento: sebo.horarioFuncionamento ?? '',
         })
       })
       .catch(() => {
@@ -119,7 +139,17 @@ export function MeuSeboPage() {
     }
     setBusy(true)
     try {
-      const payload: SeboRequest = { ...form, tipoOperacao: TipoOperacaoSebo.VIRTUAL }
+      const tipoOperacao = form.tipoOperacao ?? TipoOperacaoSebo.VIRTUAL
+      const payload: SeboRequest = {
+        ...form,
+        tipoOperacao,
+        cnpj: form.cnpj.replace(/\D/g, ''),
+        cep: tipoOperacao === TipoOperacaoSebo.VIRTUAL ? undefined : form.cep?.replace(/\D/g, ''),
+        logradouro: tipoOperacao === TipoOperacaoSebo.VIRTUAL ? undefined : form.logradouro,
+        cidade: tipoOperacao === TipoOperacaoSebo.VIRTUAL ? undefined : form.cidade,
+        uf: tipoOperacao === TipoOperacaoSebo.VIRTUAL ? undefined : form.uf?.toUpperCase(),
+        horarioFuncionamento: tipoOperacao === TipoOperacaoSebo.VIRTUAL ? undefined : form.horarioFuncionamento,
+      }
       const saved = existing
         ? await seboService.atualizarMeu(payload)
         : await seboService.criar(payload)
@@ -132,6 +162,9 @@ export function MeuSeboPage() {
       setBusy(false)
     }
   }
+
+  const selectedTipoOperacao = form.tipoOperacao ?? TipoOperacaoSebo.VIRTUAL
+  const showPhysicalFields = selectedTipoOperacao !== TipoOperacaoSebo.VIRTUAL
 
   async function consultarCnpj() {
     if (!existing) return
@@ -190,8 +223,8 @@ export function MeuSeboPage() {
           </div>
         ) : null}
         <section className="verification-status" role="status" aria-live="polite">
-          <strong>Modalidade:</strong> <span>Totalmente virtual</span>
-          <p>Este fluxo do Vitral opera de forma totalmente virtual. Vendas físicas e retirada presencial ficam desativadas para o sebo.</p>
+          <strong>Modalidade:</strong> <span>{modalidadeLabels[selectedTipoOperacao]}</span>
+          <p>{modalidadeDescricao[selectedTipoOperacao]}</p>
           {existing?.confirmado ? <p><strong>✓ Sebo confirmado:</strong> este cadastro já passou pela verificação e foi validado.</p> : null}
         </section>
         {existing ? (
@@ -223,6 +256,34 @@ export function MeuSeboPage() {
             value={form.descricao ?? ''} onChange={(e) => update('descricao', e.target.value)} />
           <Input id="telefone" label="Telefone"
             value={form.telefone ?? ''} onChange={(e) => update('telefone', e.target.value)} />
+          <label className="vit-input-wrapper">
+            <span className="vit-input-label">Modalidade de operação</span>
+            <select
+              className="vit-input"
+              value={selectedTipoOperacao}
+              onChange={(e) => update('tipoOperacao', e.target.value as TipoOperacaoSebo)}
+            >
+              <option value={TipoOperacaoSebo.VIRTUAL}>Totalmente virtual</option>
+              <option value={TipoOperacaoSebo.FISICO}>Físico</option>
+              <option value={TipoOperacaoSebo.HIBRIDO}>Híbrido</option>
+            </select>
+          </label>
+          {showPhysicalFields ? (
+            <>
+              <Input id="cep" label="CEP" inputMode="numeric" maxLength={9}
+                value={form.cep ?? ''}
+                onChange={(e) => update('cep', e.target.value.replace(/\D/g, '').slice(0, 8))}
+                placeholder="Somente números" />
+              <Input id="logradouro" label="Endereço/logradouro"
+                value={form.logradouro ?? ''} onChange={(e) => update('logradouro', e.target.value)} />
+              <Input id="cidade" label="Cidade"
+                value={form.cidade ?? ''} onChange={(e) => update('cidade', e.target.value)} />
+              <Input id="uf" label="UF" maxLength={2}
+                value={form.uf ?? ''} onChange={(e) => update('uf', e.target.value.toUpperCase().slice(0, 2))} />
+              <Input id="horarioFuncionamento" label="Horário de funcionamento"
+                value={form.horarioFuncionamento ?? ''} onChange={(e) => update('horarioFuncionamento', e.target.value)} />
+            </>
+          ) : null}
           <ImageUploadField
             id="fotoUrl"
             label="Foto do sebo"

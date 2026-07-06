@@ -27,6 +27,7 @@ import { seboService } from '../services/seboService'
 import { usuarioService } from '../services/usuarioService'
 import { StatusPedido, type Pedido } from '../types/pedido'
 import { CondicaoProduto } from '../types/produto'
+import { TipoOperacaoSebo } from '../types/sebo'
 import { AccountType } from '../types/account'
 import { useAuthStore } from '../store/authStore'
 import type { CestaItem } from '../types/cesta'
@@ -336,14 +337,19 @@ describe('cobertura de branches restantes', () => {
     await waitFor(() => expect(buscaService.buscarProdutos).toHaveBeenLastCalledWith(expect.objectContaining({ q: 'abc' })))
   })
 
-  it('ignora filtros físicos antigos na busca de sebos', async () => {
+  it('aplica filtros de modalidade e localização na busca de sebos', async () => {
     vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
     const buscarSebosSpy = vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })
 
-    renderWithParams('/busca?tab=sebos&cidade=Campina%20Grande&uf=PB', <BuscaPage />)
+    renderWithParams('/busca?tab=sebos&tipoOperacao=FISICO&cidade=Campina%20Grande&uf=PB', <BuscaPage />)
     expect(await screen.findByText('Nenhum sebo encontrado.')).toBeInTheDocument()
 
-    expect(buscarSebosSpy).toHaveBeenLastCalledWith({ q: undefined })
+    expect(buscarSebosSpy).toHaveBeenLastCalledWith({
+      q: undefined,
+      tipoOperacao: TipoOperacaoSebo.FISICO,
+      cidade: 'Campina Grande',
+      uf: 'PB',
+    })
   })
 
   it('mostra sebo com foto quando a busca retorna fotoUrl', async () => {
@@ -390,12 +396,14 @@ describe('cobertura de branches restantes', () => {
     await waitFor(() => expect(buscarProdutosSpy).toHaveBeenLastCalledWith(expect.objectContaining({ condicao: undefined, seboId: undefined, precoMin: undefined, precoMax: undefined })))
   })
 
-  it('explica a busca virtual na aba de sebos', async () => {
+  it('mostra filtros de modalidade e localização na aba de sebos', async () => {
     vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
     vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })
 
     renderWithParams('/busca?tab=sebos&cidade=Campina%20Grande&uf=PB', <BuscaPage />)
-    expect(await screen.findByText('Busque sebos virtuais pelo nome ou descrição.')).toBeInTheDocument()
+    expect(await screen.findByLabelText('Modalidade')).toBeInTheDocument()
+    expect(screen.getByLabelText('Cidade')).toHaveValue('Campina Grande')
+    expect(screen.getByLabelText('UF')).toHaveValue('PB')
   })
 
   it('aplica filtros de busca de produtos e limpa corretamente', async () => {

@@ -165,6 +165,43 @@ describe('paginas principais', () => {
     expect(seboService.criar).toHaveBeenCalledWith(expect.objectContaining({ descricao: 'Livros virtuais', tipoOperacao: TipoOperacaoSebo.VIRTUAL }))
   })
 
+  it('cadastra perfil de sebo físico com endereço e horário', async () => {
+    useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: null })
+    const criarSpy = vi.spyOn(seboService, 'criar').mockResolvedValue({
+      ...sebo,
+      tipoOperacao: TipoOperacaoSebo.FISICO,
+      cep: '60123456',
+      logradouro: 'Rua dos Livros',
+      cidade: 'Fortaleza',
+      uf: 'CE',
+      horarioFuncionamento: '9h às 18h',
+    })
+    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(null)
+    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({ ...sebo, tipoOperacao: TipoOperacaoSebo.FISICO })
+
+    renderAt('/meu-sebo', <MeuSeboPage />)
+    expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+
+    await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
+    await userEvent.selectOptions(screen.getByLabelText('Modalidade de operação'), TipoOperacaoSebo.FISICO)
+    await userEvent.type(await screen.findByLabelText('CEP'), '60123-456')
+    await userEvent.type(screen.getByLabelText('Endereço/logradouro'), 'Rua dos Livros')
+    await userEvent.type(screen.getByLabelText('Cidade'), 'Fortaleza')
+    await userEvent.type(screen.getByLabelText('UF'), 'ce')
+    await userEvent.type(screen.getByLabelText('Horário de funcionamento'), '9h às 18h')
+    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
+
+    expect(await screen.findByText('Sebo cadastrado com sucesso!')).toBeInTheDocument()
+    expect(criarSpy).toHaveBeenCalledWith(expect.objectContaining({
+      tipoOperacao: TipoOperacaoSebo.FISICO,
+      cep: '60123456',
+      logradouro: 'Rua dos Livros',
+      cidade: 'Fortaleza',
+      uf: 'CE',
+      horarioFuncionamento: '9h às 18h',
+    }))
+  })
+
   it('exibe a modalidade do sebo na tela de perfil', async () => {
     useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
     vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue({ ...sebo, tipoOperacao: TipoOperacaoSebo.VIRTUAL })
@@ -174,6 +211,30 @@ describe('paginas principais', () => {
 
     expect(await screen.findByText(/Modalidade:/i)).toBeInTheDocument()
     expect(screen.getByText('Totalmente virtual', { selector: 'span' })).toBeInTheDocument()
+  })
+
+  it('exibe perfil híbrido com campos físicos preenchidos', async () => {
+    useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
+    const seboHibrido = {
+      ...sebo,
+      tipoOperacao: TipoOperacaoSebo.HIBRIDO,
+      cep: '60123456',
+      logradouro: 'Rua dos Livros',
+      cidade: 'Fortaleza',
+      uf: 'CE',
+      horarioFuncionamento: '9h às 18h',
+    }
+    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(seboHibrido)
+    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(seboHibrido)
+
+    renderAt('/meu-sebo', <MeuSeboPage />)
+
+    expect(await screen.findByText(/Modalidade:/i)).toBeInTheDocument()
+    expect(screen.getByText('Híbrido', { selector: 'span' })).toBeInTheDocument()
+    expect(screen.getByLabelText('CEP')).toHaveValue('60123456')
+    expect(screen.getByLabelText('Endereço/logradouro')).toHaveValue('Rua dos Livros')
+    expect(screen.getByLabelText('Cidade')).toHaveValue('Fortaleza')
+    expect(screen.getByLabelText('UF')).toHaveValue('CE')
   })
 
   it('bloqueia registro de venda física para sebos virtuais', async () => {

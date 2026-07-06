@@ -35,6 +35,11 @@ export type SeboRequest = {
   telefone?: string
   fotoUrl?: string
   tipoOperacao?: TipoOperacaoSebo
+  cep?: string
+  logradouro?: string
+  cidade?: string
+  uf?: string
+  horarioFuncionamento?: string
 }
 
 export type Sebo = {
@@ -53,6 +58,11 @@ export type Sebo = {
   telefone: string | null
   fotoUrl: string | null
   tipoOperacao?: TipoOperacaoSebo | null
+  cep?: string | null
+  logradouro?: string | null
+  cidade?: string | null
+  uf?: string | null
+  horarioFuncionamento?: string | null
   confirmado?: boolean | null
 }
 
