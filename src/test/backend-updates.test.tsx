@@ -39,12 +39,15 @@ describe('mudancas recentes do backend', () => {
     authenticateSebo()
     vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(sebo)
     const billing = vi.spyOn(pedidoService, 'buscarFaturamentoMensal')
-      .mockResolvedValueOnce([{ ano: 2026, mes: 1, total: 1500 }])
+      .mockResolvedValueOnce([{ ano: 2026, mes: 1, vendasOnline: 1200, vendasFisicas: 500, estornosReembolsos: 200, total: 1500 }])
       .mockResolvedValueOnce([])
 
     render(<MemoryRouter><MeuSeboPage /></MemoryRouter>)
 
     expect((await screen.findAllByText(/R\$\s*1\.500,00/)).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/R\$\s*1\.200,00/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/R\$\s*500,00/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/R\$\s*200,00/).length).toBeGreaterThan(0)
     expect(screen.getAllByRole('row')).toHaveLength(13)
     await userEvent.selectOptions(screen.getByLabelText('Ano'), '2025')
     await waitFor(() => expect(billing).toHaveBeenLastCalledWith(2025))

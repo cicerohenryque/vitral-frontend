@@ -312,7 +312,7 @@ describe('MeuSeboPage — branches adicionais', () => {
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
     expect(await screen.findByText('Sebo cadastrado com sucesso!')).toBeInTheDocument()
-    expect(seboService.criar).toHaveBeenCalledWith({ cnpj: '12345678000199', descricao: '', telefone: '', fotoUrl: '' })
+    expect(seboService.criar).toHaveBeenCalledWith({ cnpj: '12345678000199', descricao: '', telefone: '', fotoUrl: '', tipoOperacao: 'VIRTUAL' })
   })
 
   it('envia descricao e telefone do sebo virtual', async () => {

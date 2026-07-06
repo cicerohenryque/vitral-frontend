@@ -47,13 +47,17 @@ describe('novos contratos do backend', () => {
     const put = vi.spyOn(api, 'put').mockResolvedValue({ data: {} })
     await movimentacaoService.registrarVendaFisica({ produtoId: 7, quantidade: 1, valorUnitario: 20 })
     await movimentacaoService.estornar(9, 'Erro de lançamento')
-    await seboService.enviarDocumento('CARTAO_CNPJ', '/arquivo.png')
+    const arquivo = new File(['documento'], 'arquivo.png', { type: 'image/png' })
+    await seboService.enviarDocumento('CARTAO_CNPJ', arquivo)
     await seboService.listarAuditoria(3)
     await seboService.atualizarVerificacao(3, 'REJEITADO', 'Documento ilegível')
     expect(post).toHaveBeenCalledWith('/movimentacoes-estoque/vendas-fisicas', { produtoId: 7, quantidade: 1, valorUnitario: 20 })
     expect(post).toHaveBeenCalledWith('/movimentacoes-estoque/9/estorno', { motivo: 'Erro de lançamento' })
+    expect(post).toHaveBeenCalledWith('/sebos/me/documentos', expect.any(FormData), {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
     expect(get).toHaveBeenCalledWith('/sebos/3/verificacao/auditoria')
-    expect(put).toHaveBeenCalledWith('/sebos/3/verificacao', null, { params: { status: 'REJEITADO', motivo: 'Documento ilegível' } })
+    expect(put).toHaveBeenCalledWith('/sebos/3/verificacao', { motivo: 'Documento ilegível' }, { params: { status: 'REJEITADO' } })
   })
 
   it('impede usuário comum de acessar rota ADMIN', async () => {

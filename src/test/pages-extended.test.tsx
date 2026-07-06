@@ -11,6 +11,7 @@ import { MeuSeboPage } from '../pages/MeuSeboPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
 import { OffersPage } from '../components/Offers/OffersPage'
 import { PerfilPage } from '../pages/PerfilPage'
+import { StockMovementsPage } from '../pages/StockMovementsPage'
 import { HelpPage } from '../components/Help/HelpPage'
 import { SupportPage } from '../components/Support/SupportPage'
 import { ProtectedRoute } from '../routes/ProtectedRoute'
@@ -20,11 +21,13 @@ import { categoriaService } from '../services/categoriaService'
 import { ofertaService } from '../services/ofertaService'
 import { produtoService } from '../services/produtoService'
 import { pedidoService } from '../services/pedidoService'
+import { movimentacaoService } from '../services/movimentacaoService'
 import { seboService } from '../services/seboService'
 import { usuarioService } from '../services/usuarioService'
 import { useAuthStore } from '../store/authStore'
 import { AccountType } from '../types/account'
 import { CondicaoProduto } from '../types/produto'
+import { TipoOperacaoSebo } from '../types/sebo'
 
 const emptyPage = { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20, first: true, last: true }
 const account = { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.USUARIO }
@@ -148,7 +151,7 @@ describe('paginas principais', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Falha ao atualizar perfil')
   })
 
-  it('cadastra perfil de sebo', async () => {
+  it('cadastra perfil de sebo assumindo modalidade virtual por padrão', async () => {
     useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: null })
     vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(null)
     vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(sebo)
@@ -159,7 +162,30 @@ describe('paginas principais', () => {
     await userEvent.type(screen.getByLabelText('Descrição'), 'Livros virtuais')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
     expect(await screen.findByText('Sebo cadastrado com sucesso!')).toBeInTheDocument()
-    expect(seboService.criar).toHaveBeenCalledWith(expect.objectContaining({ descricao: 'Livros virtuais' }))
+    expect(seboService.criar).toHaveBeenCalledWith(expect.objectContaining({ descricao: 'Livros virtuais', tipoOperacao: TipoOperacaoSebo.VIRTUAL }))
+  })
+
+  it('exibe a modalidade do sebo na tela de perfil', async () => {
+    useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
+    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue({ ...sebo, tipoOperacao: TipoOperacaoSebo.VIRTUAL })
+    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({ ...sebo, tipoOperacao: TipoOperacaoSebo.VIRTUAL })
+
+    renderAt('/meu-sebo', <MeuSeboPage />)
+
+    expect(await screen.findByText(/Modalidade:/i)).toBeInTheDocument()
+    expect(screen.getByText('Totalmente virtual', { selector: 'span' })).toBeInTheDocument()
+  })
+
+  it('bloqueia registro de venda física para sebos virtuais', async () => {
+    useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
+    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({ ...sebo, tipoOperacao: TipoOperacaoSebo.VIRTUAL })
+    vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue({ ...emptyPage, content: [produto] })
+    vi.spyOn(movimentacaoService, 'registrarVendaFisica').mockResolvedValue({} as never)
+
+    renderAt('/painel/estoque', <StockMovementsPage />)
+
+    expect(await screen.findByText(/Sebo virtual não permite venda física/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Registrar venda física' })).toBeDisabled()
   })
 
   it('atualiza perfil do sebo existente com sucesso', async () => {

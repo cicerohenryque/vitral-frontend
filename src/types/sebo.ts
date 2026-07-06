@@ -14,6 +14,13 @@ export const StatusConsultaCnpj = {
 } as const
 export type StatusConsultaCnpj = (typeof StatusConsultaCnpj)[keyof typeof StatusConsultaCnpj]
 
+export const TipoOperacaoSebo = {
+  VIRTUAL: 'VIRTUAL',
+  FISICO: 'FISICO',
+  HIBRIDO: 'HIBRIDO',
+} as const
+export type TipoOperacaoSebo = (typeof TipoOperacaoSebo)[keyof typeof TipoOperacaoSebo]
+
 export type ConsultaCnpjResponse = {
   cnpj: string
   razaoSocial: string | null
@@ -27,6 +34,7 @@ export type SeboRequest = {
   descricao?: string
   telefone?: string
   fotoUrl?: string
+  tipoOperacao?: TipoOperacaoSebo
 }
 
 export type Sebo = {
@@ -44,14 +52,32 @@ export type Sebo = {
   descricao: string | null
   telefone: string | null
   fotoUrl: string | null
+  tipoOperacao?: TipoOperacaoSebo | null
+  confirmado?: boolean | null
 }
 
 export const TipoDocumentoSebo = {
-  CARTAO_CNPJ: 'CARTAO_CNPJ', CONTRATO_SOCIAL: 'CONTRATO_SOCIAL',
-  DOCUMENTO_RESPONSAVEL: 'DOCUMENTO_RESPONSAVEL', COMPROVANTE_BANCARIO: 'COMPROVANTE_BANCARIO',
+  CARTAO_CNPJ: 'CARTAO_CNPJ',
+  CONTRATO_SOCIAL: 'CONTRATO_SOCIAL',
+  DOCUMENTO_RESPONSAVEL: 'DOCUMENTO_RESPONSAVEL',
+  COMPROVANTE_BANCARIO: 'COMPROVANTE_BANCARIO',
+  COMPROVANTE_ATIVIDADE: 'COMPROVANTE_ATIVIDADE',
+  OUTRO: 'OUTRO',
 } as const
 export type TipoDocumentoSebo = (typeof TipoDocumentoSebo)[keyof typeof TipoDocumentoSebo]
 export const StatusDocumentoSebo = { PENDENTE: 'PENDENTE', APROVADO: 'APROVADO', REJEITADO: 'REJEITADO' } as const
 export type StatusDocumentoSebo = (typeof StatusDocumentoSebo)[keyof typeof StatusDocumentoSebo]
-export type DocumentoSebo = { id: number; tipoDocumento: TipoDocumentoSebo; arquivoUrl: string; status: StatusDocumentoSebo; enviadoEm: string; analisadoEm: string | null; analisadoPorId: number | null; motivoRejeicao: string | null }
+export type DocumentoSebo = {
+  id: number
+  tipo: TipoDocumentoSebo
+  arquivoUrl: string
+  nomeArquivo: string
+  contentType: string
+  tamanhoBytes: number
+  enviadoEm: string
+  status: StatusDocumentoSebo
+  analisadoEm?: string | null
+  analisadoPorId?: number | null
+  motivoRejeicao?: string | null
+}
 export type AuditoriaSebo = { id: number; analisadoPorId: number; statusAnterior: StatusVerificacao; novoStatus: StatusVerificacao; motivo: string | null; criadoEm: string }

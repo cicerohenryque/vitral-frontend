@@ -38,14 +38,20 @@ export const seboService = {
   },
 
   async atualizarVerificacao(id: number, status: StatusVerificacao, motivo?: string): Promise<Sebo> {
-    const { data } = await api.put<Sebo>(`/sebos/${id}/verificacao`, null, {
-      params: { status, motivo },
+    const body = motivo ? { motivo } : undefined
+    const { data } = await api.put<Sebo>(`/sebos/${id}/verificacao`, body, {
+      params: { status },
     })
     return data
   },
 
-  async enviarDocumento(tipoDocumento: TipoDocumentoSebo, arquivoUrl: string): Promise<DocumentoSebo> {
-    const { data } = await api.post<DocumentoSebo>('/sebos/me/documentos', { tipoDocumento, arquivoUrl })
+  async enviarDocumento(tipo: TipoDocumentoSebo, arquivo: File): Promise<DocumentoSebo> {
+    const formData = new FormData()
+    formData.append('tipo', tipo)
+    formData.append('arquivo', arquivo)
+    const { data } = await api.post<DocumentoSebo>('/sebos/me/documentos', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
     return data
   },
   async listarMeusDocumentos(): Promise<DocumentoSebo[]> {

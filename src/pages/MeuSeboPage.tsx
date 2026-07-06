@@ -9,7 +9,7 @@ import { seboService } from '../services/seboService'
 import { pedidoService } from '../services/pedidoService'
 import { extractErrorMessage } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
-import { StatusConsultaCnpj, StatusVerificacao, type Sebo, type SeboRequest } from '../types/sebo'
+import { StatusConsultaCnpj, StatusVerificacao, TipoOperacaoSebo, type Sebo, type SeboRequest } from '../types/sebo'
 import type { FaturamentoMensal } from '../types/pedido'
 import './FormPage.css'
 
@@ -18,6 +18,7 @@ const EMPTY: SeboRequest = {
   descricao: '',
   telefone: '',
   fotoUrl: '',
+  tipoOperacao: TipoOperacaoSebo.VIRTUAL,
 }
 
 function formatCnpj(value: string) {
@@ -69,6 +70,7 @@ export function MeuSeboPage() {
           descricao: sebo.descricao ?? '',
           telefone: sebo.telefone ?? '',
           fotoUrl: sebo.fotoUrl ?? '',
+          tipoOperacao: sebo.tipoOperacao ?? TipoOperacaoSebo.VIRTUAL,
         })
       })
       .catch(() => {
@@ -117,7 +119,7 @@ export function MeuSeboPage() {
     }
     setBusy(true)
     try {
-      const payload: SeboRequest = { ...form }
+      const payload: SeboRequest = { ...form, tipoOperacao: TipoOperacaoSebo.VIRTUAL }
       const saved = existing
         ? await seboService.atualizarMeu(payload)
         : await seboService.criar(payload)
@@ -187,6 +189,11 @@ export function MeuSeboPage() {
             )}
           </div>
         ) : null}
+        <section className="verification-status" role="status" aria-live="polite">
+          <strong>Modalidade:</strong> <span>Totalmente virtual</span>
+          <p>Este fluxo do Vitral opera de forma totalmente virtual. Vendas físicas e retirada presencial ficam desativadas para o sebo.</p>
+          {existing?.confirmado ? <p><strong>✓ Sebo confirmado:</strong> este cadastro já passou pela verificação e foi validado.</p> : null}
+        </section>
         {existing ? (
           <section className={`cnpj-consultation cnpj-${(existing.statusConsultaCnpj ?? StatusConsultaCnpj.NAO_CONSULTADO).toLowerCase()}`} aria-labelledby="cnpj-consultation-title">
             <div>
@@ -250,19 +257,45 @@ export function MeuSeboPage() {
               </select>
             </label>
           </div>
-          <p className="billing-contract-note">O relatório apresenta somente ano, mês e total fornecidos pelo backend.</p>
           {loadingFaturamento ? (
             <StoreStatus title="Carregando faturamento" description="Consultando os valores mensais." busy />
           ) : faturamentoError ? (
             <div className="flash error" role="alert">{faturamentoError}</div>
           ) : (() => {
-            const valores = MESES.map((_, index) => faturamento.find((item) => item.mes === index + 1)?.total ?? 0)
-            const total = valores.reduce((sum, value) => sum + Number(value), 0)
+            const relatorio = MESES.map((_, index) => (
+              faturamento.find((item) => item.mes === index + 1) ?? {
+                ano,
+                mes: index + 1,
+                vendasOnline: 0,
+                vendasFisicas: 0,
+                estornosReembolsos: 0,
+                total: 0,
+              }
+            ))
+            const valores = relatorio.map((item) => Number(item.total))
+            const totalOnline = relatorio.reduce((sum, item) => sum + Number(item.vendasOnline), 0)
+            const totalFisicas = relatorio.reduce((sum, item) => sum + Number(item.vendasFisicas), 0)
+            const totalEstornos = relatorio.reduce((sum, item) => sum + Number(item.estornosReembolsos), 0)
+            const total = relatorio.reduce((sum, item) => sum + Number(item.total), 0)
+            const selecionado = relatorio[mes - 1]
             const max = Math.max(...valores, 1)
             return (
               <>
                 <p className="billing-total">Total em {ano}: <strong>{formatBRL.format(total)}</strong></p>
-                <p className="billing-total">Total de {MESES[mes - 1]}/{ano}: <strong>{formatBRL.format(valores[mes - 1])}</strong></p>
+                <div className="billing-summary-grid" aria-label={`Resumo financeiro de ${ano}`}>
+                  <span>Vendas online <strong>{formatBRL.format(totalOnline)}</strong></span>
+                  <span>Vendas físicas <strong>{formatBRL.format(totalFisicas)}</strong></span>
+                  <span>Estornos/reembolsos <strong>{formatBRL.format(totalEstornos)}</strong></span>
+                </div>
+                <div className="billing-month-card" aria-label={`Detalhamento de ${MESES[mes - 1]} de ${ano}`}>
+                  <h3>{MESES[mes - 1]}/{ano}</h3>
+                  <dl>
+                    <div><dt>Vendas online</dt><dd>{formatBRL.format(selecionado.vendasOnline)}</dd></div>
+                    <div><dt>Vendas físicas</dt><dd>{formatBRL.format(selecionado.vendasFisicas)}</dd></div>
+                    <div><dt>Estornos/reembolsos</dt><dd>{formatBRL.format(selecionado.estornosReembolsos)}</dd></div>
+                    <div><dt>Total</dt><dd>{formatBRL.format(selecionado.total)}</dd></div>
+                  </dl>
+                </div>
                 {faturamento.length === 0 ? <p className="billing-empty">Nenhum faturamento registrado neste ano.</p> : null}
                 <div className="billing-chart" aria-label={`Faturamento mensal de ${ano}`}>
                   {valores.map((value, index) => (
@@ -275,8 +308,16 @@ export function MeuSeboPage() {
                 </div>
                 <div className="billing-table-scroll">
                   <table className="billing-table">
-                    <thead><tr><th>Mês</th><th>Valor</th></tr></thead>
-                    <tbody>{valores.map((value, index) => <tr key={MESES[index]}><td>{MESES[index]}</td><td>{formatBRL.format(value)}</td></tr>)}</tbody>
+                    <thead><tr><th>Mês</th><th>Online</th><th>Físicas</th><th>Estornos</th><th>Total</th></tr></thead>
+                    <tbody>{relatorio.map((item, index) => (
+                      <tr key={MESES[index]}>
+                        <td>{MESES[index]}</td>
+                        <td>{formatBRL.format(item.vendasOnline)}</td>
+                        <td>{formatBRL.format(item.vendasFisicas)}</td>
+                        <td>{formatBRL.format(item.estornosReembolsos)}</td>
+                        <td>{formatBRL.format(item.total)}</td>
+                      </tr>
+                    ))}</tbody>
                   </table>
                 </div>
               </>

@@ -55,5 +55,8 @@ export type Pedido = {
 export type FaturamentoMensal = {
   ano: number
   mes: number
+  vendasOnline: number
+  vendasFisicas: number
+  estornosReembolsos: number
   total: number
 }
