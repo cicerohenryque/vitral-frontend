@@ -34,6 +34,13 @@ const account = { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountTyp
 const sebo = { id: 3, accountId: 1, nome: 'Sebo Central', email: 'rute@teste.com', descricao: 'Raros', telefone: '9999', fotoUrl: null }
 const produto = { id: 7, seboId: 3, categoriaId: 2, categoriaNome: 'Romance', titulo: 'Livro Teste', autor: 'Autor', descricao: 'Descrição', preco: 25, estoque: 2, condicao: CondicaoProduto.USADO, fotoUrl: null, ativo: true }
 
+function isoDaysAgo(days: number) {
+  const date = new Date()
+  date.setDate(date.getDate() - days)
+  date.setHours(10, 0, 0, 0)
+  return date.toISOString()
+}
+
 describe('paginas principais', () => {
   beforeEach(() => {
     useAuthStore.setState({ token: null, account: null, seboId: null })
@@ -211,6 +218,96 @@ describe('paginas principais', () => {
 
     expect(await screen.findByText(/Modalidade:/i)).toBeInTheDocument()
     expect(screen.getByText('Totalmente virtual', { selector: 'span' })).toBeInTheDocument()
+  })
+
+  it('exibe data de criação e última atividade recente do sebo', async () => {
+    const ultimaAtividade = isoDaysAgo(0)
+    useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
+    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue({
+      ...sebo,
+      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
+      dataCriacao: '2026-07-06',
+      ultimaAtividade,
+    })
+    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({
+      ...sebo,
+      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
+      dataCriacao: '2026-07-06',
+      ultimaAtividade,
+    })
+
+    renderAt('/meu-sebo', <MeuSeboPage />)
+
+    expect(await screen.findByText(/Data de criação:/i)).toBeInTheDocument()
+    expect(screen.getByText('06/07/2026')).toBeInTheDocument()
+    const activity = screen.getByText(/Última atividade:/i).closest('p')
+    expect(activity).toHaveTextContent(/\d{2}\/\d{2}\/\d{4}, \d{2}:\d{2}/)
+    expect(activity).toHaveClass('seller-activity-fresh')
+  })
+
+  it('destaca última atividade antiga em amarelo', async () => {
+    const ultimaAtividade = isoDaysAgo(40)
+    useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
+    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue({
+      ...sebo,
+      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
+      ultimaAtividade,
+    })
+    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({
+      ...sebo,
+      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
+      ultimaAtividade,
+    })
+
+    renderAt('/meu-sebo', <MeuSeboPage />)
+
+    const activity = (await screen.findByText(/Última atividade:/i)).closest('p')
+    expect(activity).toHaveTextContent('Última atividade há 40 dias.')
+    expect(activity).toHaveClass('seller-activity-stale')
+  })
+
+  it('destaca vendedor sem atividade há mais de noventa dias em vermelho', async () => {
+    const ultimaAtividade = isoDaysAgo(100)
+    useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
+    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue({
+      ...sebo,
+      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
+      ultimaAtividade,
+    })
+    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({
+      ...sebo,
+      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
+      ultimaAtividade,
+    })
+
+    renderAt('/meu-sebo', <MeuSeboPage />)
+
+    const activity = (await screen.findByText(/Última atividade:/i)).closest('p')
+    expect(activity).toHaveTextContent('Vendedor sem atividade há mais de 90 dias.')
+    expect(activity).toHaveClass('seller-activity-inactive')
+  })
+
+  it('exibe fallback seguro quando datas do sebo vêm ausentes ou inválidas', async () => {
+    useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
+    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue({
+      ...sebo,
+      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
+      dataCriacao: 'data-invalida',
+      ultimaAtividade: null,
+    })
+    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({
+      ...sebo,
+      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
+      dataCriacao: 'data-invalida',
+    })
+
+    renderAt('/meu-sebo', <MeuSeboPage />)
+
+    const activity = (await screen.findByText(/Última atividade:/i)).closest('p')
+    expect(activity).toHaveTextContent('Sem atividade registrada')
+    expect(activity).toHaveClass('seller-activity-neutral')
+    expect(screen.queryByText(/Data de criação:/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/data-invalida/)).not.toBeInTheDocument()
   })
 
   it('exibe perfil híbrido com campos físicos preenchidos', async () => {

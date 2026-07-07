@@ -64,6 +64,8 @@ export type Sebo = {
   uf?: string | null
   horarioFuncionamento?: string | null
   confirmado?: boolean | null
+  dataCriacao?: string | null
+  ultimaAtividade?: string | null
 }
 
 export const TipoDocumentoSebo = {

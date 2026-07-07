@@ -89,3 +89,19 @@
     flex-direction: column;
   }
 }
+.seller-activity {
+  margin: 0.5rem 0 0;
+}
+
+.seller-activity-stale {
+  color: #9a6a00;
+}
+
+.seller-activity-inactive {
+  color: #b42318;
+}
+
+.seller-activity-fresh,
+.seller-activity-neutral {
+  color: inherit;
+}

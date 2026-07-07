@@ -11,6 +11,7 @@ import { extractErrorMessage } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
 import { StatusConsultaCnpj, StatusVerificacao, TipoOperacaoSebo, type Sebo, type SeboRequest } from '../types/sebo'
 import type { FaturamentoMensal } from '../types/pedido'
+import { daysSince, formatDateBR, formatDateTimeBR } from '../utils/date'
 import './FormPage.css'
 
 const EMPTY: SeboRequest = {
@@ -165,6 +166,17 @@ export function MeuSeboPage() {
 
   const selectedTipoOperacao = form.tipoOperacao ?? TipoOperacaoSebo.VIRTUAL
   const showPhysicalFields = selectedTipoOperacao !== TipoOperacaoSebo.VIRTUAL
+  const dataCriacao = formatDateBR(existing?.dataCriacao)
+  const ultimaAtividade = formatDateTimeBR(existing?.ultimaAtividade)
+  const diasSemAtividade = daysSince(existing?.ultimaAtividade)
+  const activityTone = diasSemAtividade == null ? 'neutral' : diasSemAtividade > 90 ? 'inactive' : diasSemAtividade > 30 ? 'stale' : 'fresh'
+  const activityText = diasSemAtividade == null
+    ? 'Sem atividade registrada'
+    : diasSemAtividade > 90
+      ? 'Vendedor sem atividade há mais de 90 dias.'
+      : diasSemAtividade > 30
+        ? `Última atividade há ${diasSemAtividade} dias.`
+        : ultimaAtividade
 
   async function consultarCnpj() {
     if (!existing) return
@@ -225,6 +237,12 @@ export function MeuSeboPage() {
         <section className="verification-status" role="status" aria-live="polite">
           <strong>Modalidade:</strong> <span>{modalidadeLabels[selectedTipoOperacao]}</span>
           <p>{modalidadeDescricao[selectedTipoOperacao]}</p>
+          {existing ? (
+            <>
+              {dataCriacao ? <p><strong>Data de criação:</strong> {dataCriacao}</p> : null}
+              <p className={`seller-activity seller-activity-${activityTone}`}><strong>Última atividade:</strong> {activityText}</p>
+            </>
+          ) : null}
           {existing?.confirmado ? <p><strong>✓ Sebo confirmado:</strong> este cadastro já passou pela verificação e foi validado.</p> : null}
         </section>
         {existing ? (

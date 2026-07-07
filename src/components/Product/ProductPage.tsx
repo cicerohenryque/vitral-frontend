@@ -9,6 +9,7 @@ import { produtoService } from '../../services/produtoService'
 import { seboService } from '../../services/seboService'
 import type { Produto, ProdutoVendedor } from '../../types/produto'
 import type { Sebo } from '../../types/sebo'
+import { formatDateBR } from '../../utils/date'
 import './ProductPage.css'
 
 const formatBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -152,6 +153,8 @@ export function ProductPage() {
     )
   }
 
+  const publicationDate = formatDateBR(produto.dataPublicacao ?? produto.createdAt)
+
   return (
     <StorePage title="Detalhes do produto" subtitle="Conheca o item antes de solicitar a reserva.">
       <section className="product-detail">
@@ -176,6 +179,7 @@ export function ProductPage() {
         <article className="product-information">
           <span className="product-category">{produto.categoriaNome ?? produto.condicao}</span>
           <h2>{produto.titulo}</h2>
+          {publicationDate ? <p className="product-description">Publicado em: {publicationDate}</p> : null}
           {produto.precoPromocional != null && Number(produto.precoPromocional) < Number(produto.preco) ? (
             <p className="product-price">
               <s style={{ opacity: 0.6, marginRight: 8, fontWeight: 400 }}>

@@ -36,6 +36,8 @@ export type Produto = {
   ativo: boolean
   seboVerificado?: boolean
   seboNome?: string | null
+  dataPublicacao?: string | null
+  createdAt?: string | null
 }
 
 export type VendaFisicaResponse = {

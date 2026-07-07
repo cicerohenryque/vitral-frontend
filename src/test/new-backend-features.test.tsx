@@ -41,6 +41,61 @@ describe('novos contratos do backend', () => {
     expect(add).toHaveBeenCalledWith(22)
   })
 
+  it('exibe a data de publicação do anúncio quando retornada pelo backend', async () => {
+    useAuthStore.setState({ token: null, account: null, seboId: null })
+    vi.spyOn(produtoService, 'buscarPorId').mockResolvedValue({
+      id: 10,
+      seboId: 2,
+      categoriaId: null,
+      categoriaNome: null,
+      isbn: null,
+      titulo: 'Livro publicado',
+      autor: null,
+      descricao: null,
+      preco: 50,
+      estoque: 3,
+      condicao: CondicaoProduto.USADO,
+      fotoUrl: null,
+      ativo: true,
+      dataPublicacao: '2026-07-06',
+    })
+    vi.spyOn(produtoService, 'listarVendedores').mockResolvedValue([])
+    vi.spyOn(seboService, 'buscarPorId').mockRejectedValue(new Error('irrelevante'))
+
+    render(<MemoryRouter initialEntries={['/produto/10']}><Routes><Route path="/produto/:productId" element={<ProductPage />} /></Routes></MemoryRouter>)
+
+    expect(await screen.findByText('Publicado em: 06/07/2026')).toBeInTheDocument()
+  })
+
+  it('não exibe data técnica quando a publicação do anúncio vem ausente ou inválida', async () => {
+    useAuthStore.setState({ token: null, account: null, seboId: null })
+    vi.spyOn(produtoService, 'buscarPorId').mockResolvedValue({
+      id: 10,
+      seboId: 2,
+      categoriaId: null,
+      categoriaNome: null,
+      isbn: null,
+      titulo: 'Livro antigo',
+      autor: null,
+      descricao: null,
+      preco: 50,
+      estoque: 3,
+      condicao: CondicaoProduto.USADO,
+      fotoUrl: null,
+      ativo: true,
+      dataPublicacao: 'data-invalida',
+      createdAt: null,
+    })
+    vi.spyOn(produtoService, 'listarVendedores').mockResolvedValue([])
+    vi.spyOn(seboService, 'buscarPorId').mockRejectedValue(new Error('irrelevante'))
+
+    render(<MemoryRouter initialEntries={['/produto/10']}><Routes><Route path="/produto/:productId" element={<ProductPage />} /></Routes></MemoryRouter>)
+
+    expect(await screen.findByText('Livro antigo')).toBeInTheDocument()
+    expect(screen.queryByText(/Publicado em/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/data-invalida/)).not.toBeInTheDocument()
+  })
+
   it('integra movimentacoes, documentos, auditoria e revisão administrativa', async () => {
     const post = vi.spyOn(api, 'post').mockResolvedValue({ data: {} })
     const get = vi.spyOn(api, 'get').mockResolvedValue({ data: [] })
