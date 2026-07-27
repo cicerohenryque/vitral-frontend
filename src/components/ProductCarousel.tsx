@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Produto } from '../types/produto'
 import { ProductCard } from './ProductCard'
+import { Link } from 'react-router-dom'
 import './ProductCarousel.css'
 
 type Props = {
@@ -9,6 +10,8 @@ type Props = {
   loading?: boolean
   placeholderCount?: number
   emptyMessage?: string
+  viewAllTo?: string
+  total?: number
 }
 
 function getVisibleProductCount(viewportWidth: number): number {
@@ -17,7 +20,7 @@ function getVisibleProductCount(viewportWidth: number): number {
   return 5
 }
 
-export function ProductCarousel({ title, produtos, loading, placeholderCount = 5, emptyMessage }: Props) {
+export function ProductCarousel({ title, produtos, loading, placeholderCount = 5, emptyMessage, viewAllTo, total }: Props) {
   const trackRef = useRef<HTMLDivElement>(null)
   const [visibleProductCount, setVisibleProductCount] = useState(() => getVisibleProductCount(window.innerWidth))
   const items = loading
@@ -39,7 +42,12 @@ export function ProductCarousel({ title, produtos, loading, placeholderCount = 5
 
   return (
     <section className="carousel" aria-busy={loading}>
-      <h2 className="section-title">{title}</h2>
+      <div className="carousel-heading">
+        <h2 className="section-title">{title}</h2>
+        {viewAllTo && !loading && produtos.length > 0 && (total ?? produtos.length) > produtos.length
+          ? <Link to={viewAllTo}>Ver todos</Link>
+          : null}
+      </div>
       {!loading && produtos.length === 0 ? (
         <p className="carousel-empty">{emptyMessage ?? 'Nenhum produto para exibir.'}</p>
       ) : (

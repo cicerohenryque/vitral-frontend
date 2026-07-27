@@ -12,7 +12,9 @@ export function ProductCard({ produto }: Props) {
     return <div className="product-card skeleton-card" aria-hidden="true" />
   }
 
-  const unavailable = !produto.ativo || Number(produto.estoque ?? 0) <= 0
+  const unavailable = produto.disponivel !== undefined
+    ? !produto.disponivel
+    : !produto.ativo || Number(produto.estoque ?? 0) <= 0
 
   return (
     <Link
@@ -28,6 +30,7 @@ export function ProductCard({ produto }: Props) {
       )}
       <div className="product-card-info">
         <strong>{produto.titulo}</strong>
+        {produto.seboNome ? <small>{produto.seboNome}</small> : null}
         {produto.seboVerificado ? <small>✓ Sebo verificado</small> : null}
         {produto.categoriaNome ? <small>{produto.categoriaNome}</small> : null}
         {produto.bookGenre ? <small>Gênero: {bookGenreLabel(produto.bookGenre) ?? produto.bookGenre}</small> : null}

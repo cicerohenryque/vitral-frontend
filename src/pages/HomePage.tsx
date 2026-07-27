@@ -1,99 +1,108 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ProductCarousel } from '../components/ProductCarousel'
-import { extractErrorMessage } from '../services/api'
-import { buscaService } from '../services/buscaService'
-import { produtoService } from '../services/produtoService'
 import { useAuth } from '../hooks/useAuth'
-import type { Produto } from '../types/produto'
+import { extractErrorMessage } from '../services/api'
+import { homeService } from '../services/homeService'
+import type { HomeResponse, HomeSection } from '../types/home'
+
+type RenderSection = HomeSection & {
+  key: string
+  viewAllTo?: string
+}
+
+function hasContent(section: HomeSection | null | undefined): section is HomeSection {
+  return Boolean(section && section.total > 0 && section.produtos.length > 0)
+}
+
+function buildSections(home: HomeResponse): RenderSection[] {
+  const sections: RenderSection[] = []
+
+  if (hasContent(home.lancamentos)) {
+    sections.push({ ...home.lancamentos, key: 'lancamentos', viewAllTo: '/lancamentos' })
+  }
+  if (hasContent(home.classicos)) {
+    sections.push({ ...home.classicos, key: 'classicos' })
+  }
+  if (hasContent(home.recentes)) {
+    sections.push({ ...home.recentes, key: 'recentes' })
+  }
+  if (hasContent(home.recomendados)) {
+    sections.push({ ...home.recomendados, key: 'recomendados' })
+  }
+
+  home.categorias.forEach((category) => {
+    if (category.total <= 0 || category.produtos.length === 0) return
+    sections.push({
+      titulo: category.nome,
+      produtos: category.produtos,
+      total: category.total,
+      key: `categoria-${category.id}`,
+      viewAllTo: `/categorias?categoriaId=${category.id}`,
+    })
+  })
+
+  return sections
+}
 
 export function HomePage() {
-  const { isSebo, seboId } = useAuth()
-  const [recentes, setRecentes] = useState<Produto[]>([])
-  const [classicos, setClassicos] = useState<Produto[]>([])
-  const [loadingRecentes, setLoadingRecentes] = useState(true)
-  const [loadingClassicos, setLoadingClassicos] = useState(true)
+  const { token } = useAuth()
+  const [home, setHome] = useState<HomeResponse | null>(null)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let active = true
 
-    if (isSebo) {
-      // Conta de sebo: nunca mostrar o catalogo de outros sebos, mesmo antes do
-      // perfil proprio ser cadastrado/carregado (nesse caso, a vitrine fica vazia).
-      if (!seboId) {
-        return () => {
-          active = false
-        }
-      }
-
-      buscaService.buscarProdutos({ seboId }, 0, 12)
-        .then((page) => {
-          if (active) setRecentes(page.content)
-        })
-        .catch((err) => {
-          if (active) {
-            setError(extractErrorMessage(err, 'Nao foi possivel carregar os produtos.'))
-            setRecentes([])
-          }
-        })
-        .finally(() => {
-          if (active) setLoadingRecentes(false)
-        })
-
-      produtoService.listarPorSebo(seboId, 0, 12, 'createdAt,asc')
-        .then((page) => {
-          if (active) setClassicos(page.content)
-        })
-        .catch(() => {
-          if (active) setClassicos([])
-        })
-        .finally(() => {
-          if (active) setLoadingClassicos(false)
-        })
-
-      return () => {
-        active = false
-      }
-    }
-
-    buscaService.buscarProdutos({}, 0, 12)
-      .then((page) => {
-        if (active) setRecentes(page.content)
+    homeService.carregar()
+      .then((response) => {
+        if (!active) return
+        setHome(response)
+        setError(null)
       })
       .catch((err) => {
-        if (active) {
-          setError(extractErrorMessage(err, 'Nao foi possivel carregar os produtos.'))
-          setRecentes([])
-        }
+        if (!active) return
+        setHome(null)
+        setError(extractErrorMessage(err, 'Não foi possível carregar a vitrine.'))
       })
       .finally(() => {
-        if (active) setLoadingRecentes(false)
+        if (active) setLoading(false)
       })
 
-    produtoService.listarClassicos(0, 12)
-      .then((page) => {
-        if (active) setClassicos(page.content)
-      })
-      .catch(() => {
-        if (active) setClassicos([])
-      })
-      .finally(() => {
-        if (active) setLoadingClassicos(false)
-      })
+    return () => { active = false }
+  }, [token, reloadKey])
 
-    return () => {
-      active = false
-    }
-  }, [isSebo, seboId])
+  const sections = useMemo(() => home ? buildSections(home) : [], [home])
 
-  const awaitingSeboProfile = isSebo && !seboId
+  function retry() {
+    setHome(null)
+    setError(null)
+    setLoading(true)
+    setReloadKey((key) => key + 1)
+  }
 
   return (
     <div className="page">
       <main className="container">
-        {!awaitingSeboProfile && error ? <div className="flash error" role="alert">{error}</div> : null}
-        <ProductCarousel title="Produtos disponíveis" produtos={awaitingSeboProfile ? [] : recentes} loading={awaitingSeboProfile ? false : loadingRecentes} />
-        <ProductCarousel title="Clássicos" produtos={awaitingSeboProfile ? [] : classicos} loading={awaitingSeboProfile ? false : loadingClassicos} />
+        {loading ? <ProductCarousel title="Carregando vitrine" produtos={[]} loading placeholderCount={5} /> : null}
+        {!loading && error ? (
+          <div className="flash error" role="alert">
+            <span>{error}</span>{' '}
+            <button type="button" onClick={retry}>Tentar novamente</button>
+          </div>
+        ) : null}
+        {!loading && !error && sections.length === 0
+          ? <p className="carousel-empty">Nenhum produto disponível no momento.</p>
+          : null}
+        {!loading && !error ? sections.map((section) => (
+          <ProductCarousel
+            key={section.key}
+            title={section.titulo}
+            produtos={section.produtos}
+            total={section.total}
+            viewAllTo={section.viewAllTo}
+          />
+        )) : null}
       </main>
     </div>
   )

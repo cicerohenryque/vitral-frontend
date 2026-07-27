@@ -200,6 +200,7 @@ export function ProductPage() {
             <div><dt>Estado</dt><dd>{produto.condicao}</dd></div>
             <div><dt>Categoria</dt><dd>{produto.categoriaNome ?? 'Nao informada'}</dd></div>
             {produto.bookGenre ? <div><dt>Gênero</dt><dd>{bookGenreLabel(produto.bookGenre) ?? produto.bookGenre}</dd></div> : null}
+            {produto.classico ? <div><dt>Curadoria</dt><dd>Clássico</dd></div> : null}
             <div><dt>Autor</dt><dd>{produto.autor ?? 'Nao informado'}</dd></div>
             <div><dt>Estoque</dt><dd>{produto.estoque ?? 0}</dd></div>
             <div><dt>Disponibilidade</dt><dd>{produto.ativo && Number(produto.estoque ?? 0) > 0 ? 'Disponivel' : 'Indisponivel'}</dd></div>

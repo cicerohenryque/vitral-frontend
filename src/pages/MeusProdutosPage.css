@@ -70,3 +70,17 @@
   gap: 1rem;
   margin-bottom: 1.25rem;
 }
+
+.produto-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 44px;
+  font-weight: 600;
+}
+
+.produto-checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-accent);
+}

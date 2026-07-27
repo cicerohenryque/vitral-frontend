@@ -18,6 +18,7 @@ import { ProtectedRoute } from '../routes/ProtectedRoute'
 import { authService } from '../services/authService'
 import { buscaService } from '../services/buscaService'
 import { categoriaService } from '../services/categoriaService'
+import { homeService } from '../services/homeService'
 import { ofertaService } from '../services/ofertaService'
 import { produtoService } from '../services/produtoService'
 import { pedidoService } from '../services/pedidoService'
@@ -364,13 +365,20 @@ describe('paginas principais', () => {
   })
 
   it('carrega home com produtos e apresenta falha da busca', async () => {
-    vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValueOnce({ ...emptyPage, content: [produto], totalElements: 1 }).mockRejectedValueOnce(new Error('offline'))
-    vi.spyOn(produtoService, 'listarClassicos').mockResolvedValue({ ...emptyPage, content: [produto], totalElements: 1 })
+    vi.spyOn(homeService, 'carregar')
+      .mockResolvedValueOnce({
+        lancamentos: { titulo: 'Lançamentos', produtos: [], total: 0 },
+        classicos: { titulo: 'Clássicos', produtos: [], total: 0 },
+        recentes: { titulo: 'Adicionados recentemente', produtos: [], total: 0 },
+        recomendados: null,
+        categorias: [{ id: 2, nome: 'Livros', slug: 'livros', produtos: [produto], total: 1 }],
+      })
+      .mockRejectedValueOnce(new Error('offline'))
     const first = renderAt('/', <HomePage />)
-    expect(await screen.findAllByText('Livro Teste')).toHaveLength(2)
+    expect(await screen.findAllByText('Livro Teste')).toHaveLength(1)
     first.unmount()
     renderAt('/', <HomePage />)
-    expect(await screen.findByRole('alert')).toHaveTextContent('Nao foi possivel carregar os produtos.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível carregar a vitrine.')
   })
 
   it('busca produtos, aplica filtros e alterna para sebos', async () => {

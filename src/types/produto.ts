@@ -11,6 +11,8 @@ export type ProdutoRequest = {
   titulo: string
   categoriaId?: number
   bookGenre?: BookGenre
+  classico?: boolean
+  lancamento?: boolean
   autor?: string
   descricao?: string
   preco: number
@@ -25,6 +27,8 @@ export type Produto = {
   categoriaId: number | null
   categoriaNome: string | null
   bookGenre?: BookGenre | null
+  classico?: boolean
+  lancamento?: boolean
   catalogoLivroId?: number | null
   isbn?: string | null
   titulo: string
@@ -36,6 +40,7 @@ export type Produto = {
   condicao: CondicaoProduto
   fotoUrl: string | null
   ativo: boolean
+  disponivel?: boolean
   seboVerificado?: boolean
   seboNome?: string | null
   dataPublicacao?: string | null

@@ -7,6 +7,19 @@
   font-family: var(--font-sans);
   line-height: 1.55;
 }
+.carousel-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.carousel-heading .section-title { margin-bottom: 0.75rem; }
+.carousel-heading a {
+  color: var(--color-accent);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  white-space: nowrap;
+}
 .carousel-wrapper {
   position: relative;
   display: flex;

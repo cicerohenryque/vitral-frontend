@@ -3,6 +3,7 @@ import { api } from '../services/api'
 import { categoriaService } from '../services/categoriaService'
 import { cestaService } from '../services/cestaService'
 import { favoritoService } from '../services/favoritoService'
+import { homeService } from '../services/homeService'
 import { mensagemService } from '../services/mensagemService'
 import { ofertaService } from '../services/ofertaService'
 import { pedidoService } from '../services/pedidoService'
@@ -14,6 +15,15 @@ import { StatusPedido } from '../types/pedido'
 const page = { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20, first: true, last: true }
 
 describe('contratos dos servicos com o backend', () => {
+  it('carrega todas as seções da home pelo endpoint centralizado', async () => {
+    const home = { lancamentos: null, classicos: null, recentes: null, recomendados: null, categorias: [] }
+    const get = vi.spyOn(api, 'get').mockResolvedValue({ data: home })
+
+    await expect(homeService.carregar()).resolves.toBe(home)
+
+    expect(get).toHaveBeenCalledWith('/home')
+  })
+
   it('busca detalhes reais do produto e perfil publico do sebo por ID', async () => {
     const produto = { id: 7, titulo: 'Livro' }
     const sebo = { id: 3, nome: 'Sebo Central' }

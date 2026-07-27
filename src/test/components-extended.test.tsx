@@ -139,6 +139,13 @@ describe('componentes pequenos e interações', () => {
     expect(screen.getByText('Sem produtos')).toBeInTheDocument()
   })
 
+  it('exibe link para a listagem completa apenas quando o total supera os produtos carregados', () => {
+    const { rerender } = render(<MemoryRouter><ProductCarousel title="Livros" produtos={[produto]} total={2} viewAllTo="/categorias?categoriaId=2" /></MemoryRouter>)
+    expect(screen.getByRole('link', { name: 'Ver todos' })).toHaveAttribute('href', '/categorias?categoriaId=2')
+    rerender(<MemoryRouter><ProductCarousel title="Livros" produtos={[produto]} total={1} viewAllTo="/categorias?categoriaId=2" /></MemoryRouter>)
+    expect(screen.queryByRole('link', { name: 'Ver todos' })).not.toBeInTheDocument()
+  })
+
   it('recalcula a navegação conforme a quantidade visível no tamanho da tela', async () => {
     const products = Array.from({ length: 4 }, (_, index) => ({ ...produto, id: index + 1, titulo: `Produto ${index + 1}` }))
     Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 800 })

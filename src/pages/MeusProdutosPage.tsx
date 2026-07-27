@@ -28,6 +28,7 @@ const EMPTY: ProdutoRequest = {
   preco: 0,
   estoque: 1,
   condicao: CondicaoProduto.USADO,
+  classico: false,
   fotoUrl: '',
 }
 
@@ -119,6 +120,7 @@ export function MeusProdutosPage() {
       titulo: p.titulo,
       categoriaId: p.categoriaId ?? undefined,
       bookGenre: p.bookGenre ?? undefined,
+      classico: p.classico ?? false,
       autor: p.autor ?? '',
       descricao: p.descricao ?? '',
       preco: p.preco,
@@ -281,6 +283,10 @@ export function MeusProdutosPage() {
               <option value={CondicaoProduto.SEMINOVO}>Seminovo</option>
               <option value={CondicaoProduto.USADO}>Usado</option>
             </select>
+          </label>
+          <label className="produto-checkbox">
+            <input type="checkbox" checked={form.classico ?? false} onChange={(e) => update('classico', e.target.checked)} />
+            <span>Destacar como clássico</span>
           </label>
           <ImageUploadField
             id="fotoUrl"
