@@ -1,9 +1,14 @@
 import { api } from './api'
-import type { Account } from '../types/account'
+import type { Account, UpdateProfileRequest } from '../types/account'
 import type { MensagemResponse } from '../types/account'
 
 export const usuarioService = {
-  async atualizarPerfil(payload: { name: string; fotoUrl?: string }): Promise<Account> {
+  async buscarPerfil(): Promise<Account> {
+    const { data } = await api.get<Account>('/auth/me')
+    return data
+  },
+
+  async atualizarPerfil(payload: UpdateProfileRequest): Promise<Account> {
     const { data } = await api.put<Account>('/usuarios/me', payload)
     return data
   },

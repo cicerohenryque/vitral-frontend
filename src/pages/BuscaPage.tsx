@@ -8,6 +8,9 @@ import type { Produto } from '../types/produto'
 import { TipoOperacaoSebo, type Sebo } from '../types/sebo'
 import { CondicaoProduto } from '../types/produto'
 import './BuscaPage.css'
+import { categoriaService } from '../services/categoriaService'
+import type { Categoria } from '../types/categoria'
+import { BOOK_GENRE_OPTIONS, getAllowedCategories, isBookCategory, type BookGenre } from '../constants/productCatalog'
 
 type Tab = 'produtos' | 'sebos'
 
@@ -20,6 +23,8 @@ export function BuscaPage() {
   const appliedSeboId = searchParams.get('seboId') ?? ''
   const appliedPrecoMin = searchParams.get('precoMin') ?? ''
   const appliedPrecoMax = searchParams.get('precoMax') ?? ''
+  const appliedCategoriaId = searchParams.get('categoriaId') ?? ''
+  const appliedBookGenre = searchParams.get('bookGenre') ?? ''
   const appliedTipoOperacao = searchParams.get('tipoOperacao') ?? ''
   const appliedCidade = searchParams.get('cidade') ?? ''
   const appliedUf = searchParams.get('uf') ?? ''
@@ -31,6 +36,9 @@ export function BuscaPage() {
   const [seboId, setSeboId] = useState(appliedSeboId)
   const [precoMin, setPrecoMin] = useState(appliedPrecoMin)
   const [precoMax, setPrecoMax] = useState(appliedPrecoMax)
+  const [categoriaId, setCategoriaId] = useState(appliedCategoriaId)
+  const [bookGenre, setBookGenre] = useState(appliedBookGenre)
+  const [categorias, setCategorias] = useState<Categoria[]>([])
   const [tipoOperacao, setTipoOperacao] = useState(appliedTipoOperacao)
   const [cidade, setCidade] = useState(appliedCidade)
   const [uf, setUf] = useState(appliedUf)
@@ -59,10 +67,16 @@ export function BuscaPage() {
     setSeboId(appliedSeboId)
     setPrecoMin(appliedPrecoMin)
     setPrecoMax(appliedPrecoMax)
+    setCategoriaId(appliedCategoriaId)
+    setBookGenre(appliedBookGenre)
     setTipoOperacao(appliedTipoOperacao)
     setCidade(appliedCidade)
     setUf(appliedUf)
-  }, [q, appliedCondicao, appliedSeboId, appliedPrecoMin, appliedPrecoMax, appliedTipoOperacao, appliedCidade, appliedUf])
+  }, [q, appliedCondicao, appliedSeboId, appliedPrecoMin, appliedPrecoMax, appliedCategoriaId, appliedBookGenre, appliedTipoOperacao, appliedCidade, appliedUf])
+
+  useEffect(() => {
+    categoriaService.listar().then((page) => setCategorias(getAllowedCategories(page.content))).catch(() => setCategorias([]))
+  }, [])
 
   useEffect(() => {
     const params = {
@@ -71,6 +85,8 @@ export function BuscaPage() {
       condicao: appliedCondicao ? (appliedCondicao as CondicaoProduto) : undefined,
       precoMin: appliedPrecoMin ? Number(appliedPrecoMin) : undefined,
       precoMax: appliedPrecoMax ? Number(appliedPrecoMax) : undefined,
+      categoriaId: appliedCategoriaId ? Number(appliedCategoriaId) : undefined,
+      bookGenre: appliedBookGenre ? (appliedBookGenre as BookGenre) : undefined,
     }
 
     const request = currentPage === 0
@@ -90,7 +106,7 @@ export function BuscaPage() {
         setTotalPaginasProdutos(0)
       })
       .finally(() => setLoadingProdutos(false))
-  }, [q, appliedSeboId, appliedCondicao, appliedPrecoMin, appliedPrecoMax, currentPage])
+  }, [q, appliedSeboId, appliedCondicao, appliedPrecoMin, appliedPrecoMax, appliedCategoriaId, appliedBookGenre, currentPage])
 
   useEffect(() => {
     const params = {
@@ -200,6 +216,10 @@ export function BuscaPage() {
       else next.delete('precoMin')
       if (precoMax) next.set('precoMax', precoMax)
       else next.delete('precoMax')
+      if (categoriaId) next.set('categoriaId', categoriaId)
+      else next.delete('categoriaId')
+      if (bookGenre && isBookCategory(categorias.find((item) => item.id === Number(categoriaId)))) next.set('bookGenre', bookGenre)
+      else next.delete('bookGenre')
       if (next.toString() === searchParams.toString()) return
       setLoadingProdutos(true)
       setErrorProdutos(null)
@@ -227,6 +247,8 @@ export function BuscaPage() {
     setSeboId('')
     setPrecoMin('')
     setPrecoMax('')
+    setCategoriaId('')
+    setBookGenre('')
     setTipoOperacao('')
     setCidade('')
     setUf('')
@@ -268,6 +290,21 @@ export function BuscaPage() {
               <h3>Filtros</h3>
               {tab === 'produtos' ? (
                 <>
+                  <label className="busca-filtro-label">
+                    Categoria
+                    <select value={categoriaId} onChange={(e) => { setCategoriaId(e.target.value); setBookGenre('') }}>
+                      <option value="">Todas</option>
+                      {categorias.map((category) => <option key={category.id} value={category.id}>{category.nome}</option>)}
+                    </select>
+                  </label>
+                  {isBookCategory(categorias.find((item) => item.id === Number(categoriaId))) ? (
+                    <label className="busca-filtro-label">Gênero do livro
+                      <select value={bookGenre} onChange={(e) => setBookGenre(e.target.value)}>
+                        <option value="">Todos</option>
+                        {BOOK_GENRE_OPTIONS.map((genre) => <option key={genre.value} value={genre.value}>{genre.label}</option>)}
+                      </select>
+                    </label>
+                  ) : null}
                   <label className="busca-filtro-label">
                     Condição
                     <select value={condicao} onChange={(e) => setCondicao(e.target.value)}>

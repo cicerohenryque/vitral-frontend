@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { StoreStatus } from '../components/Layout/StorePage'
 import { Button } from '../components/ui/Button'
@@ -18,6 +18,7 @@ import type { Produto, ProdutoRequest } from '../types/produto'
 import './FormPage.css'
 import './MeusProdutosPage.css'
 import { isValidIsbn, normalizeIsbn } from '../utils/isbn'
+import { BOOK_GENRE_OPTIONS, bookGenreLabel, getAllowedCategories, isBookCategory, type BookGenre } from '../constants/productCatalog'
 
 const EMPTY: ProdutoRequest = {
   isbn: '',
@@ -45,6 +46,17 @@ export function MeusProdutosPage() {
   const [totalProducts, setTotalProducts] = useState(0)
   const [sellingId, setSellingId] = useState<number | null>(null)
   const [verification, setVerification] = useState<VerificationStatus | null>(null)
+  const [categoryFilter, setCategoryFilter] = useState('')
+  const [genreFilter, setGenreFilter] = useState('')
+
+  const allowedCategories = useMemo(() => getAllowedCategories(categorias), [categorias])
+  const selectedCategory = allowedCategories.find((item) => item.id === form.categoriaId)
+  const bookSelected = isBookCategory(selectedCategory)
+  const visibleProducts = produtos.filter((item) => {
+    if (categoryFilter && item.categoriaId !== Number(categoryFilter)) return false
+    if (genreFilter && item.bookGenre !== genreFilter) return false
+    return true
+  })
 
   const load = useCallback(() => {
     if (!seboId) {
@@ -80,7 +92,10 @@ export function MeusProdutosPage() {
         if (active) setCategorias(page.content)
       })
       .catch(() => {
-        if (active) setCategorias([])
+        if (active) {
+          setCategorias([])
+          setError('Não foi possível carregar as categorias permitidas.')
+        }
       })
 
     return () => {
@@ -103,6 +118,7 @@ export function MeusProdutosPage() {
       isbn: p.isbn ?? '',
       titulo: p.titulo,
       categoriaId: p.categoriaId ?? undefined,
+      bookGenre: p.bookGenre ?? undefined,
       autor: p.autor ?? '',
       descricao: p.descricao ?? '',
       preco: p.preco,
@@ -129,8 +145,13 @@ export function MeusProdutosPage() {
         setError('Informe um ISBN-10 ou ISBN-13 válido.')
         return
       }
+      if (!form.categoriaId || !allowedCategories.some((category) => category.id === form.categoriaId)) {
+        setError('Selecione uma das quatro categorias permitidas.')
+        return
+      }
       const payload: ProdutoRequest = {
         ...form,
+        bookGenre: bookSelected ? form.bookGenre : undefined,
         isbn: form.isbn ? normalizeIsbn(form.isbn) : undefined,
         preco: Number(form.preco),
         estoque: Number(form.estoque ?? 1),
@@ -231,14 +252,24 @@ export function MeusProdutosPage() {
             <select
               className="vit-input"
               value={form.categoriaId ?? ''}
-              onChange={(e) => update('categoriaId', e.target.value ? Number(e.target.value) : undefined)}
+              required
+              onChange={(e) => setForm((current) => ({ ...current, categoriaId: e.target.value ? Number(e.target.value) : undefined, bookGenre: undefined }))}
             >
-              <option value="">Sem categoria</option>
-              {categorias.map((categoria) => (
+              <option value="">Selecione</option>
+              {allowedCategories.map((categoria) => (
                 <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>
               ))}
             </select>
           </label>
+          {bookSelected ? (
+            <label className="vit-input-wrapper">
+              <span className="vit-input-label">Gênero do livro</span>
+              <select className="vit-input" value={form.bookGenre ?? ''} onChange={(e) => update('bookGenre', e.target.value as BookGenre)}>
+                <option value="">Selecione</option>
+                {BOOK_GENRE_OPTIONS.map((genre) => <option key={genre.value} value={genre.value}>{genre.label}</option>)}
+              </select>
+            </label>
+          ) : null}
           <label className="vit-input-wrapper">
             <span className="vit-input-label">Condição</span>
             <select
@@ -270,13 +301,17 @@ export function MeusProdutosPage() {
         </form>
 
         <h2 className="section-title">Catálogo ({totalProducts})</h2>
+        <div className="produto-filters" aria-label="Filtros do catálogo">
+          <label className="vit-input-wrapper"><span className="vit-input-label">Filtrar por categoria</span><select className="vit-input" value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setGenreFilter('') }}><option value="">Todas</option>{allowedCategories.map((category) => <option key={category.id} value={category.id}>{category.nome}</option>)}</select></label>
+          {isBookCategory(allowedCategories.find((item) => item.id === Number(categoryFilter))) ? <label className="vit-input-wrapper"><span className="vit-input-label">Filtrar por gênero</span><select className="vit-input" value={genreFilter} onChange={(e) => setGenreFilter(e.target.value)}><option value="">Todos</option>{BOOK_GENRE_OPTIONS.map((genre) => <option key={genre.value} value={genre.value}>{genre.label}</option>)}</select></label> : null}
+        </div>
         {loading ? (
           <StoreStatus
             title="Carregando catálogo"
             description="Buscando os produtos do seu catálogo."
             busy
           />
-        ) : produtos.length === 0 ? (
+        ) : visibleProducts.length === 0 ? (
           <StoreStatus
             title="Nenhum produto cadastrado"
             description="Adicione o primeiro item usando o formulário acima para começar seu catálogo."
@@ -290,6 +325,7 @@ export function MeusProdutosPage() {
                   <th scope="col">Título</th>
                   <th scope="col">Autor</th>
                   <th scope="col">Categoria</th>
+                  <th scope="col">Gênero</th>
                   <th scope="col">Preço</th>
                   <th scope="col">Estoque</th>
                   <th scope="col">Condição</th>
@@ -297,11 +333,12 @@ export function MeusProdutosPage() {
                 </tr>
               </thead>
               <tbody>
-                {produtos.map((p) => (
+                {visibleProducts.map((p) => (
                   <tr key={p.id}>
                     <td>{p.titulo}</td>
                     <td>{p.autor ?? '-'}</td>
                     <td>{p.categoriaNome ?? '-'}</td>
+                    <td>{bookGenreLabel(p.bookGenre) ?? '-'}</td>
                     <td>R$ {Number(p.preco).toFixed(2)}</td>
                     <td>{p.estoque ?? 0}</td>
                     <td>{p.condicao}</td>

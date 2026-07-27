@@ -112,7 +112,7 @@ describe('cobertura de branches restantes', () => {
   })
 
   it('mostra erro ao carregar produtos da categoria selecionada', async () => {
-    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'Romance', descricao: 'Livros', slug: 'romance' }] })
+    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'Livros', descricao: 'Livros', slug: 'livros' }] })
     vi.spyOn(produtoService, 'listarPorCategoria').mockRejectedValue(new Error('falha categoria'))
     renderWithParams('/categorias?categoriaId=2', <CategoriesPage />)
 
@@ -121,7 +121,7 @@ describe('cobertura de branches restantes', () => {
   })
 
   it('mostra categoria sem produtos quando nenhuma opcao esta disponivel', async () => {
-    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'Romance', descricao: null, slug: 'romance' }] })
+    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'Livros', descricao: null, slug: 'livros' }] })
     vi.spyOn(produtoService, 'listarPorCategoria').mockResolvedValue({ ...emptyPage, content: [] })
     renderWithParams('/categorias?categoriaId=2', <CategoriesPage />)
 
@@ -460,13 +460,13 @@ describe('cobertura de branches restantes', () => {
 
     const categoriaSelect = screen.getByLabelText('Categoria') as HTMLSelectElement
     expect(categoriaSelect.options).toHaveLength(1)
-    expect(categoriaSelect.options[0].text).toBe('Sem categoria')
+    expect(categoriaSelect.options[0].text).toBe('Selecione')
   })
 
   it('mostra erro ao listar produtos do sebo quando o backend falha', async () => {
     useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
     vi.spyOn(produtoService, 'listarPorSebo').mockRejectedValue(new Error('falha listar'))
-    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [] })
+    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'CDs', slug: 'cds', descricao: null }] })
 
     renderPage(<MeusProdutosPage />)
     expect(await screen.findByRole('alert')).toHaveTextContent('Erro ao listar produtos')
@@ -476,11 +476,12 @@ describe('cobertura de branches restantes', () => {
     useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
     const product = { id: 123, seboId: 3, categoriaId: 2, categoriaNome: 'Romance', titulo: 'Livro Remover', autor: 'Autor', descricao: 'Descrição', preco: 15, estoque: 5, condicao: CondicaoProduto.USADO, fotoUrl: null, ativo: true }
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue({ ...emptyPage, content: [product] })
-    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [] })
+    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'CDs', slug: 'cds', descricao: null }] })
     vi.spyOn(produtoService, 'remover').mockRejectedValue(new Error('falha remover'))
     vi.spyOn(window, 'confirm').mockReturnValue(true)
 
     renderPage(<MeusProdutosPage />)
+    await userEvent.selectOptions(await screen.findByLabelText('Categoria'), '2')
     expect(await screen.findByText('Livro Remover')).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: /Remover/i }))
@@ -506,10 +507,11 @@ describe('cobertura de branches restantes', () => {
   it('mostra erro ao salvar novo produto quando o backend falha', async () => {
     useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue({ ...emptyPage, content: [] })
-    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [] })
+    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'CDs', slug: 'cds', descricao: null }] })
     vi.spyOn(produtoService, 'criar').mockRejectedValue(new Error('falha salvar'))
 
     renderPage(<MeusProdutosPage />)
+    await userEvent.selectOptions(await screen.findByLabelText('Categoria'), '2')
     await userEvent.type(screen.getByLabelText('Título'), 'Livro Novo')
     await userEvent.type(screen.getByLabelText('Preço (R$)'), '10')
     await userEvent.click(screen.getByRole('button', { name: /Adicionar produto/i }))
@@ -548,7 +550,7 @@ describe('cobertura de branches restantes', () => {
     useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
     const product = { id: 124, seboId: 3, categoriaId: 2, categoriaNome: 'Romance', titulo: 'Livro Editar', autor: 'Autor', descricao: 'Descrição', preco: 20, estoque: 4, condicao: CondicaoProduto.USADO, fotoUrl: null, ativo: true }
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue({ ...emptyPage, content: [product] })
-    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'Romance', slug: 'romance', descricao: null }] })
+    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'Livros', slug: 'livros', descricao: null }] })
     vi.spyOn(produtoService, 'atualizar').mockResolvedValue({ ...product, titulo: 'Livro Editado' })
 
     renderPage(<MeusProdutosPage />)

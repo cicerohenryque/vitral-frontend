@@ -30,7 +30,7 @@ import { CondicaoProduto } from '../types/produto'
 import { TipoOperacaoSebo } from '../types/sebo'
 
 const emptyPage = { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20, first: true, last: true }
-const account = { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.USUARIO }
+const account = { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.USUARIO, cpf: '52998224725', cep: '60000000', logradouro: 'Rua A', numero: '1', complemento: null, bairro: 'Centro', cidade: 'Fortaleza', estado: 'CE' }
 const sebo = { id: 3, accountId: 1, nome: 'Sebo Central', email: 'rute@teste.com', descricao: 'Raros', telefone: '9999', fotoUrl: null }
 const produto = { id: 7, seboId: 3, categoriaId: 2, categoriaNome: 'Romance', titulo: 'Livro Teste', autor: 'Autor', descricao: 'Descrição', preco: 25, estoque: 2, condicao: CondicaoProduto.USADO, fotoUrl: null, ativo: true }
 
@@ -139,23 +139,25 @@ describe('paginas principais', () => {
 
   it('atualiza perfil e persiste a nova conta', async () => {
     useAuthStore.setState({ token: 'jwt', account, seboId: null })
+    vi.spyOn(usuarioService, 'buscarPerfil').mockResolvedValue(account)
     vi.spyOn(usuarioService, 'atualizarPerfil').mockResolvedValue({ ...account, name: 'Novo nome' })
     renderAt('/perfil', <PerfilPage />)
-    await userEvent.clear(screen.getByLabelText('Nome de exibição'))
-    await userEvent.type(screen.getByLabelText('Nome de exibição'), 'Novo nome')
-    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }))
+    await userEvent.clear(screen.getByLabelText('Nome'))
+    await userEvent.type(screen.getByLabelText('Nome'), 'Novo nome')
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
     expect(await screen.findByText('Perfil atualizado com sucesso.')).toBeInTheDocument()
     expect(useAuthStore.getState().account?.name).toBe('Novo nome')
   })
 
   it('mostra erro quando a atualizacao de perfil falha', async () => {
     useAuthStore.setState({ token: 'jwt', account, seboId: null })
+    vi.spyOn(usuarioService, 'buscarPerfil').mockResolvedValue(account)
     vi.spyOn(usuarioService, 'atualizarPerfil').mockRejectedValue(new Error('erro'))
     renderAt('/perfil', <PerfilPage />)
 
-    await userEvent.clear(screen.getByLabelText('Nome de exibição'))
-    await userEvent.type(screen.getByLabelText('Nome de exibição'), 'Novo nome')
-    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }))
+    await userEvent.clear(screen.getByLabelText('Nome'))
+    await userEvent.type(screen.getByLabelText('Nome'), 'Novo nome')
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Falha ao atualizar perfil')
   })
@@ -386,15 +388,15 @@ describe('paginas principais', () => {
   })
 
   it('carrega categorias e mostra produtos da categoria selecionada', async () => {
-    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 1, nome: 'Romance', slug: 'romance', descricao: 'Livros antigos' }, { id: 2, nome: 'História', slug: 'historia', descricao: 'Livros de história' }] })
+    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 1, nome: 'Livros', slug: 'livros', descricao: 'Livros antigos' }, { id: 2, nome: 'CDs', slug: 'cds', descricao: 'Música em CD' }] })
     vi.spyOn(produtoService, 'listarPorCategoria').mockResolvedValue({ ...emptyPage, content: [produto], totalElements: 1 })
     renderAt('/categorias', <CategoriesPage />)
 
-    expect(await screen.findByRole('button', { name: /Romance/ })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /História/ })).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: /História/ }))
+    expect(await screen.findByRole('button', { name: /Livros/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /CDs/ })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /CDs/ }))
 
-    expect(await screen.findByRole('heading', { name: 'Produtos em História' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Produtos em CDs' })).toBeInTheDocument()
     expect(await screen.findByRole('link', { name: /Livro Teste/ })).toHaveAttribute('href', '/produto/7')
   })
 

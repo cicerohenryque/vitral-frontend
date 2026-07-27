@@ -74,17 +74,17 @@ describe('fluxos integrados do front', () => {
   it('nao busca categoria 0 e carrega produtos somente apos selecionar categoria', async () => {
     vi.spyOn(categoriaService, 'listar').mockResolvedValue({
       ...emptyPage,
-      content: [{ id: 2, nome: 'Romance', slug: 'romance', descricao: null }],
+      content: [{ id: 2, nome: 'Livros', slug: 'livros', descricao: null }],
     })
     vi.spyOn(produtoService, 'listarPorCategoria').mockResolvedValue(emptyPage)
     renderPage(<CategoriesPage />)
 
-    expect(await screen.findByRole('button', { name: /Romance/ })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /Livros/ })).toBeInTheDocument()
     expect(produtoService.listarPorCategoria).not.toHaveBeenCalled()
 
-    await userEvent.click(screen.getByRole('button', { name: /Romance/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Livros/ }))
 
-    await waitFor(() => expect(produtoService.listarPorCategoria).toHaveBeenCalledWith(2))
+    await waitFor(() => expect(produtoService.listarPorCategoria).toHaveBeenCalledWith(2, 0, 20, undefined))
     expect(await screen.findByText('Nenhum produto nesta categoria')).toBeInTheDocument()
   })
 

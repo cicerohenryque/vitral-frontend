@@ -68,7 +68,7 @@ describe('roteamento e estados preenchidos', () => {
 
   it('edita, cancela e remove produto do catalogo', async () => {
     useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Sebo', username: 'sebo', email: 's@t.com', type: AccountType.SEBO }, seboId: 3 })
-    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'Romance', slug: 'romance', descricao: null }] })
+    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'Livros', slug: 'livros', descricao: null }] })
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue({ ...emptyPage, content: [produto] })
     vi.spyOn(produtoService, 'atualizar').mockResolvedValue(produto)
     vi.spyOn(produtoService, 'remover').mockResolvedValue()

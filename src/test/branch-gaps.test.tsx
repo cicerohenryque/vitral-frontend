@@ -402,7 +402,7 @@ describe('MeusProdutosPage — branches adicionais', () => {
 
   it('seleciona categoria "Sem categoria" ao escolher opcao vazia', async () => {
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue({ ...emptyPage, content: [] })
-    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'Romance', slug: 'romance', descricao: null }] })
+    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'Livros', slug: 'livros', descricao: null }] })
 
     renderPage(<MeusProdutosPage />)
     await waitFor(() => expect(categoriaService.listar).toHaveBeenCalled())

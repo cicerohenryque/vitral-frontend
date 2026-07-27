@@ -10,6 +10,7 @@ export type ProdutoRequest = {
   isbn?: string
   titulo: string
   categoriaId?: number
+  bookGenre?: BookGenre
   autor?: string
   descricao?: string
   preco: number
@@ -23,6 +24,7 @@ export type Produto = {
   seboId: number
   categoriaId: number | null
   categoriaNome: string | null
+  bookGenre?: BookGenre | null
   catalogoLivroId?: number | null
   isbn?: string | null
   titulo: string
@@ -55,3 +57,4 @@ export type ProdutoVendedor = {
   estoque: number
   condicao: CondicaoProduto
 }
+import type { BookGenre } from '../constants/productCatalog'

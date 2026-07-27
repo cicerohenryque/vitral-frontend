@@ -44,20 +44,21 @@ describe('fluxos de upload de imagem', () => {
       email: 'rute@teste.com',
       type: AccountType.USUARIO,
       fotoUrl: null,
+      cpf: '52998224725', cep: '60000000', logradouro: 'Rua A', numero: '1', complemento: null, bairro: 'Centro', cidade: 'Fortaleza', estado: 'CE',
     }
     useAuthStore.setState({ token: 'jwt', account, seboId: null })
+    vi.spyOn(usuarioService, 'buscarPerfil').mockResolvedValue(account)
     vi.spyOn(usuarioService, 'atualizarPerfil').mockResolvedValue({ ...account, fotoUrl: uploadedUrl })
 
     renderPage(<PerfilPage />)
     const file = new File(['imagem'], 'perfil.png', { type: 'image/png' })
     await userEvent.upload(screen.getByLabelText('Foto do perfil'), file)
-    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
 
     expect(uploadService.uploadImage).toHaveBeenCalledWith(file)
-    await waitFor(() => expect(usuarioService.atualizarPerfil).toHaveBeenCalledWith({
-      name: 'Rute',
-      fotoUrl: uploadedUrl,
-    }))
+    await waitFor(() => expect(usuarioService.atualizarPerfil).toHaveBeenCalledWith(expect.objectContaining({
+      name: 'Rute', fotoUrl: uploadedUrl, cpf: '52998224725', cep: '60000000',
+    })))
     expect(useAuthStore.getState().account?.fotoUrl).toBe(uploadedUrl)
   })
 
@@ -96,7 +97,7 @@ describe('fluxos de upload de imagem', () => {
   it('inclui a URL enviada ao cadastrar um produto', async () => {
     const account = { id: 2, name: 'Sebo', username: 'sebo', email: 'sebo@teste.com', type: AccountType.SEBO }
     useAuthStore.setState({ token: 'jwt', account, seboId: 3 })
-    vi.spyOn(categoriaService, 'listar').mockResolvedValue(emptyPage)
+    vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'CDs', slug: 'cds', descricao: null }] })
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue(emptyPage)
     vi.spyOn(produtoService, 'criar').mockResolvedValue({
       id: 7,
@@ -120,6 +121,7 @@ describe('fluxos de upload de imagem', () => {
     await userEvent.type(screen.getByLabelText('Preço (R$)'), '25')
     const file = new File(['imagem'], 'produto.jpg', { type: 'image/jpeg' })
     await userEvent.upload(screen.getByLabelText('Foto do produto'), file)
+    await userEvent.selectOptions(screen.getByLabelText('Categoria'), '2')
     await userEvent.click(screen.getByRole('button', { name: 'Adicionar produto' }))
 
     await waitFor(() => expect(produtoService.criar).toHaveBeenCalledWith(

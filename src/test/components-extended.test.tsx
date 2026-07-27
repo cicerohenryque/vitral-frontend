@@ -115,7 +115,7 @@ describe('componentes pequenos e interações', () => {
     expect(container.querySelector('.icon-cart')).toBeInTheDocument()
   })
 
-  it('renderiza carousel com produto, navegação e vazio personalizado', async () => {
+  it('renderiza carousel sem navegação quando todos os produtos estão visíveis e mostra vazio personalizado', async () => {
     const scrollBy = vi.fn()
     Object.defineProperty(HTMLElement.prototype, 'scrollBy', { configurable: true, value: scrollBy })
 
@@ -126,9 +126,9 @@ describe('componentes pequenos e interações', () => {
     )
 
     expect(screen.getByRole('heading', { name: 'Vitrine' })).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Próximo' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Anterior' }))
-    expect(scrollBy).toHaveBeenCalledTimes(2)
+    expect(screen.queryByRole('button', { name: 'Próximo' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Anterior' })).not.toBeInTheDocument()
+    expect(scrollBy).not.toHaveBeenCalled()
 
     rerender(
       <MemoryRouter>
@@ -137,6 +137,24 @@ describe('componentes pequenos e interações', () => {
     )
 
     expect(screen.getByText('Sem produtos')).toBeInTheDocument()
+  })
+
+  it('recalcula a navegação conforme a quantidade visível no tamanho da tela', async () => {
+    const products = Array.from({ length: 4 }, (_, index) => ({ ...produto, id: index + 1, titulo: `Produto ${index + 1}` }))
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 800 })
+
+    const { rerender } = render(<MemoryRouter><ProductCarousel title="Responsivo" produtos={products} /></MemoryRouter>)
+    expect(screen.getByRole('button', { name: 'Próximo' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Anterior' })).toBeInTheDocument()
+
+    act(() => {
+      window.innerWidth = 1000
+      window.dispatchEvent(new Event('resize'))
+    })
+    expect(screen.queryByRole('button', { name: 'Próximo' })).not.toBeInTheDocument()
+
+    rerender(<MemoryRouter><ProductCarousel title="Responsivo" produtos={[...products, { ...produto, id: 5 }, { ...produto, id: 6 }]} /></MemoryRouter>)
+    expect(screen.getByRole('button', { name: 'Próximo' })).toBeInTheDocument()
   })
 
   it('renderiza menu lateral para visitante, usuário e sebo', () => {

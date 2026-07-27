@@ -123,7 +123,7 @@ describe('ramos alternativos e interacoes', () => {
     Object.defineProperty(HTMLElement.prototype, 'scrollBy', { configurable: true, value: scrollBy })
     renderRoute('/', '*', <>
       <StorePage title="Teste" subtitle="Sub"><ProductPlaceholder label="Item" badge="Novo" /><StoreStatus title="Pronto" description="Ok" tone="success" /></StorePage>
-      <ProductCarousel title="Vitrine" produtos={[produto]} />
+      <ProductCarousel title="Vitrine" produtos={Array.from({ length: 6 }, (_, index) => ({ ...produto, id: index + 1 }))} />
     </>)
     await userEvent.type(screen.getByRole('textbox', { name: 'Pesquisar' }), 'romance')
     await userEvent.click(screen.getByRole('button', { name: 'Pesquisar' }))

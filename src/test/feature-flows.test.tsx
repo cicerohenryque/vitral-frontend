@@ -264,7 +264,7 @@ describe('funcionalidades principais do front', () => {
   it('cadastra produto com estoque e categoria no painel do sebo', async () => {
     authenticate(AccountType.SEBO, 3)
     vi.spyOn(categoriaService, 'listar').mockResolvedValue({
-      ...emptyPage, content: [{ id: 4, nome: 'Romance', slug: 'romance', descricao: null }],
+      ...emptyPage, content: [{ id: 4, nome: 'Livros', slug: 'livros', descricao: null }],
     })
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue(emptyPage)
     vi.spyOn(produtoService, 'criar').mockResolvedValue(produto())

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { Produto } from '../types/produto'
 import './ProductCard.css'
+import { bookGenreLabel } from '../constants/productCatalog'
 
 type Props = {
   produto?: Produto
@@ -29,6 +30,7 @@ export function ProductCard({ produto }: Props) {
         <strong>{produto.titulo}</strong>
         {produto.seboVerificado ? <small>✓ Sebo verificado</small> : null}
         {produto.categoriaNome ? <small>{produto.categoriaNome}</small> : null}
+        {produto.bookGenre ? <small>Gênero: {bookGenreLabel(produto.bookGenre) ?? produto.bookGenre}</small> : null}
         {produto.precoPromocional != null && Number(produto.precoPromocional) < Number(produto.preco) ? (
           <span>
             <s style={{ opacity: 0.6, marginRight: 6 }}>R$ {Number(produto.preco).toFixed(2)}</s>

@@ -11,6 +11,7 @@ import type { Produto, ProdutoVendedor } from '../../types/produto'
 import type { Sebo } from '../../types/sebo'
 import { formatDateBR } from '../../utils/date'
 import './ProductPage.css'
+import { bookGenreLabel } from '../../constants/productCatalog'
 
 const formatBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 
@@ -198,6 +199,7 @@ export function ProductPage() {
             {produto.isbn ? <div><dt>ISBN</dt><dd>{produto.isbn}</dd></div> : null}
             <div><dt>Estado</dt><dd>{produto.condicao}</dd></div>
             <div><dt>Categoria</dt><dd>{produto.categoriaNome ?? 'Nao informada'}</dd></div>
+            {produto.bookGenre ? <div><dt>Gênero</dt><dd>{bookGenreLabel(produto.bookGenre) ?? produto.bookGenre}</dd></div> : null}
             <div><dt>Autor</dt><dd>{produto.autor ?? 'Nao informado'}</dd></div>
             <div><dt>Estoque</dt><dd>{produto.estoque ?? 0}</dd></div>
             <div><dt>Disponibilidade</dt><dd>{produto.ativo && Number(produto.estoque ?? 0) > 0 ? 'Disponivel' : 'Indisponivel'}</dd></div>

@@ -21,11 +21,6 @@ export function HomePage() {
       // Conta de sebo: nunca mostrar o catalogo de outros sebos, mesmo antes do
       // perfil proprio ser cadastrado/carregado (nesse caso, a vitrine fica vazia).
       if (!seboId) {
-        setRecentes([])
-        setClassicos([])
-        setError(null)
-        setLoadingRecentes(false)
-        setLoadingClassicos(false)
         return () => {
           active = false
         }
@@ -91,12 +86,14 @@ export function HomePage() {
     }
   }, [isSebo, seboId])
 
+  const awaitingSeboProfile = isSebo && !seboId
+
   return (
     <div className="page">
       <main className="container">
-        {error ? <div className="flash error" role="alert">{error}</div> : null}
-        <ProductCarousel title="Produtos disponíveis" produtos={recentes} loading={loadingRecentes} />
-        <ProductCarousel title="Clássicos" produtos={classicos} loading={loadingClassicos} />
+        {!awaitingSeboProfile && error ? <div className="flash error" role="alert">{error}</div> : null}
+        <ProductCarousel title="Produtos disponíveis" produtos={awaitingSeboProfile ? [] : recentes} loading={awaitingSeboProfile ? false : loadingRecentes} />
+        <ProductCarousel title="Clássicos" produtos={awaitingSeboProfile ? [] : classicos} loading={awaitingSeboProfile ? false : loadingClassicos} />
       </main>
     </div>
   )

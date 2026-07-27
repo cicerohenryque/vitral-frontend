@@ -14,6 +14,27 @@ export type Account = {
   type: AccountType
   fotoUrl?: string | null
   emailVerificado?: boolean
+  cpf?: string | null
+  cep?: string | null
+  logradouro?: string | null
+  numero?: string | null
+  complemento?: string | null
+  bairro?: string | null
+  cidade?: string | null
+  estado?: string | null
+}
+
+export type UpdateProfileRequest = {
+  name: string
+  fotoUrl?: string
+  cpf: string
+  cep: string
+  logradouro: string
+  numero: string
+  complemento?: string
+  bairro: string
+  cidade: string
+  estado: string
 }
 
 export type RegisterRequest = {

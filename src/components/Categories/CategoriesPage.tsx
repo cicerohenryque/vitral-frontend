@@ -8,6 +8,7 @@ import { produtoService } from '../../services/produtoService'
 import type { Categoria } from '../../types/categoria'
 import type { Produto } from '../../types/produto'
 import './CategoriesPage.css'
+import { BOOK_GENRE_OPTIONS, getAllowedCategories, isBookCategory, type BookGenre } from '../../constants/productCatalog'
 
 export function CategoriesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -22,6 +23,7 @@ export function CategoriesPage() {
   const [loadingProducts, setLoadingProducts] = useState(hasSelectedCategory)
   const [error, setError] = useState<string | null>(null)
   const [productError, setProductError] = useState<string | null>(null)
+  const selectedGenre = (searchParams.get('bookGenre') || '') as BookGenre | ''
 
   const selectedCategory = categories.find((category) => category.id === selectedId)
 
@@ -37,7 +39,7 @@ export function CategoriesPage() {
       .listar()
       .then((page) => {
         if (!active) return
-        setCategories(page.content)
+        setCategories(getAllowedCategories(page.content))
         setError(null)
       })
       .catch((err) => {
@@ -59,7 +61,7 @@ export function CategoriesPage() {
     }
 
     produtoService
-      .listarPorCategoria(selectedId)
+      .listarPorCategoria(selectedId, 0, 20, selectedGenre || undefined)
       .then((page) => {
         if (!active) return
         setProducts(page.content)
@@ -74,12 +76,21 @@ export function CategoriesPage() {
     return () => {
       active = false
     }
-  }, [hasSelectedCategory, selectedId])
+  }, [hasSelectedCategory, selectedId, selectedGenre])
 
   function selectCategory(category: Categoria) {
     setLoadingProducts(true)
     setProductError(null)
     setSearchParams({ categoriaId: String(category.id) })
+  }
+
+  function selectGenre(value: string) {
+    setLoadingProducts(true)
+    setProductError(null)
+    const next = new URLSearchParams(searchParams)
+    if (value) next.set('bookGenre', value)
+    else next.delete('bookGenre')
+    setSearchParams(next)
   }
 
   return (
@@ -128,6 +139,14 @@ export function CategoriesPage() {
               <h2 className="section-title">
                 {selectedCategory ? `Produtos em ${selectedCategory.nome}` : 'Produtos da categoria'}
               </h2>
+              {isBookCategory(selectedCategory) ? (
+                <label className="category-genre-filter">Gênero do livro
+                  <select value={selectedGenre} onChange={(event) => selectGenre(event.target.value)}>
+                    <option value="">Todos</option>
+                    {BOOK_GENRE_OPTIONS.map((genre) => <option key={genre.value} value={genre.value}>{genre.label}</option>)}
+                  </select>
+                </label>
+              ) : null}
               {loadingProducts ? (
                 <StoreStatus title="Carregando produtos" description="Buscando produtos desta categoria." busy />
               ) : productError ? (

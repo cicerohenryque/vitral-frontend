@@ -44,7 +44,7 @@ describe('contratos completos dos servicos', () => {
     await pedidoService.buscarFaturamentoMensal(2026)
     await seboService.criar({ cnpj: '12345678000199', descricao: 'Livros' })
     await seboService.atualizarMeu({ cnpj: '12345678000199', descricao: 'Livros raros' })
-    await usuarioService.atualizarPerfil({ name: 'Novo' })
+    await usuarioService.atualizarPerfil({ name: 'Novo', cpf: '52998224725', cep: '60000000', logradouro: 'Rua A', numero: '1', bairro: 'Centro', cidade: 'Fortaleza', estado: 'CE' })
     await usuarioService.excluirConta()
     expect(api.post).toHaveBeenCalledWith('/cesta/7', null, { params: { quantidade: 2 } })
     expect(api.put).toHaveBeenCalledWith('/produtos/7', { titulo: 'Novo' })

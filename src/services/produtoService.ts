@@ -1,6 +1,7 @@
 import { api } from './api'
 import type { Page } from '../types/common'
 import type { Produto, ProdutoRequest, ProdutoVendedor, VendaFisicaResponse } from '../types/produto'
+import type { BookGenre } from '../constants/productCatalog'
 
 export const produtoService = {
   async criar(payload: ProdutoRequest): Promise<Produto> {
@@ -41,9 +42,9 @@ export const produtoService = {
     return data
   },
 
-  async listarPorCategoria(categoriaId: number, page = 0, size = 20): Promise<Page<Produto>> {
+  async listarPorCategoria(categoriaId: number, page = 0, size = 20, bookGenre?: BookGenre): Promise<Page<Produto>> {
     const { data } = await api.get<Page<Produto>>(`/produtos/categoria/${categoriaId}`, {
-      params: { page, size },
+      params: { page, size, bookGenre },
     })
     return data
   },
