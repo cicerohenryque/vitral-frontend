@@ -1,9 +1,11 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { HomePage } from '../pages/HomePage'
 import { buscaService } from '../services/buscaService'
 import { produtoService } from '../services/produtoService'
+import { useAuthStore } from '../store/authStore'
+import { AccountType } from '../types/account'
 
 const pageVazia = {
   content: [],
@@ -101,5 +103,53 @@ describe('HomePage', () => {
     expect(screen.getByText('Produtos disponíveis')).toBeInTheDocument()
     expect(screen.getByText('Clássicos')).toBeInTheDocument()
     expect(await screen.findAllByText('Nenhum produto para exibir.')).toHaveLength(2)
+  })
+})
+
+describe('HomePage — conta de sebo', () => {
+  beforeEach(() => {
+    vi.spyOn(buscaService, 'buscarProdutos')
+    vi.spyOn(produtoService, 'listarClassicos')
+    vi.spyOn(produtoService, 'listarPorSebo')
+  })
+
+  afterEach(() => {
+    useAuthStore.setState({ token: null, account: null, seboId: null })
+  })
+
+  it('mostra apenas os produtos do proprio sebo quando o seboId ja foi resolvido', async () => {
+    useAuthStore.setState({
+      token: 'jwt',
+      account: { id: 9, name: 'Sebo Teste', username: 'sebo.teste', email: 'sebo@teste.com', type: AccountType.SEBO },
+      seboId: 42,
+    })
+    vi.mocked(buscaService.buscarProdutos).mockResolvedValue(pageProdutos('Livro do Sebo'))
+    vi.mocked(produtoService.listarPorSebo).mockResolvedValue(pageProdutos('Classico do Sebo'))
+
+    renderHome()
+
+    expect(await screen.findByText('Livro do Sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Classico do Sebo')).toBeInTheDocument()
+    expect(buscaService.buscarProdutos).toHaveBeenCalledWith({ seboId: 42 }, 0, 12)
+    expect(produtoService.listarPorSebo).toHaveBeenCalledWith(42, 0, 12, 'createdAt,asc')
+    expect(produtoService.listarClassicos).not.toHaveBeenCalled()
+  })
+
+  it('nao mostra produtos de outros sebos quando o sebo ainda nao cadastrou o proprio perfil', async () => {
+    useAuthStore.setState({
+      token: 'jwt',
+      account: { id: 9, name: 'Sebo Novo', username: 'sebo.novo', email: 'novo@teste.com', type: AccountType.SEBO },
+      seboId: null,
+    })
+    vi.mocked(buscaService.buscarProdutos).mockResolvedValue(pageProdutos('Livro de outro sebo'))
+    vi.mocked(produtoService.listarClassicos).mockResolvedValue(pageProdutos('Classico de outro sebo'))
+
+    renderHome()
+
+    expect(await screen.findAllByText('Nenhum produto para exibir.')).toHaveLength(2)
+    expect(screen.queryByText('Livro de outro sebo')).not.toBeInTheDocument()
+    expect(screen.queryByText('Classico de outro sebo')).not.toBeInTheDocument()
+    expect(buscaService.buscarProdutos).not.toHaveBeenCalled()
+    expect(produtoService.listarClassicos).not.toHaveBeenCalled()
   })
 })

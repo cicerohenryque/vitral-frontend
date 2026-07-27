@@ -13,7 +13,7 @@ import { AccountType } from '../types/account'
 import { CondicaoProduto } from '../types/produto'
 
 const emptyPage = { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20, first: true, last: true }
-const account = { id: 1, name: 'Sebo Virtual', email: 'sebo@vitral.com', type: AccountType.SEBO }
+const account = { id: 1, name: 'Sebo Virtual', username: 'sebo.virtual', email: 'sebo@vitral.com', type: AccountType.SEBO }
 const sebo = { id: 3, accountId: 1, nome: 'Sebo Virtual', email: account.email, descricao: 'Online', telefone: '9999', fotoUrl: null }
 const produto = {
   id: 7,

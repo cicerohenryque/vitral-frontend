@@ -66,6 +66,7 @@ export type Sebo = {
   confirmado?: boolean | null
   dataCriacao?: string | null
   ultimaAtividade?: string | null
+  distanciaKm?: number | null
 }
 
 export const TipoDocumentoSebo = {

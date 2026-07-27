@@ -3,7 +3,9 @@
   --store-accent: var(--color-accent-soft);
   --store-card: var(--color-surface);
   min-height: 100svh;
-  padding: 28px 5.8vw 70px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 24px 70px;
   background: var(--store-bg);
   color: var(--color-text);
   font-family: var(--font-serif);
@@ -604,7 +606,7 @@
 
 @media (max-width: 800px) {
   .store-page {
-    padding: 22px 20px 50px;
+    padding: 22px 18px 50px;
   }
 
   .store-header .vitral-logo {

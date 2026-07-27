@@ -19,6 +19,7 @@ export function AuthPage() {
   const [loginBusy, setLoginBusy] = useState(false)
 
   const [regName, setRegName] = useState('')
+  const [regUsername, setRegUsername] = useState('')
   const [regEmail, setRegEmail] = useState('')
   const [regPassword, setRegPassword] = useState('')
   const [regConfirm, setRegConfirm] = useState('')
@@ -26,6 +27,16 @@ export function AuthPage() {
   const [regError, setRegError] = useState<string | null>(null)
   const [regBusy, setRegBusy] = useState(false)
   const [regSuccess, setRegSuccess] = useState<string | null>(null)
+
+  function sanitizeUsername(valor: string) {
+    return valor
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/\s+/g, '.')
+      .replace(/[^a-z0-9._-]/g, '')
+      .slice(0, 30)
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -36,10 +47,10 @@ export function AuthPage() {
       login(res.token, res.account)
       if (res.account.type === AccountType.SEBO) {
         try {
-          const sebo = await seboService.buscarPorConta(res.account.id, res.account.name, res.account.email)
-          if (sebo) setSeboId(sebo.id)
+          const sebo = await seboService.buscarMeu()
+          setSeboId(sebo.id)
         } catch {
-          // The user can still create or recover the sebo profile from the panel.
+          // Ainda nao existe perfil cadastrado; o usuario pode criar no painel.
         }
       }
       navigate('/')
@@ -65,6 +76,7 @@ export function AuthPage() {
     try {
       const res = await authService.register({
         name: regName,
+        username: regUsername,
         email: regEmail,
         password: regPassword,
         type: regType,
@@ -132,9 +144,20 @@ export function AuthPage() {
             {regError ? <div className="flash error" role="alert">{regError}</div> : null}
             <Input
               id="reg-name"
-              label="Usuário:"
+              label="Nome:"
+              placeholder="Como você quer ser chamado no Vitral"
               value={regName}
               onChange={(e) => setRegName(e.target.value)}
+              required
+            />
+            <Input
+              id="reg-username"
+              label="Usuário (login):"
+              placeholder="apenas letras minúsculas, números, ponto, hífen ou underline"
+              value={regUsername}
+              onChange={(e) => setRegUsername(sanitizeUsername(e.target.value))}
+              minLength={3}
+              maxLength={30}
               required
             />
             <Input

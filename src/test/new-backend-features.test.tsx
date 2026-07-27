@@ -26,7 +26,7 @@ describe('novos contratos do backend', () => {
   })
 
   it('escolhe vendedor e adiciona o produto correspondente à cesta', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Cliente', email: 'c@x.com', type: AccountType.USUARIO }, seboId: null })
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Cliente', username: 'cliente', email: 'c@x.com', type: AccountType.USUARIO }, seboId: null })
     vi.spyOn(produtoService, 'buscarPorId').mockResolvedValue({ id: 10, seboId: 2, categoriaId: null, categoriaNome: null, isbn: '9780306406157', titulo: 'Livro', autor: null, descricao: null, preco: 50, estoque: 3, condicao: CondicaoProduto.USADO, fotoUrl: null, ativo: true })
     vi.spyOn(produtoService, 'listarVendedores').mockResolvedValue([
       { produtoId: 10, seboId: 2, seboNome: 'Sebo A', preco: 50, precoPromocional: 40, precoEfetivo: 40, estoque: 3, condicao: CondicaoProduto.USADO },
@@ -116,15 +116,15 @@ describe('novos contratos do backend', () => {
   })
 
   it('impede usuário comum de acessar rota ADMIN', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Cliente', email: 'c@x.com', type: AccountType.USUARIO }, seboId: null })
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Cliente', username: 'cliente', email: 'c@x.com', type: AccountType.USUARIO }, seboId: null })
     render(<MemoryRouter initialEntries={['/admin']}><Routes><Route path="/" element={<p>Início</p>} /><Route path="/admin" element={<ProtectedRoute requireRole={AccountType.ADMIN}><p>Painel admin</p></ProtectedRoute>} /></Routes></MemoryRouter>)
     await waitFor(() => expect(screen.getByText('Início')).toBeInTheDocument())
     expect(screen.queryByText('Painel admin')).not.toBeInTheDocument()
   })
 
   it('consulta o CNPJ e exibe razão social e status retornados pelo backend', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 2, name: 'Sebo', email: 's@x.com', type: AccountType.SEBO }, seboId: 3 })
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({ id: 3, accountId: 2, nome: 'Sebo', email: 's@x.com', cnpj: '12345678000199', statusVerificacao: StatusVerificacao.PENDENTE, statusConsultaCnpj: StatusConsultaCnpj.NAO_CONSULTADO, motivoRejeicao: null, descricao: null, telefone: null, fotoUrl: null })
+    useAuthStore.setState({ token: 'jwt', account: { id: 2, name: 'Sebo', username: 'sebo', email: 's@x.com', type: AccountType.SEBO }, seboId: 3 })
+    vi.spyOn(seboService, 'buscarMeu').mockResolvedValue({ id: 3, accountId: 2, nome: 'Sebo', email: 's@x.com', cnpj: '12345678000199', statusVerificacao: StatusVerificacao.PENDENTE, statusConsultaCnpj: StatusConsultaCnpj.NAO_CONSULTADO, motivoRejeicao: null, descricao: null, telefone: null, fotoUrl: null })
     vi.spyOn(pedidoService, 'buscarFaturamentoMensal').mockResolvedValue([])
     const consult = vi.spyOn(seboService, 'consultarMeuCnpj').mockResolvedValue({ cnpj: '12345678000199', razaoSocial: 'VITRAL LIVROS LTDA', status: StatusConsultaCnpj.ATIVA, consultadoEm: '2026-07-05T10:00:00Z', mensagem: 'Consulta realizada' })
     render(<MemoryRouter><MeuSeboPage /></MemoryRouter>)

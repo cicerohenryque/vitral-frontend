@@ -15,10 +15,12 @@
 .topbar-message {
   font-weight: 600;
   font-size: 13px;
+  line-height: 1;
 }
 .topbar-help {
   font-weight: 600;
   font-size: 13px;
+  line-height: 1;
   opacity: 0.86;
 }
 .topbar-help:hover { opacity: 1; }

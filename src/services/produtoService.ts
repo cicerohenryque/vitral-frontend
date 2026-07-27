@@ -34,9 +34,9 @@ export const produtoService = {
     return data
   },
 
-  async listarPorSebo(seboId: number, page = 0, size = 10): Promise<Page<Produto>> {
+  async listarPorSebo(seboId: number, page = 0, size = 10, sort?: string): Promise<Page<Produto>> {
     const { data } = await api.get<Page<Produto>>(`/produtos/sebo/${seboId}`, {
-      params: { page, size },
+      params: { page, size, sort },
     })
     return data
   },

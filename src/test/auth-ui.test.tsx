@@ -61,5 +61,5 @@ function authenticate(currentAccount: Account) {
 }
 
 function account(type: AccountType): Account {
-  return { id: 1, name: 'Conta Teste', email: 'conta@teste.com', type }
+  return { id: 1, name: 'Conta Teste', username: 'conta.teste', email: 'conta@teste.com', type }
 }

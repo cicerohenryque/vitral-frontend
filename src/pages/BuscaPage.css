@@ -196,6 +196,47 @@
   margin-top: 2px;
 }
 
+.busca-sebo-distancia {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-top: 6px;
+}
+
+.busca-proximidade {
+  margin-bottom: 16px;
+}
+
+.busca-proximidade-btn {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-text);
+  transition: background 0.15s;
+}
+
+.busca-proximidade-btn:hover { background: var(--color-beige); }
+.busca-proximidade-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.busca-proximidade-btn-ativo {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent-soft);
+}
+
+.busca-proximidade-erro {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--color-danger, #b3261e);
+  margin-top: 6px;
+}
+
 .busca-sebo-desc {
   color: var(--color-text);
   margin-top: 6px;

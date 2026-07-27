@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Header } from '../components/Header'
-import { TopBar } from '../components/TopBar'
 import { Button } from '../components/ui/Button'
 import { ImageUploadField } from '../components/ui/ImageUploadField'
 import { Input } from '../components/ui/Input'
@@ -40,8 +38,6 @@ export function PerfilPage() {
 
   return (
     <div className="page">
-      <TopBar />
-        <Header />
       <main className="container form-page">
         <h1 className="form-page-title">Meu Perfil</h1>
         {erro ? <div className="flash error" role="alert">{erro}</div> : null}

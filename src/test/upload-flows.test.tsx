@@ -40,6 +40,7 @@ describe('fluxos de upload de imagem', () => {
     const account = {
       id: 1,
       name: 'Rute',
+      username: 'rute',
       email: 'rute@teste.com',
       type: AccountType.USUARIO,
       fotoUrl: null,
@@ -61,7 +62,7 @@ describe('fluxos de upload de imagem', () => {
   })
 
   it('inclui a URL enviada ao cadastrar o sebo', async () => {
-    const account = { id: 2, name: 'Sebo', email: 'sebo@teste.com', type: AccountType.SEBO }
+    const account = { id: 2, name: 'Sebo', username: 'sebo', email: 'sebo@teste.com', type: AccountType.SEBO }
     const savedSebo = {
       id: 3,
       accountId: 2,
@@ -77,8 +78,7 @@ describe('fluxos de upload de imagem', () => {
       fotoUrl: uploadedUrl,
     }
     useAuthStore.setState({ token: 'jwt', account, seboId: null })
-    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(null)
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(savedSebo)
+    vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('Sebo nao encontrado'))
     vi.spyOn(seboService, 'criar').mockResolvedValue(savedSebo)
 
     renderPage(<MeuSeboPage />)
@@ -94,7 +94,7 @@ describe('fluxos de upload de imagem', () => {
   })
 
   it('inclui a URL enviada ao cadastrar um produto', async () => {
-    const account = { id: 2, name: 'Sebo', email: 'sebo@teste.com', type: AccountType.SEBO }
+    const account = { id: 2, name: 'Sebo', username: 'sebo', email: 'sebo@teste.com', type: AccountType.SEBO }
     useAuthStore.setState({ token: 'jwt', account, seboId: 3 })
     vi.spyOn(categoriaService, 'listar').mockResolvedValue(emptyPage)
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue(emptyPage)

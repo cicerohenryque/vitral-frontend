@@ -22,7 +22,7 @@ describe('contratos completos dos servicos', () => {
   })
 
   it('cobre autenticacao e busca', async () => {
-    await authService.register({ name: 'R', email: 'r@t.com', password: '12345678', type: AccountType.USUARIO })
+    await authService.register({ name: 'R', username: 'r', email: 'r@t.com', password: '12345678', type: AccountType.USUARIO })
     await authService.login({ login: 'r@t.com', password: '12345678' })
     await authService.logout()
     await authService.confirmarEmail('abc')
@@ -52,21 +52,18 @@ describe('contratos completos dos servicos', () => {
     expect(api.get).toHaveBeenCalledWith('/pedidos/faturamento-mensal', { params: { ano: 2026 } })
   })
 
-  it('localiza sebo por conta, email ou retorna nulo', async () => {
+  it('busca o proprio perfil de sebo via /sebos/me', async () => {
     const get = vi.mocked(api.get)
-    get.mockResolvedValueOnce({ data: { content: [{ id: 1, accountId: 9, email: 'a@a.com' }] } } as never)
-    expect((await seboService.buscarPorConta(9, 'Nome', 'x@x.com'))?.id).toBe(1)
-    get.mockResolvedValueOnce({ data: { content: [{ id: 2, accountId: 8, email: 'x@x.com' }] } } as never)
-    expect((await seboService.buscarPorConta(9, 'Nome', 'x@x.com'))?.id).toBe(2)
-    get.mockResolvedValueOnce({ data: { content: [] } } as never)
-    expect(await seboService.buscarPorConta(9, 'Nome', 'x@x.com')).toBeNull()
+    get.mockResolvedValueOnce({ data: { id: 1, accountId: 9, email: 'a@a.com' } } as never)
+    expect((await seboService.buscarMeu()).id).toBe(1)
+    expect(get).toHaveBeenCalledWith('/sebos/me')
   })
 })
 
 describe('persistencia da autenticacao', () => {
   it('persiste login, conta, sebo e limpa no logout mesmo com falha remota', async () => {
     vi.spyOn(api, 'post').mockRejectedValue(new Error('offline'))
-    const account = { id: 1, name: 'Rute', email: 'r@t.com', type: AccountType.SEBO }
+    const account = { id: 1, name: 'Rute', username: 'rute', email: 'r@t.com', type: AccountType.SEBO }
     useAuthStore.getState().login('jwt', account)
     expect(localStorage.getItem(TOKEN_KEY)).toBe('jwt')
     useAuthStore.getState().setAccount({ ...account, name: 'Nova' })

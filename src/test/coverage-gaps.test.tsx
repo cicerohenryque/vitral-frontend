@@ -67,7 +67,7 @@ describe('roteamento e estados preenchidos', () => {
   })
 
   it('edita, cancela e remove produto do catalogo', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Sebo', email: 's@t.com', type: AccountType.SEBO }, seboId: 3 })
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Sebo', username: 'sebo', email: 's@t.com', type: AccountType.SEBO }, seboId: 3 })
     vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'Romance', slug: 'romance', descricao: null }] })
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue({ ...emptyPage, content: [produto] })
     vi.spyOn(produtoService, 'atualizar').mockResolvedValue(produto)
@@ -89,7 +89,7 @@ describe('roteamento e estados preenchidos', () => {
   })
 
   it('orienta sebo sem perfil antes de cadastrar produtos', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Sebo', email: 's@t.com', type: AccountType.SEBO }, seboId: null })
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Sebo', username: 'sebo', email: 's@t.com', type: AccountType.SEBO }, seboId: null })
     vi.spyOn(categoriaService, 'listar').mockResolvedValue(emptyPage)
     renderPage(<MeusProdutosPage />)
     expect(screen.getByText('Cadastre seu sebo primeiro')).toBeInTheDocument()

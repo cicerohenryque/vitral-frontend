@@ -304,7 +304,7 @@ function renderRoute(initialEntry: string, route: string, component: ReactNode) 
 function authenticate(type: AccountType, seboId: number | null = null) {
   useAuthStore.setState({
     token: 'token',
-    account: { id: 1, name: 'Conta', email: 'conta@teste.com', type },
+    account: { id: 1, name: 'Conta', username: 'conta', email: 'conta@teste.com', type },
     seboId,
   })
 }

@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Header } from '../components/Header'
-import { TopBar } from '../components/TopBar'
 import { ProductCard } from '../components/ProductCard'
 import { Pagination } from '../components/ui/Pagination'
 import { extractErrorMessage } from '../services/api'
@@ -36,6 +34,11 @@ export function BuscaPage() {
   const [tipoOperacao, setTipoOperacao] = useState(appliedTipoOperacao)
   const [cidade, setCidade] = useState(appliedCidade)
   const [uf, setUf] = useState(appliedUf)
+
+  const [proximidadeAtiva, setProximidadeAtiva] = useState(false)
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
+  const [geoLoading, setGeoLoading] = useState(false)
+  const [geoError, setGeoError] = useState<string | null>(null)
 
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [sebos, setSebos] = useState<Sebo[]>([])
@@ -95,6 +98,8 @@ export function BuscaPage() {
       tipoOperacao: appliedTipoOperacao ? (appliedTipoOperacao as TipoOperacaoSebo) : undefined,
       cidade: appliedCidade || undefined,
       uf: appliedUf || undefined,
+      lat: proximidadeAtiva && coords ? coords.lat : undefined,
+      lng: proximidadeAtiva && coords ? coords.lng : undefined,
     }
 
     const request = currentPage === 0
@@ -114,7 +119,49 @@ export function BuscaPage() {
         setTotalPaginasSebos(0)
       })
       .finally(() => setLoadingSebos(false))
-  }, [q, appliedTipoOperacao, appliedCidade, appliedUf, currentPage])
+  }, [q, appliedTipoOperacao, appliedCidade, appliedUf, currentPage, proximidadeAtiva, coords])
+
+  function ativarProximidade() {
+    if (!('geolocation' in navigator)) {
+      setGeoError('Seu navegador nao suporta geolocalizacao.')
+      return
+    }
+    setGeoLoading(true)
+    setGeoError(null)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setCoords({ lat: position.coords.latitude, lng: position.coords.longitude })
+        setProximidadeAtiva(true)
+        setGeoLoading(false)
+        setLoadingSebos(true)
+        setErrorSebos(null)
+        const next = new URLSearchParams(searchParams)
+        next.delete('page')
+        setSearchParams(next)
+      },
+      () => {
+        setGeoError('Nao foi possivel obter sua localizacao. Verifique a permissao do navegador.')
+        setGeoLoading(false)
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 5 * 60 * 1000 },
+    )
+  }
+
+  function desativarProximidade() {
+    setProximidadeAtiva(false)
+    setGeoError(null)
+    setLoadingSebos(true)
+    setErrorSebos(null)
+    const next = new URLSearchParams(searchParams)
+    next.delete('page')
+    setSearchParams(next)
+  }
+
+  function formatarDistancia(distanciaKm: number) {
+    return distanciaKm < 1
+      ? `${Math.round(distanciaKm * 1000)} m`
+      : `${distanciaKm.toFixed(1)} km`
+  }
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -201,8 +248,6 @@ export function BuscaPage() {
 
   return (
     <div className="page busca-page">
-      <TopBar />
-      <Header />
       <main className="container busca-main">
         <form className="busca-search-bar" onSubmit={handleSearch}>
           <input
@@ -267,6 +312,27 @@ export function BuscaPage() {
                 </>
               ) : (
                 <>
+                  <div className="busca-proximidade">
+                    {!proximidadeAtiva ? (
+                      <button
+                        type="button"
+                        className="busca-proximidade-btn"
+                        onClick={ativarProximidade}
+                        disabled={geoLoading}
+                      >
+                        {geoLoading ? 'Obtendo localização...' : '📍 Ordenar por proximidade'}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="busca-proximidade-btn busca-proximidade-btn-ativo"
+                        onClick={desativarProximidade}
+                      >
+                        📍 Ordenado por proximidade — cancelar
+                      </button>
+                    )}
+                    {geoError ? <p className="busca-proximidade-erro">{geoError}</p> : null}
+                  </div>
                   <label className="busca-filtro-label">
                     Modalidade
                     <select value={tipoOperacao} onChange={(e) => setTipoOperacao(e.target.value)}>
@@ -354,6 +420,9 @@ export function BuscaPage() {
                       {s.descricao ? <p className="busca-sebo-desc">{s.descricao}</p> : null}
                       {s.tipoOperacao !== TipoOperacaoSebo.VIRTUAL && (s.cidade || s.uf) ? <p className="busca-sebo-tel">{[s.cidade, s.uf].filter(Boolean).join(' - ')}</p> : null}
                       {s.telefone ? <p className="busca-sebo-tel">{s.telefone}</p> : null}
+                      {proximidadeAtiva && s.distanciaKm != null ? (
+                        <p className="busca-sebo-distancia">📍 {formatarDistancia(s.distanciaKm)} de você</p>
+                      ) : null}
                     </div>
                   </Link>
                 ))}

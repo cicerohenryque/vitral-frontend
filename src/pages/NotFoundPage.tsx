@@ -1,12 +1,8 @@
 import { Link } from 'react-router-dom'
-import { Header } from '../components/Header'
-import { TopBar } from '../components/TopBar'
 
 export function NotFoundPage() {
   return (
     <div className="page">
-      <TopBar />
-      <Header />
       <main className="container" style={{ padding: '60px 0', textAlign: 'center' }}>
         <h1>Página não encontrada</h1>
         <p style={{ margin: '16px 0' }}>O endereço acessado não existe.</p>

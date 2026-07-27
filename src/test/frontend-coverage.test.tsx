@@ -89,22 +89,12 @@ describe('frontend utilities and auth flow', () => {
     expect(spyDelete).toHaveBeenCalledWith('/cesta/5')
   })
 
-  it('searches storefront by account or email and returns null when absent', async () => {
-    const apiResponse = {
-      data: {
-        content: [
-          { id: 2, accountId: 7, email: 'other@teste.com' },
-          { id: 3, accountId: 1, email: 'rute@teste.com' },
-        ],
-      },
-    }
-    const spyGet = vi.spyOn(api, 'get').mockResolvedValue(apiResponse)
+  it('busca o proprio perfil de sebo via /sebos/me', async () => {
+    const meuSebo = { id: 3, accountId: 1, email: 'rute@teste.com' }
+    const spyGet = vi.spyOn(api, 'get').mockResolvedValue({ data: meuSebo })
 
-    await expect(seboService.buscarPorConta(1, 'Rute', 'rute@teste.com')).resolves.toEqual(apiResponse.data.content[1])
-    expect(spyGet).toHaveBeenCalledWith('/busca/sebos', { params: { q: 'Rute', page: 0, size: 20 } })
-
-    spyGet.mockResolvedValueOnce({ data: { content: [] } })
-    await expect(seboService.buscarPorConta(9, 'Outro', 'outro@teste.com')).resolves.toBeNull()
+    await expect(seboService.buscarMeu()).resolves.toEqual(meuSebo)
+    expect(spyGet).toHaveBeenCalledWith('/sebos/me')
   })
 
   it('deleta conta de sebo via serviço', async () => {
@@ -114,7 +104,7 @@ describe('frontend utilities and auth flow', () => {
   })
 
   it('carrega o estado de auth do localStorage e ignora valores inválidos', async () => {
-    const account = { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.USUARIO }
+    const account = { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.USUARIO }
 
     localStorage.setItem('vitral_account', JSON.stringify(account))
     localStorage.setItem('vitral_sebo_id', '25')
@@ -169,7 +159,7 @@ describe('frontend utilities and auth flow', () => {
   })
 
   it('updates auth store and cleans storage on logout', async () => {
-    const account = { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.USUARIO }
+    const account = { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.USUARIO }
     const spyPost = vi.spyOn(api, 'post').mockResolvedValue({ data: {} })
 
     useAuthStore.getState().login('jwt-token', account)

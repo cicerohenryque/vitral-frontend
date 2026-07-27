@@ -23,7 +23,7 @@ import { StatusVerificacao, TipoDocumentoSebo, TipoOperacaoSebo } from '../types
 import { formatBytes } from '../utils/documentSebo'
 
 const emptyPage = { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20, first: true, last: true }
-const seboAccount = { id: 1, name: 'Sebo', email: 'sebo@vitral.com', type: AccountType.SEBO }
+const seboAccount = { id: 1, name: 'Sebo', username: 'sebo', email: 'sebo@vitral.com', type: AccountType.SEBO }
 const sebo = {
   id: 3,
   accountId: 1,
@@ -163,7 +163,7 @@ describe('cobertura focada em recuperação de senha', () => {
 describe('cobertura focada no painel admin de verificação', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
-    useAuthStore.setState({ token: 'jwt', account: { id: 9, name: 'Admin', email: 'admin@vitral.com', type: AccountType.ADMIN }, seboId: null })
+    useAuthStore.setState({ token: 'jwt', account: { id: 9, name: 'Admin', username: 'admin', email: 'admin@vitral.com', type: AccountType.ADMIN }, seboId: null })
   })
 
   it('lista pendentes, detalhes, documentos, auditoria e aprova sebo', async () => {

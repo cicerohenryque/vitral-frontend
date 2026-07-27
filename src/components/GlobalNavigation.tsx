@@ -3,14 +3,36 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../assets/vitral-sebo-icon.svg'
 import { useAuth } from '../hooks/useAuth'
 import { SideMenu } from './SideMenu'
-import { BackIcon, UserIcon } from './Layout/Icons'
+import { TopBar } from './TopBar'
+import { SearchIcon, UserIcon } from './Layout/Icons'
 import './GlobalNavigation.css'
+
+const SEARCH_ROUTES = new Set([
+  '/',
+  '/busca',
+  '/buscar',
+  '/painel/perfil',
+  '/conta',
+  '/painel/sebo',
+  '/sebo/perfil',
+  '/painel/produtos',
+  '/anuncios',
+  '/painel/ofertas',
+])
 
 export function GlobalNavigation() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [search, setSearch] = useState('')
   const { isAuthenticated, isSebo, isAdmin, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
+  const showSearch = SEARCH_ROUTES.has(location.pathname)
+
+  function handleSearch(event: React.FormEvent) {
+    event.preventDefault()
+    const term = search.trim()
+    if (term) navigate(`/busca?tab=produtos&q=${encodeURIComponent(term)}`)
+  }
 
   useEffect(() => {
     if (!menuOpen) return
@@ -34,7 +56,9 @@ export function GlobalNavigation() {
   }
 
   return (
-    <header className="global-navigation">
+    <>
+      <TopBar />
+      <header className="global-navigation">
       {menuOpen ? <SideMenu onClose={() => setMenuOpen(false)} /> : null}
       <div className="global-navigation-inner container">
         <div className="global-navigation-start">
@@ -54,14 +78,22 @@ export function GlobalNavigation() {
           <Link to="/" className="global-logo" aria-label="Ir para a página inicial">
             <img src={logo} alt="Vitral" />
           </Link>
-
-          {location.pathname !== '/' ? (
-            <button type="button" className="global-action global-back" onClick={() => navigate(-1)}>
-              <BackIcon size={23} />
-              <span>Voltar</span>
-            </button>
-          ) : null}
         </div>
+
+        {showSearch ? (
+          <form className="global-search" role="search" onSubmit={handleSearch}>
+            <input
+              type="search"
+              aria-label="Pesquisar produtos"
+              placeholder="O que você está procurando?"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+            <button type="submit" aria-label="Buscar">
+              <SearchIcon size={20} />
+            </button>
+          </form>
+        ) : null}
 
         <div className="global-navigation-actions">
           {isAuthenticated ? (
@@ -80,6 +112,7 @@ export function GlobalNavigation() {
           )}
         </div>
       </div>
-    </header>
+      </header>
+    </>
   )
 }

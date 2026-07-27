@@ -30,7 +30,7 @@ import { CondicaoProduto } from '../types/produto'
 import { TipoOperacaoSebo } from '../types/sebo'
 
 const emptyPage = { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20, first: true, last: true }
-const account = { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.USUARIO }
+const account = { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.USUARIO }
 const sebo = { id: 3, accountId: 1, nome: 'Sebo Central', email: 'rute@teste.com', descricao: 'Raros', telefone: '9999', fotoUrl: null }
 const produto = { id: 7, seboId: 3, categoriaId: 2, categoriaNome: 'Romance', titulo: 'Livro Teste', autor: 'Autor', descricao: 'Descrição', preco: 25, estoque: 2, condicao: CondicaoProduto.USADO, fotoUrl: null, ativo: true }
 
@@ -51,7 +51,8 @@ describe('paginas principais', () => {
     vi.spyOn(authService, 'register').mockResolvedValue({ mensagem: 'Confira seu e-mail' })
     renderAt('/auth', <AuthPage />)
     const fields = screen.getAllByLabelText(/Senha/)
-    await userEvent.type(screen.getByLabelText('Usuário:'), 'Rute')
+    await userEvent.type(screen.getByLabelText('Nome:'), 'Rute')
+    await userEvent.type(screen.getByLabelText('Usuário (login):'), 'rute')
     await userEvent.type(screen.getByLabelText('Email:'), 'rute@teste.com')
     await userEvent.type(fields[1], '12345678')
     await userEvent.type(screen.getByLabelText('Confirme sua senha:'), 'diferente')
@@ -87,9 +88,9 @@ describe('paginas principais', () => {
   })
 
   it('faz login de sebo mesmo quando buscar perfil falha', async () => {
-    const seboAccount = { id: 2, name: 'Sebo', email: 'sebo@teste.com', type: AccountType.SEBO }
+    const seboAccount = { id: 2, name: 'Sebo', username: 'sebo', email: 'sebo@teste.com', type: AccountType.SEBO }
     vi.spyOn(authService, 'login').mockResolvedValue({ token: 'jwt', account: seboAccount, expiresIn: 3600 })
-    vi.spyOn(seboService, 'buscarPorConta').mockRejectedValue(new Error('offline'))
+    vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('offline'))
 
     render(
       <MemoryRouter initialEntries={['/auth']}>
@@ -113,7 +114,8 @@ describe('paginas principais', () => {
     vi.spyOn(authService, 'register').mockRejectedValue(new Error('erro cadastro'))
     renderAt('/auth', <AuthPage />)
 
-    await userEvent.type(screen.getByLabelText('Usuário:'), 'Rute')
+    await userEvent.type(screen.getByLabelText('Nome:'), 'Rute')
+    await userEvent.type(screen.getByLabelText('Usuário (login):'), 'rute')
     await userEvent.type(screen.getByLabelText('Email:'), 'rute@teste.com')
     await userEvent.type(screen.getByLabelText('Senha:', { selector: '#reg-password' }), '12345678')
     await userEvent.type(screen.getByLabelText('Confirme sua senha:'), '12345678')
@@ -160,8 +162,7 @@ describe('paginas principais', () => {
 
   it('cadastra perfil de sebo assumindo modalidade virtual por padrão', async () => {
     useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: null })
-    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(null)
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(sebo)
+    vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('Sebo nao encontrado'))
     vi.spyOn(seboService, 'criar').mockResolvedValue(sebo)
     renderAt('/meu-sebo', <MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
@@ -183,8 +184,7 @@ describe('paginas principais', () => {
       uf: 'CE',
       horarioFuncionamento: '9h às 18h',
     })
-    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(null)
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({ ...sebo, tipoOperacao: TipoOperacaoSebo.FISICO })
+    vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('Sebo nao encontrado'))
 
     renderAt('/meu-sebo', <MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
@@ -211,8 +211,7 @@ describe('paginas principais', () => {
 
   it('exibe a modalidade do sebo na tela de perfil', async () => {
     useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
-    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue({ ...sebo, tipoOperacao: TipoOperacaoSebo.VIRTUAL })
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({ ...sebo, tipoOperacao: TipoOperacaoSebo.VIRTUAL })
+    vi.spyOn(seboService, 'buscarMeu').mockResolvedValue({ ...sebo, tipoOperacao: TipoOperacaoSebo.VIRTUAL })
 
     renderAt('/meu-sebo', <MeuSeboPage />)
 
@@ -223,13 +222,7 @@ describe('paginas principais', () => {
   it('exibe data de criação e última atividade recente do sebo', async () => {
     const ultimaAtividade = isoDaysAgo(0)
     useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
-    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue({
-      ...sebo,
-      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
-      dataCriacao: '2026-07-06',
-      ultimaAtividade,
-    })
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({
+    vi.spyOn(seboService, 'buscarMeu').mockResolvedValue({
       ...sebo,
       tipoOperacao: TipoOperacaoSebo.VIRTUAL,
       dataCriacao: '2026-07-06',
@@ -246,35 +239,31 @@ describe('paginas principais', () => {
   })
 
   it('destaca última atividade antiga em amarelo', async () => {
-    const ultimaAtividade = isoDaysAgo(40)
-    useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
-    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue({
-      ...sebo,
-      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
-      ultimaAtividade,
-    })
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({
-      ...sebo,
-      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
-      ultimaAtividade,
-    })
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-06-15T12:00:00'))
+    try {
+      const ultimaAtividade = isoDaysAgo(40)
+      useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
+      vi.spyOn(seboService, 'buscarMeu').mockResolvedValue({
+        ...sebo,
+        tipoOperacao: TipoOperacaoSebo.VIRTUAL,
+        ultimaAtividade,
+      })
 
-    renderAt('/meu-sebo', <MeuSeboPage />)
+      renderAt('/meu-sebo', <MeuSeboPage />)
 
-    const activity = (await screen.findByText(/Última atividade:/i)).closest('p')
-    expect(activity).toHaveTextContent('Última atividade há 40 dias.')
-    expect(activity).toHaveClass('seller-activity-stale')
+      const activity = (await screen.findByText(/Última atividade:/i)).closest('p')
+      expect(activity).toHaveTextContent('Última atividade há 40 dias.')
+      expect(activity).toHaveClass('seller-activity-stale')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('destaca vendedor sem atividade há mais de noventa dias em vermelho', async () => {
     const ultimaAtividade = isoDaysAgo(100)
     useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
-    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue({
-      ...sebo,
-      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
-      ultimaAtividade,
-    })
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({
+    vi.spyOn(seboService, 'buscarMeu').mockResolvedValue({
       ...sebo,
       tipoOperacao: TipoOperacaoSebo.VIRTUAL,
       ultimaAtividade,
@@ -289,16 +278,11 @@ describe('paginas principais', () => {
 
   it('exibe fallback seguro quando datas do sebo vêm ausentes ou inválidas', async () => {
     useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
-    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue({
+    vi.spyOn(seboService, 'buscarMeu').mockResolvedValue({
       ...sebo,
       tipoOperacao: TipoOperacaoSebo.VIRTUAL,
       dataCriacao: 'data-invalida',
       ultimaAtividade: null,
-    })
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({
-      ...sebo,
-      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
-      dataCriacao: 'data-invalida',
     })
 
     renderAt('/meu-sebo', <MeuSeboPage />)
@@ -321,8 +305,7 @@ describe('paginas principais', () => {
       uf: 'CE',
       horarioFuncionamento: '9h às 18h',
     }
-    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(seboHibrido)
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(seboHibrido)
+    vi.spyOn(seboService, 'buscarMeu').mockResolvedValue(seboHibrido)
 
     renderAt('/meu-sebo', <MeuSeboPage />)
 
@@ -349,12 +332,11 @@ describe('paginas principais', () => {
   it('atualiza perfil do sebo existente com sucesso', async () => {
     useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: null })
     const existingSebo = { ...sebo, descricao: 'Velho sebo', telefone: '0000', cidade: 'Fortaleza', uf: 'CE' }
-    const buscarPorContaSpy = vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(existingSebo)
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(existingSebo)
+    const buscarMeuSpy = vi.spyOn(seboService, 'buscarMeu').mockResolvedValue(existingSebo)
     vi.spyOn(seboService, 'atualizarMeu').mockResolvedValue({ ...existingSebo, descricao: 'Novo sebo' })
 
     renderAt('/meu-sebo', <MeuSeboPage />)
-    await waitFor(() => expect(buscarPorContaSpy).toHaveBeenCalled())
+    await waitFor(() => expect(buscarMeuSpy).toHaveBeenCalled())
     expect(await screen.findByText('Editar perfil do sebo')).toBeInTheDocument()
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.clear(screen.getByLabelText('Descrição'))
@@ -367,7 +349,7 @@ describe('paginas principais', () => {
 
   it('mostra erro ao cadastrar perfil do sebo', async () => {
     useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: null })
-    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(null)
+    vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('Sebo nao encontrado'))
     vi.spyOn(seboService, 'criar').mockRejectedValue(new Error('falha'))
 
     renderAt('/meu-sebo', <MeuSeboPage />)
@@ -437,7 +419,7 @@ describe('paginas principais', () => {
     expect(await screen.findByText('Login page')).toBeInTheDocument()
     authRoutes.unmount()
 
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.USUARIO }, seboId: null })
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.USUARIO }, seboId: null })
     const userRoutes = render(<MemoryRouter initialEntries={['/secreto']}>
       <Routes>
         <Route path="/auth" element={<div>Login page</div>} />
@@ -453,8 +435,8 @@ describe('paginas principais', () => {
     const loginSpy = vi.fn()
     const setSeboIdSpy = vi.fn()
     useAuthStore.setState({ login: loginSpy, setSeboId: setSeboIdSpy })
-    vi.spyOn(authService, 'login').mockResolvedValue({ token: 'jwt', account: { id: 2, name: 'Sebo', email: 'sebo@teste.com', type: AccountType.SEBO }, expiresIn: 3600 })
-    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(sebo)
+    vi.spyOn(authService, 'login').mockResolvedValue({ token: 'jwt', account: { id: 2, name: 'Sebo', username: 'sebo', email: 'sebo@teste.com', type: AccountType.SEBO }, expiresIn: 3600 })
+    vi.spyOn(seboService, 'buscarMeu').mockResolvedValue(sebo)
 
     render(<MemoryRouter initialEntries={['/auth']}>
       <Routes>
@@ -474,7 +456,8 @@ describe('paginas principais', () => {
 
   it('valida senha curta no cadastro e mostra erro', async () => {
     renderAt('/auth', <AuthPage />)
-    await userEvent.type(screen.getByLabelText('Usuário:'), 'Novo')
+    await userEvent.type(screen.getByLabelText('Nome:'), 'Novo')
+    await userEvent.type(screen.getByLabelText('Usuário (login):'), 'novo')
     await userEvent.type(screen.getByLabelText('Email:'), 'novo@teste.com')
     await userEvent.type(screen.getByLabelText('Senha:', { selector: '#reg-password' }), '123')
     await userEvent.type(screen.getByLabelText('Confirme sua senha:'), '123')

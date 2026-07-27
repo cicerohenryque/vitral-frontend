@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Header } from '../components/Header'
-import { TopBar } from '../components/TopBar'
 import { StoreStatus } from '../components/Layout/StorePage'
 import { Button } from '../components/ui/Button'
 import { CurrencyInput } from '../components/ui/CurrencyInput'
@@ -194,8 +192,6 @@ export function MeusProdutosPage() {
   if (!seboId) {
     return (
       <div className="page">
-        <TopBar />
-        <Header />
         <main className="container form-page">
           <h1 className="form-page-title">Cadastre seu sebo primeiro</h1>
           <StoreStatus
@@ -209,13 +205,11 @@ export function MeusProdutosPage() {
   }
 
   if (verification && verification !== StatusVerificacao.VERIFICADO) {
-    return <div className="page"><TopBar /><Header /><main className="container form-page"><StoreStatus title="Sebo ainda não verificado" description="Cadastro de produtos e vendas serão liberados após a aprovação dos documentos." tone={verification === StatusVerificacao.REJEITADO ? 'error' : 'neutral'} action={<Link to="/painel/sebo/documentos">Gerenciar documentos</Link>} /></main></div>
+    return <div className="page"><main className="container form-page"><StoreStatus title="Sebo ainda não verificado" description="Cadastro de produtos e vendas serão liberados após a aprovação dos documentos." tone={verification === StatusVerificacao.REJEITADO ? 'error' : 'neutral'} action={<Link to="/painel/sebo/documentos">Gerenciar documentos</Link>} /></main></div>
   }
 
   return (
     <div className="page">
-      <TopBar />
-      <Header />
       <main className="container form-page">
         <h1 className="form-page-title">Meus produtos</h1>
         {error ? <div className="flash error" role="alert">{error}</div> : null}

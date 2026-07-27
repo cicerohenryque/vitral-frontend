@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { Header } from '../components/Header'
 import { GlobalNavigation } from '../components/GlobalNavigation'
 import { ProductCarousel } from '../components/ProductCarousel'
 import { ProductPage } from '../components/Product/ProductPage'
@@ -107,7 +106,7 @@ describe('ramos alternativos e interacoes', () => {
     authenticate(AccountType.USUARIO)
     const logout = vi.fn()
     useAuthStore.setState({ logout })
-    renderRoute('/', '*', <><GlobalNavigation /><Header /><Routes><Route path="/busca" element={<p>Busca aberta</p>} /></Routes></>)
+    renderRoute('/', '*', <><GlobalNavigation /><Routes><Route path="/busca" element={<p>Busca aberta</p>} /></Routes></>)
     await userEvent.type(screen.getByLabelText('Pesquisar produtos'), ' livro raro ')
     await userEvent.click(screen.getByRole('button', { name: 'Buscar' }))
     expect(await screen.findByText('Busca aberta')).toBeInTheDocument()
@@ -136,7 +135,7 @@ describe('ramos alternativos e interacoes', () => {
 })
 
 function authenticate(type: AccountType) {
-  useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'r@t.com', type }, seboId: type === AccountType.SEBO ? 3 : null })
+  useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'r@t.com', type }, seboId: type === AccountType.SEBO ? 3 : null })
 }
 
 function renderPage(element: React.ReactNode) {

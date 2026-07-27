@@ -18,6 +18,8 @@ export type BuscaSebosParams = {
   tipoOperacao?: TipoOperacaoSebo
   cidade?: string
   uf?: string
+  lat?: number
+  lng?: number
 }
 
 export const buscaService = {

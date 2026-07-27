@@ -150,7 +150,7 @@ describe('componentes pequenos e interações', () => {
     visitorRender.unmount()
 
     act(() => {
-      useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.USUARIO }, seboId: null })
+      useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.USUARIO }, seboId: null })
     })
     const userRender = render(
       <MemoryRouter>
@@ -162,7 +162,7 @@ describe('componentes pequenos e interações', () => {
     userRender.unmount()
 
     act(() => {
-      useAuthStore.setState({ token: 'jwt', account: { id: 2, name: 'Sebo', email: 'sebo@teste.com', type: AccountType.SEBO }, seboId: 3 })
+      useAuthStore.setState({ token: 'jwt', account: { id: 2, name: 'Sebo', username: 'sebo', email: 'sebo@teste.com', type: AccountType.SEBO }, seboId: 3 })
     })
     render(
       <MemoryRouter>

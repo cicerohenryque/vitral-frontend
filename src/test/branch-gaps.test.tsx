@@ -301,11 +301,10 @@ describe('MeuSeboPage — branches adicionais', () => {
   })
 
   it('cadastra novo sebo apenas com dados virtuais', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
-    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(null)
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
+    vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('Sebo nao encontrado'))
     const novoSebo = { id: 10, accountId: 1, nome: 'Rute', email: 'rute@teste.com', descricao: 'Desc', telefone: '99', fotoUrl: null }
     vi.spyOn(seboService, 'criar').mockResolvedValue(novoSebo)
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(novoSebo)
 
     renderPage(<MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
@@ -316,11 +315,10 @@ describe('MeuSeboPage — branches adicionais', () => {
   })
 
   it('envia descricao e telefone do sebo virtual', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
-    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(null)
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
+    vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('Sebo nao encontrado'))
     const novoSebo = { id: 11, accountId: 1, nome: 'Rute', email: 'rute@teste.com', descricao: 'x', telefone: '99', fotoUrl: null }
     vi.spyOn(seboService, 'criar').mockResolvedValue(novoSebo)
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(novoSebo)
 
     renderPage(<MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
@@ -332,8 +330,8 @@ describe('MeuSeboPage — branches adicionais', () => {
   })
 
   it('mostra erro ao salvar sebo quando o backend falha', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
-    vi.spyOn(seboService, 'buscarPorConta').mockResolvedValue(null)
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
+    vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('Sebo nao encontrado'))
     vi.spyOn(seboService, 'criar').mockRejectedValue(new Error('falha ao salvar'))
 
     renderPage(<MeuSeboPage />)
@@ -349,21 +347,22 @@ describe('MeuSeboPage — branch sem account e sem seboId', () => {
 
   it('exibe formulario de cadastro quando account e seboId sao null', async () => {
     useAuthStore.setState({ token: null, account: null, seboId: null })
+    vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('Sebo nao encontrado'))
     renderPage(<MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
   })
 
   it('exibe estado de loading antes de completar a busca', () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
-    vi.spyOn(seboService, 'buscarPorConta').mockReturnValue(new Promise(() => {}))
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
+    vi.spyOn(seboService, 'buscarMeu').mockReturnValue(new Promise(() => {}))
     renderPage(<MeuSeboPage />)
     expect(screen.getByText('Carregando perfil do sebo')).toBeInTheDocument()
   })
 
   it('popula o formulario com dados do sebo existente via seboId', async () => {
     const existingSebo = { id: 5, accountId: 1, nome: 'Sebo Test', email: 'a@b.com', descricao: 'Desc', telefone: '111', cep: '11111', logradouro: 'Rua A', cidade: 'SP', uf: 'SP', horarioFuncionamento: '8h', fotoUrl: 'http://foto.png' }
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 5 })
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(existingSebo)
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 5 })
+    vi.spyOn(seboService, 'buscarMeu').mockResolvedValue(existingSebo)
 
     renderPage(<MeuSeboPage />)
     expect(await screen.findByDisplayValue('Desc')).toBeInTheDocument()
@@ -372,8 +371,8 @@ describe('MeuSeboPage — branch sem account e sem seboId', () => {
 
   it('popula o formulario com string vazia para campos opcionais null', async () => {
     const sebolNullFields = { id: 6, accountId: 1, nome: 'Sebo Null', email: 'a@b.com', descricao: null, telefone: null, cep: null, logradouro: null, cidade: null, uf: null, horarioFuncionamento: null, fotoUrl: null }
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 6 })
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(sebolNullFields as never)
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 6 })
+    vi.spyOn(seboService, 'buscarMeu').mockResolvedValue(sebolNullFields as never)
 
     renderPage(<MeuSeboPage />)
     expect(await screen.findByText('Editar perfil do sebo')).toBeInTheDocument()
@@ -387,7 +386,7 @@ describe('MeuSeboPage — branch sem account e sem seboId', () => {
 describe('MeusProdutosPage — branches adicionais', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
   })
 
   it('exibe "-" para autor nulo e categoria nula no catalogo', async () => {

@@ -9,6 +9,7 @@ export type AccountType = (typeof AccountType)[keyof typeof AccountType]
 export type Account = {
   id: number
   name: string
+  username: string
   email: string
   type: AccountType
   fotoUrl?: string | null
@@ -17,6 +18,7 @@ export type Account = {
 
 export type RegisterRequest = {
   name: string
+  username: string
   email: string
   password: string
   type: AccountType

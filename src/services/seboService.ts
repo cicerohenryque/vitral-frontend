@@ -2,7 +2,6 @@ import { api } from './api'
 import type { MensagemResponse } from '../types/account'
 import type { AuditoriaSebo, ConsultaCnpjResponse, DocumentoSebo, Sebo, SeboRequest, StatusVerificacao, TipoDocumentoSebo } from '../types/sebo'
 import type { Page } from '../types/common'
-import { fetchAllPages } from './pagination'
 
 export const seboService = {
   async criar(payload: SeboRequest): Promise<Sebo> {
@@ -65,16 +64,6 @@ export const seboService = {
   async listarAuditoria(id: number): Promise<AuditoriaSebo[]> {
     const { data } = await api.get<AuditoriaSebo[]>(`/sebos/${id}/verificacao/auditoria`)
     return data
-  },
-
-  async buscarPorConta(accountId: number, name: string, email: string): Promise<Sebo | null> {
-    const sebos = await fetchAllPages(async (page, size) => {
-      const { data } = await api.get<Page<Sebo>>('/busca/sebos', {
-        params: { q: name, page, size },
-      })
-      return data
-    }, 20)
-    return sebos.find((sebo) => sebo.accountId === accountId || sebo.email === email) ?? null
   },
 
   async excluirConta(): Promise<MensagemResponse> {

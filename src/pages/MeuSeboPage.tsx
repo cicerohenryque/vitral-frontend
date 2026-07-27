@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Header } from '../components/Header'
-import { TopBar } from '../components/TopBar'
 import { StoreStatus } from '../components/Layout/StorePage'
 import { Button } from '../components/ui/Button'
 import { ImageUploadField } from '../components/ui/ImageUploadField'
@@ -50,7 +48,7 @@ const modalidadeDescricao: Record<TipoOperacaoSebo, string> = {
 }
 
 export function MeuSeboPage() {
-  const { account, seboId, setSeboId } = useAuth()
+  const { setSeboId } = useAuth()
   const [form, setForm] = useState<SeboRequest>(EMPTY)
   const [existing, setExisting] = useState<Sebo | null>(null)
   const [loading, setLoading] = useState(true)
@@ -66,19 +64,9 @@ export function MeuSeboPage() {
 
   useEffect(() => {
     let active = true
-    const request = seboId
-      ? seboService.buscarPorId(seboId)
-      : account
-        ? seboService.buscarPorConta(account.id, account.name, account.email)
-        : Promise.resolve(null)
-
-    request
+    seboService.buscarMeu()
       .then((sebo) => {
         if (!active) return
-        if (!sebo) {
-          setExisting(null)
-          return
-        }
         setExisting(sebo)
         setSeboId(sebo.id)
         setForm({
@@ -95,6 +83,8 @@ export function MeuSeboPage() {
         })
       })
       .catch(() => {
+        // Ainda nao existe perfil cadastrado para esta conta (ou o backend esta indisponivel);
+        // o formulario de cadastro em branco e o comportamento correto neste caso.
         if (active) setExisting(null)
       })
       .finally(() => {
@@ -103,7 +93,7 @@ export function MeuSeboPage() {
     return () => {
       active = false
     }
-  }, [account, seboId, setSeboId])
+  }, [setSeboId])
 
   useEffect(() => {
     let active = true
@@ -204,8 +194,6 @@ export function MeuSeboPage() {
   if (loading) {
     return (
       <div className="page">
-        <TopBar />
-        <Header />
         <main className="container form-page">
           <StoreStatus
             title="Carregando perfil do sebo"
@@ -219,8 +207,6 @@ export function MeuSeboPage() {
 
   return (
     <div className="page">
-      <TopBar />
-      <Header />
       <main className="container form-page">
         <h1 className="form-page-title">{existing ? 'Editar perfil do sebo' : 'Cadastrar perfil do sebo'}</h1>
         {existing ? (

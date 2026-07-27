@@ -209,7 +209,7 @@ describe('cobertura de branches restantes', () => {
   })
 
   it('exibe pagina de exclusao de conta com erro quando a exclusao falha', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.USUARIO }, seboId: null })
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.USUARIO }, seboId: null })
     vi.spyOn(usuarioService, 'excluirConta').mockRejectedValue(new Error('falha'))
 
     renderRoute('/conta/excluir', '/conta/excluir', <DeleteAccountPage />)
@@ -442,16 +442,16 @@ describe('cobertura de branches restantes', () => {
   })
 
   it('carrega perfil do sebo com falha de busca por conta e mostra o formulário de cadastro', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
-    vi.spyOn(seboService, 'buscarPorConta').mockRejectedValue(new Error('erro ao carregar'))
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
+    vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('erro ao carregar'))
 
     renderPage(<MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
-    expect(seboService.buscarPorConta).toHaveBeenCalled()
+    expect(seboService.buscarMeu).toHaveBeenCalled()
   })
 
   it('mostra formulário de produto quando categorias não carregam', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue({ ...emptyPage, content: [] })
     vi.spyOn(categoriaService, 'listar').mockRejectedValue(new Error('falha'))
 
@@ -464,7 +464,7 @@ describe('cobertura de branches restantes', () => {
   })
 
   it('mostra erro ao listar produtos do sebo quando o backend falha', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
     vi.spyOn(produtoService, 'listarPorSebo').mockRejectedValue(new Error('falha listar'))
     vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [] })
 
@@ -473,7 +473,7 @@ describe('cobertura de branches restantes', () => {
   })
 
   it('mostra erro ao remover produto com falha no backend', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
     const product = { id: 123, seboId: 3, categoriaId: 2, categoriaNome: 'Romance', titulo: 'Livro Remover', autor: 'Autor', descricao: 'Descrição', preco: 15, estoque: 5, condicao: CondicaoProduto.USADO, fotoUrl: null, ativo: true }
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue({ ...emptyPage, content: [product] })
     vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [] })
@@ -488,7 +488,7 @@ describe('cobertura de branches restantes', () => {
   })
 
   it('nao remove produto quando usuario cancela a confirmacao', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
     const product = { id: 124, seboId: 3, categoriaId: 2, categoriaNome: 'Romance', titulo: 'Livro Cancelar', autor: 'Autor', descricao: 'Descrição', preco: 20, estoque: 3, condicao: CondicaoProduto.USADO, fotoUrl: null, ativo: true }
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue({ ...emptyPage, content: [product] })
     vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [] })
@@ -504,7 +504,7 @@ describe('cobertura de branches restantes', () => {
   })
 
   it('mostra erro ao salvar novo produto quando o backend falha', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue({ ...emptyPage, content: [] })
     vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [] })
     vi.spyOn(produtoService, 'criar').mockRejectedValue(new Error('falha salvar'))
@@ -518,9 +518,9 @@ describe('cobertura de branches restantes', () => {
   })
 
   it('carrega perfil do sebo existente usando seboId no auth store', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 5 })
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 5 })
     const existingSebo = { id: 5, accountId: 1, nome: 'Sebo Atual', email: 'rute@teste.com', descricao: 'Atual', telefone: '9999', cep: '60000', logradouro: 'Rua B', cidade: 'Fortaleza', uf: 'CE', horarioFuncionamento: '10h', fotoUrl: null }
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue(existingSebo)
+    vi.spyOn(seboService, 'buscarMeu').mockResolvedValue(existingSebo)
     vi.spyOn(seboService, 'atualizarMeu').mockResolvedValue({ ...existingSebo, descricao: 'Novo nome' })
 
     renderPage(<MeuSeboPage />)
@@ -536,7 +536,7 @@ describe('cobertura de branches restantes', () => {
   })
 
   it('mostra mensagem de cadastro quando o produto nao tem sebo cadastrado', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
     vi.spyOn(categoriaService, 'listar').mockResolvedValue(emptyPage)
     renderPage(<MeusProdutosPage />)
 
@@ -545,7 +545,7 @@ describe('cobertura de branches restantes', () => {
   })
 
   it('edita produto existente e atualiza com sucesso', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
+    useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: 3 })
     const product = { id: 124, seboId: 3, categoriaId: 2, categoriaNome: 'Romance', titulo: 'Livro Editar', autor: 'Autor', descricao: 'Descrição', preco: 20, estoque: 4, condicao: CondicaoProduto.USADO, fotoUrl: null, ativo: true }
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue({ ...emptyPage, content: [product] })
     vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'Romance', slug: 'romance', descricao: null }] })
