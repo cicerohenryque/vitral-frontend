@@ -46,7 +46,7 @@ export type Sebo = {
   id: number
   accountId: number
   nome: string
-  email: string
+  email?: string | null
   cnpj?: string
   statusVerificacao?: StatusVerificacao
   motivoRejeicao?: string | null

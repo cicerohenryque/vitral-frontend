@@ -75,8 +75,8 @@ describe('ramos alternativos e interacoes', () => {
     failed.unmount()
     renderRoute('/vendedor/3', '/vendedor/:sellerId', <SellerPage />)
     expect(await screen.findByText('Nenhum produto cadastrado')).toBeInTheDocument()
-    expect(screen.getByText('sebo@teste.com')).toBeInTheDocument()
-    expect(screen.getByText('sebo@teste.com')).toBeInTheDocument()
+    expect(screen.queryByText('sebo@teste.com')).not.toBeInTheDocument()
+    expect(screen.queryByText('Contato')).not.toBeInTheDocument()
   })
 
   it('seleciona conversa existente e trata falhas de conversa e envio', async () => {

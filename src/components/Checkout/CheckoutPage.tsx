@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { StorePage, StoreStatus } from '../Layout/StorePage'
-import { extractErrorMessage } from '../../services/api'
+import { extractErrorMessage, extractProfileIncompleteError, type ProfileIncompleteError } from '../../services/api'
 import { cestaService } from '../../services/cestaService'
 import { pedidoService } from '../../services/pedidoService'
 import type { CestaItem } from '../../types/cesta'
@@ -13,6 +13,7 @@ export function CheckoutPage() {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [profileIssue, setProfileIssue] = useState<ProfileIncompleteError | null>(null)
   const [formaPagamento, setFormaPagamento] = useState<FormaPagamento>(FormaPagamento.PIX)
   const [numeroCartao, setNumeroCartao] = useState('')
 
@@ -49,6 +50,7 @@ export function CheckoutPage() {
   async function confirmarPedido() {
     setBusy(true)
     setError(null)
+    setProfileIssue(null)
     try {
       const criado = await pedidoService.confirmarPedido({
         formaPagamento,
@@ -57,7 +59,9 @@ export function CheckoutPage() {
       setPedido(criado)
       setItems([])
     } catch (err) {
-      setError(extractErrorMessage(err, 'Nao foi possivel confirmar o pedido.'))
+      const incompleteProfile = extractProfileIncompleteError(err)
+      if (incompleteProfile) setProfileIssue(incompleteProfile)
+      else setError(extractErrorMessage(err, 'Nao foi possivel confirmar o pedido.'))
     } finally {
       setBusy(false)
     }
@@ -89,6 +93,23 @@ export function CheckoutPage() {
         />
       ) : (
         <>
+          {profileIssue ? (
+            <div className="flash error checkout-profile-error" role="alert">
+              <strong>Complete seu perfil antes de finalizar a compra.</strong>
+              <p>{profileIssue.message}</p>
+              {profileIssue.fields.length > 0 ? (
+                <ul>
+                  {profileIssue.fields.map((item) => <li key={item.field}>{item.field}: {item.message}</li>)}
+                </ul>
+              ) : null}
+              <Link
+                to="/painel/perfil?from=checkout"
+                state={{ fromCheckout: true, incompleteFields: profileIssue.fields.map((item) => item.field) }}
+              >
+                Completar perfil
+              </Link>
+            </div>
+          ) : null}
           {error ? <div className="flash error" role="alert">{error}</div> : null}
           <section className="store-summary" aria-label="Resumo e pagamento">
             <div>

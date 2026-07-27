@@ -33,6 +33,22 @@
   border-bottom: 1px solid var(--color-border, #ddd);
 }
 
+.form-field-error,
+.form-field-hint {
+  align-self: start;
+  margin-top: -12px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+
+.form-field-error { color: var(--color-danger); }
+.form-field-hint { color: var(--color-text-muted); }
+
+.vit-input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 2px rgba(180, 35, 24, 0.12);
+}
+
 .perfil-email {
   align-self: end;
   padding: 12px 14px;

@@ -1,5 +1,10 @@
 export const onlyDigits = (value: string) => value.replace(/\D/g, '')
 
+export const BRAZILIAN_UFS = new Set([
+  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
+  'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
+])
+
 export function formatCpf(value: string): string {
   return onlyDigits(value).slice(0, 11).replace(/^(\d{3})(\d)/, '$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1-$2')
 }
@@ -17,4 +22,16 @@ export function isValidCpf(value: string): boolean {
     return result === 10 ? 0 : result
   }
   return digit(9) === Number(cpf[9]) && digit(10) === Number(cpf[10])
+}
+
+export function isMaskedCpf(value: string): boolean {
+  return value.includes('*') || (value.trim().length > 0 && onlyDigits(value).length !== 11)
+}
+
+export function isValidCep(value: string): boolean {
+  return onlyDigits(value).length === 8
+}
+
+export function isValidUf(value: string): boolean {
+  return BRAZILIAN_UFS.has(value.trim().toUpperCase())
 }

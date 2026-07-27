@@ -56,9 +56,9 @@ describe('fluxos de upload de imagem', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
 
     expect(uploadService.uploadImage).toHaveBeenCalledWith(file)
-    await waitFor(() => expect(usuarioService.atualizarPerfil).toHaveBeenCalledWith(expect.objectContaining({
-      name: 'Rute', fotoUrl: uploadedUrl, cpf: '52998224725', cep: '60000000',
-    })))
+    await waitFor(() => expect(usuarioService.atualizarPerfil).toHaveBeenCalledWith({
+      name: 'Rute', fotoUrl: uploadedUrl,
+    }))
     expect(useAuthStore.getState().account?.fotoUrl).toBe(uploadedUrl)
   })
 

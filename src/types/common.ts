@@ -17,6 +17,7 @@ export type ApiError = {
   timestamp: string
   status: number
   error: string
+  code?: string | null
   message: string
   path: string
   fieldErrors: ApiErrorField[]

@@ -27,14 +27,14 @@ export type Account = {
 export type UpdateProfileRequest = {
   name: string
   fotoUrl?: string
-  cpf: string
-  cep: string
-  logradouro: string
-  numero: string
+  cpf?: string
+  cep?: string
+  logradouro?: string
+  numero?: string
   complemento?: string
-  bairro: string
-  cidade: string
-  estado: string
+  bairro?: string
+  cidade?: string
+  estado?: string
 }
 
 export type RegisterRequest = {
