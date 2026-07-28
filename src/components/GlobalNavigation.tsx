@@ -18,6 +18,7 @@ const SEARCH_ROUTES = new Set([
   '/painel/produtos',
   '/anuncios',
   '/painel/ofertas',
+  '/recomendacoes',
 ])
 
 export function GlobalNavigation() {

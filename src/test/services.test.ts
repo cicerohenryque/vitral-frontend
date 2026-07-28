@@ -7,6 +7,7 @@ import { homeService } from '../services/homeService'
 import { mensagemService } from '../services/mensagemService'
 import { ofertaService } from '../services/ofertaService'
 import { pedidoService } from '../services/pedidoService'
+import { recomendacaoService } from '../services/recomendacaoService'
 import { produtoService } from '../services/produtoService'
 import { seboService } from '../services/seboService'
 import { uploadService } from '../services/uploadService'
@@ -15,6 +16,17 @@ import { StatusPedido } from '../types/pedido'
 const page = { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20, first: true, last: true }
 
 describe('contratos dos servicos com o backend', () => {
+  it('lista recomendações com limite máximo e limpa o histórico', async () => {
+    const get = vi.spyOn(api, 'get').mockResolvedValue({ data: page })
+    const remove = vi.spyOn(api, 'delete').mockResolvedValue({ data: { mensagem: 'ok' } })
+
+    await recomendacaoService.listar(2, 100)
+    await recomendacaoService.limparHistorico()
+
+    expect(get).toHaveBeenCalledWith('/recomendacoes', { params: { page: 2, size: 50 } })
+    expect(remove).toHaveBeenCalledWith('/recomendacoes/historico')
+  })
+
   it('carrega todas as seções da home pelo endpoint centralizado', async () => {
     const home = { lancamentos: null, classicos: null, recentes: null, recomendados: null, categorias: [] }
     const get = vi.spyOn(api, 'get').mockResolvedValue({ data: home })

@@ -14,6 +14,7 @@ const publicItems = [
 ]
 
 const userItems = [
+  { label: 'Recomendados para você', to: '/recomendacoes' },
   { label: 'Carrinho', to: '/carrinho' },
   { label: 'Favoritos', to: '/favoritos' },
   { label: 'Reservas', to: '/reservas' },

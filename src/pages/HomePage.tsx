@@ -24,7 +24,7 @@ function buildSections(home: HomeResponse): RenderSection[] {
     sections.push({ ...home.classicos, key: 'classicos' })
   }
   if (hasContent(home.recomendados)) {
-    sections.push({ ...home.recomendados, key: 'recomendados' })
+    sections.push({ ...home.recomendados, key: 'recomendados', viewAllTo: '/recomendacoes' })
   }
 
   home.categorias.forEach((category) => {

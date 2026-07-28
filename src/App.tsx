@@ -28,6 +28,7 @@ import { MeusProdutosPage } from './pages/MeusProdutosPage'
 import { MinhasOfertasPage } from './pages/MinhasOfertasPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { PerfilPage } from './pages/PerfilPage'
+import { RecomendacoesPage } from './pages/RecomendacoesPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { AccountType } from './types/account'
 import { GlobalNavigation } from './components/GlobalNavigation'
@@ -124,6 +125,14 @@ function App() {
           element={
             <ProtectedRoute>
               <FavoritesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/recomendacoes"
+          element={
+            <ProtectedRoute requireRole={AccountType.USUARIO}>
+              <RecomendacoesPage />
             </ProtectedRoute>
           }
         />

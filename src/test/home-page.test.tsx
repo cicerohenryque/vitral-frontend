@@ -81,11 +81,12 @@ describe('HomePage integrada à API centralizada', () => {
 
   it('renderiza recomendados apenas quando a API retorna conteúdo', async () => {
     vi.mocked(homeService.carregar).mockResolvedValue(response({
-      recomendados: section('Recomendados para você', [product(4, 'Escolha para você')]),
+      recomendados: section('Recomendados para você', [product(4, 'Escolha para você')], 3),
     }))
     const view = renderHome()
 
     expect(await screen.findByRole('heading', { name: 'Recomendados para você' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ver todos' })).toHaveAttribute('href', '/recomendacoes')
     view.unmount()
 
     vi.mocked(homeService.carregar).mockResolvedValue(response({ recomendados: null }))
