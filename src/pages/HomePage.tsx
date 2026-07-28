@@ -23,9 +23,6 @@ function buildSections(home: HomeResponse): RenderSection[] {
   if (hasContent(home.classicos)) {
     sections.push({ ...home.classicos, key: 'classicos' })
   }
-  if (hasContent(home.recentes)) {
-    sections.push({ ...home.recentes, key: 'recentes' })
-  }
   if (hasContent(home.recomendados)) {
     sections.push({ ...home.recomendados, key: 'recomendados' })
   }

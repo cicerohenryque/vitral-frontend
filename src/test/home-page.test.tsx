@@ -58,7 +58,7 @@ describe('HomePage integrada à API centralizada', () => {
 
   afterEach(() => vi.restoreAllMocks())
 
-  it('consome a home pública e renderiza lançamentos, clássicos e recentes sem reclassificar produtos', async () => {
+  it('renderiza lançamentos e clássicos sem exibir a seção de adicionados recentemente', async () => {
     const release = product(1, 'Lançamento da API', { lancamento: true })
     const classic = product(2, 'Clássico da API', { classico: true })
     const recent = product(3, 'Recente da API')
@@ -73,8 +73,9 @@ describe('HomePage integrada à API centralizada', () => {
     expect(screen.getByRole('heading', { name: 'Carregando vitrine' })).toBeInTheDocument()
     expect(await screen.findByText('Lançamento da API')).toBeInTheDocument()
     expect(screen.getByText('Clássico da API')).toBeInTheDocument()
-    expect(screen.getByText('Recente da API')).toBeInTheDocument()
-    expect(screen.getAllByText('Sebo Aurora')).toHaveLength(3)
+    expect(screen.queryByText('Recente da API')).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Adicionados recentemente' })).not.toBeInTheDocument()
+    expect(screen.getAllByText('Sebo Aurora')).toHaveLength(2)
     expect(homeService.carregar).toHaveBeenCalledTimes(1)
   })
 
@@ -141,7 +142,7 @@ describe('HomePage integrada à API centralizada', () => {
   it('mostra erro amigável e permite tentar novamente', async () => {
     vi.mocked(homeService.carregar)
       .mockRejectedValueOnce(new Error('offline'))
-      .mockResolvedValueOnce(response({ recentes: section('Recentes', [product(8, 'Carregado novamente')]) }))
+      .mockResolvedValueOnce(response({ classicos: section('Clássicos', [product(8, 'Carregado novamente', { classico: true })]) }))
     renderHome()
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível carregar a vitrine.')
@@ -152,7 +153,7 @@ describe('HomePage integrada à API centralizada', () => {
 
   it('respeita o campo disponível retornado pela API', async () => {
     vi.mocked(homeService.carregar).mockResolvedValue(response({
-      recentes: section('Recentes', [product(9, 'Produto indisponível', { disponivel: false, ativo: true, estoque: 5 })]),
+      classicos: section('Clássicos', [product(9, 'Produto indisponível', { disponivel: false, ativo: true, estoque: 5, classico: true })]),
     }))
     renderHome()
 
