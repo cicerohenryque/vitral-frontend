@@ -1,9 +1,16 @@
 import { api } from './api'
 import type { Page } from '../types/common'
-import type { Produto, ProdutoRequest, ProdutoVendedor, VendaFisicaResponse } from '../types/produto'
+import type { Produto, ProdutoRequest, ProdutoVendedor, SugestaoProduto } from '../types/produto'
 import type { BookGenre } from '../constants/productCatalog'
 
 export const produtoService = {
+  async buscarSugestoes(termo: string): Promise<SugestaoProduto[]> {
+    const { data } = await api.get<SugestaoProduto[]>('/produtos/sugestoes', {
+      params: { termo },
+    })
+    return data
+  },
+
   async criar(payload: ProdutoRequest): Promise<Produto> {
     const { data } = await api.post<Produto>('/produtos', payload)
     return data
@@ -18,12 +25,6 @@ export const produtoService = {
     await api.delete(`/produtos/${id}`)
   },
 
-  async registrarVendaFisica(id: number, quantidade: number): Promise<VendaFisicaResponse> {
-    const { data } = await api.post<VendaFisicaResponse>(`/produtos/${id}/venda-fisica`, {
-      quantidade,
-    })
-    return data
-  },
 
   async buscarPorId(id: number): Promise<Produto> {
     const { data } = await api.get<Produto>(`/produtos/${id}`)

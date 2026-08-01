@@ -11,7 +11,6 @@ import { MeuSeboPage } from '../pages/MeuSeboPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
 import { OffersPage } from '../components/Offers/OffersPage'
 import { PerfilPage } from '../pages/PerfilPage'
-import { StockMovementsPage } from '../pages/StockMovementsPage'
 import { HelpPage } from '../components/Help/HelpPage'
 import { SupportPage } from '../components/Support/SupportPage'
 import { ProtectedRoute } from '../routes/ProtectedRoute'
@@ -22,13 +21,11 @@ import { homeService } from '../services/homeService'
 import { ofertaService } from '../services/ofertaService'
 import { produtoService } from '../services/produtoService'
 import { pedidoService } from '../services/pedidoService'
-import { movimentacaoService } from '../services/movimentacaoService'
 import { seboService } from '../services/seboService'
 import { usuarioService } from '../services/usuarioService'
 import { useAuthStore } from '../store/authStore'
 import { AccountType } from '../types/account'
 import { CondicaoProduto } from '../types/produto'
-import { TipoOperacaoSebo } from '../types/sebo'
 
 const emptyPage = { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20, first: true, last: true }
 const account = { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.USUARIO, cpf: '52998224725', cep: '60000000', logradouro: 'Rua A', numero: '1', complemento: null, bairro: 'Centro', cidade: 'Fortaleza', estado: 'CE' }
@@ -150,6 +147,19 @@ describe('paginas principais', () => {
     expect(useAuthStore.getState().account?.name).toBe('Novo nome')
   })
 
+  it('nao exibe o tipo da conta e mantem o CPF antes da foto no perfil', async () => {
+    useAuthStore.setState({ token: 'jwt', account, seboId: null })
+    vi.spyOn(usuarioService, 'buscarPerfil').mockResolvedValue(account)
+    renderAt('/perfil', <PerfilPage />)
+
+    expect(await screen.findByLabelText('Nome')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Tipo da conta')).not.toBeInTheDocument()
+    expect(screen.queryByText('USUARIO')).not.toBeInTheDocument()
+
+    const campos = screen.getAllByText(/^(CPF|Foto do perfil)$/).map((item) => item.textContent)
+    expect(campos).toEqual(['CPF', 'Foto do perfil'])
+  })
+
   it('mostra erro quando a atualizacao de perfil falha', async () => {
     useAuthStore.setState({ token: 'jwt', account, seboId: null })
     vi.spyOn(usuarioService, 'buscarPerfil').mockResolvedValue(account)
@@ -163,63 +173,38 @@ describe('paginas principais', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Falha ao atualizar perfil')
   })
 
-  it('cadastra perfil de sebo assumindo modalidade virtual por padrão', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: null })
-    vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('Sebo nao encontrado'))
-    vi.spyOn(seboService, 'criar').mockResolvedValue(sebo)
-    renderAt('/meu-sebo', <MeuSeboPage />)
-    expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
-    await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
-    await userEvent.type(screen.getByLabelText('Descrição'), 'Livros virtuais')
-    await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
-    expect(await screen.findByText('Sebo cadastrado com sucesso!')).toBeInTheDocument()
-    expect(seboService.criar).toHaveBeenCalledWith(expect.objectContaining({ descricao: 'Livros virtuais', tipoOperacao: TipoOperacaoSebo.VIRTUAL }))
-  })
-
-  it('cadastra perfil de sebo físico com endereço e horário', async () => {
+  it('cadastra perfil de sebo com endereco obrigatorio', async () => {
     useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: null })
     const criarSpy = vi.spyOn(seboService, 'criar').mockResolvedValue({
       ...sebo,
-      tipoOperacao: TipoOperacaoSebo.FISICO,
       cep: '60123456',
       logradouro: 'Rua dos Livros',
       cidade: 'Fortaleza',
       uf: 'CE',
-      horarioFuncionamento: '9h às 18h',
+      horarioFuncionamento: '9h as 18h',
     })
     vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('Sebo nao encontrado'))
 
     renderAt('/meu-sebo', <MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Modalidade de operação')).not.toBeInTheDocument()
 
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
-    await userEvent.selectOptions(screen.getByLabelText('Modalidade de operação'), TipoOperacaoSebo.FISICO)
-    await userEvent.type(await screen.findByLabelText('CEP'), '60123-456')
+    await userEvent.type(screen.getByLabelText('Descrição'), 'Livros virtuais')
+    await userEvent.type(screen.getByLabelText('CEP'), '60123-456')
     await userEvent.type(screen.getByLabelText('Endereço/logradouro'), 'Rua dos Livros')
     await userEvent.type(screen.getByLabelText('Cidade'), 'Fortaleza')
     await userEvent.type(screen.getByLabelText('UF'), 'ce')
-    await userEvent.type(screen.getByLabelText('Horário de funcionamento'), '9h às 18h')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
 
     expect(await screen.findByText('Sebo cadastrado com sucesso!')).toBeInTheDocument()
     expect(criarSpy).toHaveBeenCalledWith(expect.objectContaining({
-      tipoOperacao: TipoOperacaoSebo.FISICO,
+      descricao: 'Livros virtuais',
       cep: '60123456',
       logradouro: 'Rua dos Livros',
       cidade: 'Fortaleza',
       uf: 'CE',
-      horarioFuncionamento: '9h às 18h',
     }))
-  })
-
-  it('exibe a modalidade do sebo na tela de perfil', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
-    vi.spyOn(seboService, 'buscarMeu').mockResolvedValue({ ...sebo, tipoOperacao: TipoOperacaoSebo.VIRTUAL })
-
-    renderAt('/meu-sebo', <MeuSeboPage />)
-
-    expect(await screen.findByText(/Modalidade:/i)).toBeInTheDocument()
-    expect(screen.getByText('Totalmente virtual', { selector: 'span' })).toBeInTheDocument()
   })
 
   it('exibe data de criação e última atividade recente do sebo', async () => {
@@ -227,7 +212,6 @@ describe('paginas principais', () => {
     useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
     vi.spyOn(seboService, 'buscarMeu').mockResolvedValue({
       ...sebo,
-      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
       dataCriacao: '2026-07-06',
       ultimaAtividade,
     })
@@ -249,7 +233,6 @@ describe('paginas principais', () => {
       useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
       vi.spyOn(seboService, 'buscarMeu').mockResolvedValue({
         ...sebo,
-        tipoOperacao: TipoOperacaoSebo.VIRTUAL,
         ultimaAtividade,
       })
 
@@ -268,7 +251,6 @@ describe('paginas principais', () => {
     useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
     vi.spyOn(seboService, 'buscarMeu').mockResolvedValue({
       ...sebo,
-      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
       ultimaAtividade,
     })
 
@@ -283,7 +265,6 @@ describe('paginas principais', () => {
     useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
     vi.spyOn(seboService, 'buscarMeu').mockResolvedValue({
       ...sebo,
-      tipoOperacao: TipoOperacaoSebo.VIRTUAL,
       dataCriacao: 'data-invalida',
       ultimaAtividade: null,
     })
@@ -297,44 +278,29 @@ describe('paginas principais', () => {
     expect(screen.queryByText(/data-invalida/)).not.toBeInTheDocument()
   })
 
-  it('exibe perfil híbrido com campos físicos preenchidos', async () => {
+  it('exibe o endereco do sebo preenchido no perfil', async () => {
     useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
-    const seboHibrido = {
+    const seboComEndereco = {
       ...sebo,
-      tipoOperacao: TipoOperacaoSebo.HIBRIDO,
       cep: '60123456',
       logradouro: 'Rua dos Livros',
       cidade: 'Fortaleza',
       uf: 'CE',
       horarioFuncionamento: '9h às 18h',
     }
-    vi.spyOn(seboService, 'buscarMeu').mockResolvedValue(seboHibrido)
+    vi.spyOn(seboService, 'buscarMeu').mockResolvedValue(seboComEndereco)
 
     renderAt('/meu-sebo', <MeuSeboPage />)
 
-    expect(await screen.findByText(/Modalidade:/i)).toBeInTheDocument()
-    expect(screen.getByText('Híbrido', { selector: 'span' })).toBeInTheDocument()
-    expect(screen.getByLabelText('CEP')).toHaveValue('60123456')
+    expect(await screen.findByLabelText('CEP')).toHaveValue('60123456')
     expect(screen.getByLabelText('Endereço/logradouro')).toHaveValue('Rua dos Livros')
     expect(screen.getByLabelText('Cidade')).toHaveValue('Fortaleza')
     expect(screen.getByLabelText('UF')).toHaveValue('CE')
   })
 
-  it('bloqueia registro de venda física para sebos virtuais', async () => {
-    useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: 3 })
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({ ...sebo, tipoOperacao: TipoOperacaoSebo.VIRTUAL })
-    vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue({ ...emptyPage, content: [produto] })
-    vi.spyOn(movimentacaoService, 'registrarVendaFisica').mockResolvedValue({} as never)
-
-    renderAt('/painel/estoque', <StockMovementsPage />)
-
-    expect(await screen.findByText(/Sebo virtual não permite venda física/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Registrar venda física' })).toBeDisabled()
-  })
-
   it('atualiza perfil do sebo existente com sucesso', async () => {
     useAuthStore.setState({ token: 'jwt', account: { ...account, type: AccountType.SEBO }, seboId: null })
-    const existingSebo = { ...sebo, descricao: 'Velho sebo', telefone: '0000', cidade: 'Fortaleza', uf: 'CE' }
+    const existingSebo = { ...sebo, descricao: 'Velho sebo', telefone: '0000', cep: '60123456', logradouro: 'Rua dos Livros', cidade: 'Fortaleza', uf: 'CE' }
     const buscarMeuSpy = vi.spyOn(seboService, 'buscarMeu').mockResolvedValue(existingSebo)
     vi.spyOn(seboService, 'atualizarMeu').mockResolvedValue({ ...existingSebo, descricao: 'Novo sebo' })
 
@@ -359,6 +325,10 @@ describe('paginas principais', () => {
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.type(screen.getByLabelText('Descrição'), 'Livros virtuais')
+    await userEvent.type(screen.getByLabelText('CEP'), '60123456')
+    await userEvent.type(screen.getByLabelText('Endereço/logradouro'), 'Rua dos Livros')
+    await userEvent.type(screen.getByLabelText('Cidade'), 'Fortaleza')
+    await userEvent.type(screen.getByLabelText('UF'), 'CE')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Erro ao salvar o sebo')

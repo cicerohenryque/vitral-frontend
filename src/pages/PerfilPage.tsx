@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Button } from '../components/ui/Button'
 import { ImageUploadField } from '../components/ui/ImageUploadField'
 import { Input } from '../components/ui/Input'
 import { usuarioService } from '../services/usuarioService'
+import { cepService } from '../services/cepService'
 import { extractErrorMessage } from '../services/api'
 import { useAuthStore } from '../store/authStore'
 import { AccountType, type Account, type UpdateProfileRequest } from '../types/account'
@@ -74,6 +75,8 @@ export function PerfilPage() {
     return Object.fromEntries(fields.filter((field): field is keyof ProfileForm => PURCHASE_FIELDS.includes(field as keyof ProfileForm)).map((field) => [field, 'Complete este campo para continuar a compra.']))
   })
   const [sucesso, setSucesso] = useState<string | null>(null)
+  const [cepStatus, setCepStatus] = useState<'idle' | 'loading' | 'not-found'>('idle')
+  const ultimoCepConsultado = useRef<string | null>(account ? onlyDigits(account.cep ?? '') : null)
 
   useEffect(() => {
     let active = true
@@ -83,6 +86,7 @@ export function PerfilPage() {
       setAccount(current)
       setForm(currentForm)
       setInitialForm(currentForm)
+      ultimoCepConsultado.current = onlyDigits(currentForm.cep)
       setErro(null)
     }).catch((err) => {
       if (active) setErro(extractErrorMessage(err, 'Falha ao carregar o perfil'))
@@ -91,6 +95,35 @@ export function PerfilPage() {
     })
     return () => { active = false }
   }, [setAccount])
+
+  useEffect(() => {
+    if (!isUsuario) return
+    const digits = onlyDigits(form.cep)
+    if (digits.length !== 8 || digits === ultimoCepConsultado.current) {
+      setCepStatus('idle')
+      return
+    }
+    let active = true
+    setCepStatus('loading')
+    cepService.buscar(digits).then((endereco) => {
+      if (!active) return
+      ultimoCepConsultado.current = digits
+      if (endereco) {
+        setForm((current) => ({
+          ...current,
+          logradouro: endereco.logradouro || current.logradouro,
+          bairro: endereco.bairro || current.bairro,
+          cidade: endereco.cidade || current.cidade,
+          estado: endereco.uf || current.estado,
+        }))
+        setFieldErrors((current) => ({ ...current, logradouro: undefined, bairro: undefined, cidade: undefined, estado: undefined }))
+        setCepStatus('idle')
+      } else {
+        setCepStatus('not-found')
+      }
+    })
+    return () => { active = false }
+  }, [form.cep, isUsuario])
 
   function update<K extends keyof ProfileForm>(key: K, value: ProfileForm[K]) {
     setForm((current) => ({ ...current, [key]: value }))
@@ -155,22 +188,31 @@ export function PerfilPage() {
         {sucesso ? <div className="flash success" role="status">{sucesso} {fromCheckout ? <Link to="/confirmar-pedido">Voltar ao checkout</Link> : null}</div> : null}
         <form className="form-grid" onSubmit={handleSubmit} noValidate>
           <h2 className="form-section-title">Dados pessoais</h2>
-          <Input id="perfil-name" label="Nome" value={form.name} onChange={(e) => update('name', e.target.value)} aria-invalid={Boolean(fieldErrors.name)} aria-describedby={fieldErrors.name ? 'perfil-name-error' : undefined} />
-          {fieldErrors.name ? <small id="perfil-name-error" className="form-field-error">{fieldErrors.name}</small> : null}
+          <div className="form-field-group">
+            <Input id="perfil-name" label="Nome" value={form.name} onChange={(e) => update('name', e.target.value)} aria-invalid={Boolean(fieldErrors.name)} aria-describedby={fieldErrors.name ? 'perfil-name-error' : undefined} />
+            {fieldErrors.name ? <small id="perfil-name-error" className="form-field-error">{fieldErrors.name}</small> : null}
+          </div>
           <Input id="perfil-username" label="Username" value={account?.username ?? ''} disabled />
           <Input id="perfil-email" label="E-mail" type="email" value={account?.email ?? ''} disabled />
-          <Input id="perfil-tipo" label="Tipo da conta" value={account?.type ?? ''} disabled />
           <Input id="perfil-email-status" label="Situação do e-mail" value={account?.emailVerificado ? 'Verificado' : 'Não verificado'} disabled />
+          {isUsuario ? (
+            <div className="form-field-group">
+              <Input id="perfil-cpf" label="CPF" inputMode="numeric" value={form.cpf} onFocus={() => { if (maskedCpf) update('cpf', '') }} onChange={(e) => update('cpf', formatCpf(e.target.value))} placeholder={maskedCpf ? 'Digite o CPF completo para alterá-lo' : '000.000.000-00'} maxLength={14} aria-invalid={Boolean(fieldErrors.cpf)} aria-describedby={fieldErrors.cpf ? 'perfil-cpf-error' : undefined} />
+              {fieldErrors.cpf ? <small id="perfil-cpf-error" className="form-field-error">{fieldErrors.cpf}</small> : maskedCpf ? <small className="form-field-hint">CPF protegido. Para alterar, informe novamente os 11 dígitos.</small> : null}
+            </div>
+          ) : null}
           <ImageUploadField id="perfil-foto" label="Foto do perfil" value={form.fotoUrl} onChange={(value) => update('fotoUrl', value)} />
 
           {isUsuario ? (
             <>
-              <Input id="perfil-cpf" label="CPF" inputMode="numeric" value={form.cpf} onFocus={() => { if (maskedCpf) update('cpf', '') }} onChange={(e) => update('cpf', formatCpf(e.target.value))} placeholder={maskedCpf ? 'Digite o CPF completo para alterá-lo' : '000.000.000-00'} maxLength={14} aria-invalid={Boolean(fieldErrors.cpf)} aria-describedby={fieldErrors.cpf ? 'perfil-cpf-error' : undefined} />
-              {fieldErrors.cpf ? <small id="perfil-cpf-error" className="form-field-error">{fieldErrors.cpf}</small> : maskedCpf ? <small className="form-field-hint">CPF protegido. Para alterar, informe novamente os 11 dígitos.</small> : null}
-
               <h2 className="form-section-title">Endereço</h2>
-              <Input id="perfil-cep" label="CEP" inputMode="numeric" value={form.cep} onChange={(e) => update('cep', formatCep(e.target.value))} maxLength={9} aria-invalid={Boolean(fieldErrors.cep)} aria-describedby={fieldErrors.cep ? 'perfil-cep-error' : undefined} />
-              {fieldErrors.cep ? <small id="perfil-cep-error" className="form-field-error">{fieldErrors.cep}</small> : null}
+              <div className="form-field-group">
+                <Input id="perfil-cep" label="CEP" inputMode="numeric" value={form.cep} onChange={(e) => update('cep', formatCep(e.target.value))} maxLength={9} aria-invalid={Boolean(fieldErrors.cep)} aria-describedby={fieldErrors.cep ? 'perfil-cep-error' : undefined} />
+                {fieldErrors.cep ? <small id="perfil-cep-error" className="form-field-error">{fieldErrors.cep}</small>
+                  : cepStatus === 'loading' ? <small className="form-field-hint">Buscando endereço...</small>
+                  : cepStatus === 'not-found' ? <small className="form-field-hint">CEP não encontrado. Preencha o endereço manualmente.</small>
+                  : null}
+              </div>
               <Input id="perfil-logradouro" label="Logradouro" value={form.logradouro} onChange={(e) => update('logradouro', e.target.value)} aria-invalid={Boolean(fieldErrors.logradouro)} />
               <Input id="perfil-numero" label="Número" value={form.numero} onChange={(e) => update('numero', e.target.value)} aria-invalid={Boolean(fieldErrors.numero)} />
               <Input id="perfil-complemento" label="Complemento (opcional)" value={form.complemento} onChange={(e) => update('complemento', e.target.value)} />

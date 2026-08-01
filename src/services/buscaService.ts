@@ -4,7 +4,6 @@ import type { Produto } from '../types/produto'
 import type { Sebo } from '../types/sebo'
 import type { CondicaoProduto } from '../types/produto'
 import type { BookGenre } from '../constants/productCatalog'
-import type { TipoOperacaoSebo } from '../types/sebo'
 
 export type BuscaProdutosParams = {
   q?: string
@@ -18,7 +17,6 @@ export type BuscaProdutosParams = {
 
 export type BuscaSebosParams = {
   q?: string
-  tipoOperacao?: TipoOperacaoSebo
   cidade?: string
   uf?: string
   lat?: number

@@ -17,20 +17,22 @@ import { CondicaoProduto } from '../types/produto'
 import type { Produto, ProdutoRequest } from '../types/produto'
 import './FormPage.css'
 import './MeusProdutosPage.css'
-import { isValidIsbn, normalizeIsbn } from '../utils/isbn'
 import { BOOK_GENRE_OPTIONS, bookGenreLabel, getAllowedCategories, isBookCategory, type BookGenre } from '../constants/productCatalog'
+import type { SugestaoProduto } from '../types/produto'
 
 const EMPTY: ProdutoRequest = {
-  isbn: '',
   titulo: '',
   autor: '',
   descricao: '',
+  ano: undefined,
   preco: 0,
   estoque: 1,
   condicao: CondicaoProduto.USADO,
   classico: false,
   fotoUrl: '',
 }
+
+const CATEGORIAS_MUSICAIS = ['cds', 'vinis']
 
 export function MeusProdutosPage() {
   const { seboId } = useAuth()
@@ -45,14 +47,17 @@ export function MeusProdutosPage() {
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [totalProducts, setTotalProducts] = useState(0)
-  const [sellingId, setSellingId] = useState<number | null>(null)
   const [verification, setVerification] = useState<VerificationStatus | null>(null)
   const [categoryFilter, setCategoryFilter] = useState('')
   const [genreFilter, setGenreFilter] = useState('')
+  const [sugestoes, setSugestoes] = useState<SugestaoProduto[]>([])
+  const [buscandoSugestoes, setBuscandoSugestoes] = useState(false)
+  const [sugestaoAviso, setSugestaoAviso] = useState<string | null>(null)
 
   const allowedCategories = useMemo(() => getAllowedCategories(categorias), [categorias])
   const selectedCategory = allowedCategories.find((item) => item.id === form.categoriaId)
   const bookSelected = isBookCategory(selectedCategory)
+  const autorLabel = CATEGORIAS_MUSICAIS.includes(selectedCategory?.slug ?? '') ? 'Artista' : 'Autor'
   const visibleProducts = produtos.filter((item) => {
     if (categoryFilter && item.categoriaId !== Number(categoryFilter)) return false
     if (genreFilter && item.bookGenre !== genreFilter) return false
@@ -113,16 +118,53 @@ export function MeusProdutosPage() {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
+  async function handleBuscarSugestoes() {
+    const termo = form.titulo.trim()
+    setSugestoes([])
+    if (termo.length < 3) {
+      setSugestaoAviso('Digite ao menos 3 caracteres do título para buscar.')
+      return
+    }
+    setBuscandoSugestoes(true)
+    setSugestaoAviso(null)
+    try {
+      const encontradas = await produtoService.buscarSugestoes(termo)
+      setSugestoes(encontradas)
+      if (encontradas.length === 0) {
+        setSugestaoAviso('Nenhuma informação encontrada. Preencha os campos manualmente.')
+      }
+    } catch (err) {
+      setSugestaoAviso(extractErrorMessage(err, 'Não foi possível buscar as informações agora.'))
+    } finally {
+      setBuscandoSugestoes(false)
+    }
+  }
+
+  function aplicarSugestao(sugestao: SugestaoProduto) {
+    setForm((current) => ({
+      ...current,
+      titulo: sugestao.titulo,
+      autor: sugestao.autor ?? current.autor,
+      ano: sugestao.ano ?? current.ano,
+      descricao: sugestao.descricao ?? current.descricao,
+      categoriaId: sugestao.categoriaId ?? current.categoriaId,
+      bookGenre: sugestao.categoriaId && sugestao.categoriaId !== current.categoriaId ? undefined : current.bookGenre,
+      fotoUrl: current.fotoUrl ? current.fotoUrl : sugestao.fotoUrl ?? '',
+    }))
+    setSugestoes([])
+    setSugestaoAviso(null)
+  }
+
   function startEdit(p: Produto) {
     setEditingId(p.id)
     setForm({
-      isbn: p.isbn ?? '',
       titulo: p.titulo,
       categoriaId: p.categoriaId ?? undefined,
       bookGenre: p.bookGenre ?? undefined,
       classico: p.classico ?? false,
       autor: p.autor ?? '',
       descricao: p.descricao ?? '',
+      ano: p.ano ?? undefined,
       preco: p.preco,
       estoque: p.estoque ?? 1,
       condicao: p.condicao,
@@ -135,6 +177,8 @@ export function MeusProdutosPage() {
   function resetForm() {
     setEditingId(null)
     setForm(EMPTY)
+    setSugestoes([])
+    setSugestaoAviso(null)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -143,10 +187,6 @@ export function MeusProdutosPage() {
     setSuccess(null)
     setBusy(true)
     try {
-      if (form.isbn && !isValidIsbn(form.isbn)) {
-        setError('Informe um ISBN-10 ou ISBN-13 válido.')
-        return
-      }
       if (!form.categoriaId || !allowedCategories.some((category) => category.id === form.categoriaId)) {
         setError('Selecione uma das quatro categorias permitidas.')
         return
@@ -154,7 +194,7 @@ export function MeusProdutosPage() {
       const payload: ProdutoRequest = {
         ...form,
         bookGenre: bookSelected ? form.bookGenre : undefined,
-        isbn: form.isbn ? normalizeIsbn(form.isbn) : undefined,
+        ano: form.ano ? Number(form.ano) : undefined,
         preco: Number(form.preco),
         estoque: Number(form.estoque ?? 1),
       }
@@ -181,34 +221,6 @@ export function MeusProdutosPage() {
       load()
     } catch (err) {
       setError(extractErrorMessage(err, 'Erro ao remover produto'))
-    }
-  }
-
-  async function handlePhysicalSale(p: Produto) {
-    const raw = prompt(`Quantidade vendida de "${p.titulo}":`, '1')
-    if (raw === null) return
-    const quantidade = Number(raw)
-    if (!Number.isInteger(quantidade) || quantidade < 1) {
-      setError('Informe uma quantidade inteira maior que zero.')
-      return
-    }
-    if (quantidade > (p.estoque ?? 0)) {
-      setError('A quantidade informada é maior que o estoque disponível.')
-      return
-    }
-    setSellingId(p.id)
-    setError(null)
-    setSuccess(null)
-    try {
-      const response = await produtoService.registrarVendaFisica(p.id, quantidade)
-      setProdutos((current) => current.map((item) => item.id === p.id
-        ? { ...item, estoque: response.estoqueAtual ?? Math.max((item.estoque ?? 0) - quantidade, 0) }
-        : item))
-      setSuccess(response.mensagem || 'Venda física registrada com sucesso.')
-    } catch (err) {
-      setError(extractErrorMessage(err, 'Não foi possível registrar a venda física.'))
-    } finally {
-      setSellingId(null)
     }
   }
 
@@ -239,16 +251,46 @@ export function MeusProdutosPage() {
         {success ? <div className="flash success" role="status">{success}</div> : null}
 
         <form className="form-grid" onSubmit={handleSubmit}>
-          <Input id="isbn" label="ISBN (opcional)" maxLength={20}
-            value={form.isbn ?? ''} onChange={(e) => update('isbn', e.target.value)} />
-          <Input id="titulo" label="Título" required
-            value={form.titulo} onChange={(e) => update('titulo', e.target.value)} />
-          <Input id="autor" label="Autor"
+          <div className="titulo-com-busca">
+            <Input id="titulo" label="Título" required
+              value={form.titulo} onChange={(e) => update('titulo', e.target.value)} />
+            <button type="button" className="sugestao-trigger" onClick={handleBuscarSugestoes}
+              disabled={buscandoSugestoes}>
+              {buscandoSugestoes ? 'Buscando informações...' : 'Buscar informações pelo título'}
+            </button>
+          </div>
+          <Input id="autor" label={autorLabel}
             value={form.autor ?? ''} onChange={(e) => update('autor', e.target.value)} />
+          {sugestaoAviso || sugestoes.length > 0 ? (
+            <div className="produto-sugestoes">
+              {sugestaoAviso ? <p className="produto-sugestoes-aviso" role="status">{sugestaoAviso}</p> : null}
+              {sugestoes.length > 0 ? (
+                <>
+                  <p className="produto-sugestoes-titulo">Selecione o resultado correto para preencher o cadastro:</p>
+                  <ul className="produto-sugestoes-lista">
+                    {sugestoes.map((sugestao, indice) => (
+                      <li key={`${sugestao.fonte}-${sugestao.titulo}-${indice}`}>
+                        <button type="button" className="produto-sugestao" onClick={() => aplicarSugestao(sugestao)}>
+                          <strong>{sugestao.titulo}</strong>
+                          <span>
+                            {[sugestao.autor, sugestao.ano, sugestao.categoriaNome].filter(Boolean).join(' • ')}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : null}
+            </div>
+          ) : null}
           <CurrencyInput id="preco" label="Preço (R$)" required
             value={form.preco} onChange={(value) => update('preco', value)} />
-          <Input id="estoque" label="Estoque" type="number" step="1" min="1"
-            value={form.estoque ?? 1} onChange={(e) => update('estoque', Number(e.target.value))} />
+          <div className="campo-duplo">
+            <Input id="estoque" label="Estoque" type="number" step="1" min="1"
+              value={form.estoque ?? 1} onChange={(e) => update('estoque', Number(e.target.value))} />
+            <Input id="ano" label="Ano" type="number" step="1" min="0" max="2200" placeholder="Ex: 1969"
+              value={form.ano ?? ''} onChange={(e) => update('ano', e.target.value ? Number(e.target.value) : undefined)} />
+          </div>
           <label className="vit-input-wrapper">
             <span className="vit-input-label">Categoria</span>
             <select
@@ -349,14 +391,6 @@ export function MeusProdutosPage() {
                     <td>{p.estoque ?? 0}</td>
                     <td>{p.condicao}</td>
                     <td className="produto-table-actions">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        disabled={(p.estoque ?? 0) === 0 || sellingId === p.id}
-                        onClick={() => handlePhysicalSale(p)}
-                      >
-                        {sellingId === p.id ? 'Registrando...' : 'Registrar venda física'}
-                      </Button>
                       <Button type="button" variant="ghost" onClick={() => startEdit(p)}>Editar</Button>
                       <Button type="button" variant="danger" onClick={() => handleRemove(p)}>Remover</Button>
                     </td>

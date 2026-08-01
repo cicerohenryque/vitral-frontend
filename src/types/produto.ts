@@ -7,7 +7,6 @@ export const CondicaoProduto = {
 export type CondicaoProduto = (typeof CondicaoProduto)[keyof typeof CondicaoProduto]
 
 export type ProdutoRequest = {
-  isbn?: string
   titulo: string
   categoriaId?: number
   bookGenre?: BookGenre
@@ -15,10 +14,23 @@ export type ProdutoRequest = {
   lancamento?: boolean
   autor?: string
   descricao?: string
+  ano?: number
   preco: number
   estoque?: number
   condicao: CondicaoProduto
   fotoUrl?: string
+}
+
+export type SugestaoProduto = {
+  titulo: string
+  autor: string | null
+  ano: number | null
+  descricao: string | null
+  categoriaId: number | null
+  categoriaSlug: string | null
+  categoriaNome: string | null
+  fotoUrl: string | null
+  fonte: string
 }
 
 export type Produto = {
@@ -29,11 +41,10 @@ export type Produto = {
   bookGenre?: BookGenre | null
   classico?: boolean
   lancamento?: boolean
-  catalogoLivroId?: number | null
-  isbn?: string | null
   titulo: string
   autor: string | null
   descricao: string | null
+  ano?: number | null
   preco: number
   precoPromocional?: number | null
   estoque: number | null

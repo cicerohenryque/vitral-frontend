@@ -9,17 +9,14 @@ import { ForgotPasswordPage } from '../pages/ForgotPasswordPage'
 import { MinhasOfertasPage } from '../pages/MinhasOfertasPage'
 import { ResetPasswordPage } from '../pages/ResetPasswordPage'
 import { SeboDocumentsPage } from '../pages/SeboDocumentsPage'
-import { StockMovementsPage } from '../pages/StockMovementsPage'
 import { authService } from '../services/authService'
-import { movimentacaoService } from '../services/movimentacaoService'
 import { ofertaService } from '../services/ofertaService'
 import { produtoService } from '../services/produtoService'
 import { seboService } from '../services/seboService'
 import { useAuthStore } from '../store/authStore'
 import { AccountType } from '../types/account'
-import { TipoMovimentacaoEstoque } from '../types/movimentacao'
 import { CondicaoProduto } from '../types/produto'
-import { StatusVerificacao, TipoDocumentoSebo, TipoOperacaoSebo } from '../types/sebo'
+import { StatusVerificacao, TipoDocumentoSebo } from '../types/sebo'
 import { formatBytes } from '../utils/documentSebo'
 
 const emptyPage = { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20, first: true, last: true }
@@ -34,7 +31,6 @@ const sebo = {
   telefone: '85999999999',
   fotoUrl: null,
   statusVerificacao: StatusVerificacao.VERIFICADO,
-  tipoOperacao: TipoOperacaoSebo.HIBRIDO,
 }
 const produto = {
   id: 7,
@@ -197,7 +193,7 @@ describe('cobertura focada no painel admin de verificação', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Ver documentos e auditoria' }))
     expect(await screen.findByText('cartao.pdf')).toBeInTheDocument()
     expect(screen.getByText('2.0 KB')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Abrir' })).toHaveAttribute('href', '/documentos/cartao.pdf')
+    expect(screen.getByRole('button', { name: 'Abrir' })).toBeInTheDocument()
     expect(screen.getByText(/Documento ilegível/)).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: 'Aprovar' }))
@@ -268,7 +264,7 @@ describe('cobertura focada em documentos do sebo', () => {
 
     expect(await screen.findByText('contrato.pdf')).toBeInTheDocument()
     expect(screen.getByText('1.0 MB')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Abrir' })).toHaveAttribute('href', '/privado/contrato.pdf')
+    expect(screen.getByRole('button', { name: 'Abrir' })).toBeInTheDocument()
 
     await userEvent.selectOptions(screen.getByLabelText('Tipo do documento'), TipoDocumentoSebo.CARTAO_CNPJ)
     const fileInput = screen.getByLabelText('Arquivo')
@@ -299,73 +295,6 @@ describe('cobertura focada em documentos do sebo', () => {
     expect(formatBytes(0)).toBe('—')
     expect(formatBytes(512)).toBe('512 B')
     expect(formatBytes(1536)).toBe('1.5 KB')
-  })
-})
-
-describe('cobertura focada em estoque e vendas físicas', () => {
-  beforeEach(() => {
-    vi.restoreAllMocks()
-    useAuthStore.setState({ token: 'jwt', account: seboAccount, seboId: 3 })
-  })
-
-  it('registra venda física preenchendo produto, valor e observação', async () => {
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({ ...sebo, tipoOperacao: TipoOperacaoSebo.HIBRIDO })
-    vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue(page([produto]))
-    vi.spyOn(movimentacaoService, 'listar').mockResolvedValue(page([]))
-    const sale = vi.spyOn(movimentacaoService, 'registrarVendaFisica').mockResolvedValue({} as never)
-
-    renderPage(<StockMovementsPage />)
-
-    await userEvent.selectOptions(await screen.findByLabelText('Produto'), '7')
-    await userEvent.clear(screen.getByLabelText('Quantidade'))
-    await userEvent.type(screen.getByLabelText('Quantidade'), '2')
-    await userEvent.type(screen.getByLabelText('Observação'), 'Venda no balcão')
-    await userEvent.click(screen.getByRole('button', { name: 'Registrar venda física' }))
-
-    expect(sale).toHaveBeenCalledWith({ produtoId: 7, quantidade: 2, valorUnitario: 70, observacao: 'Venda no balcão' })
-    expect(await screen.findByRole('status')).toHaveTextContent('Venda física registrada e estoque atualizado.')
-  })
-
-  it('lista movimentações e estorna venda física com confirmação', async () => {
-    vi.spyOn(seboService, 'buscarPorId').mockResolvedValue({ ...sebo, tipoOperacao: TipoOperacaoSebo.HIBRIDO })
-    vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue(page([produto]))
-    vi.spyOn(movimentacaoService, 'listar').mockResolvedValue(page([{
-      id: 20,
-      produtoId: 7,
-      seboId: 3,
-      operadorId: 1,
-      movimentacaoOrigemId: null,
-      tipo: TipoMovimentacaoEstoque.VENDA_FISICA,
-      quantidade: 1,
-      estoqueAntes: 5,
-      estoqueDepois: 4,
-      valorUnitario: 70,
-      valorTotal: 70,
-      observacao: null,
-      criadoEm: '2026-07-06T12:00:00Z',
-    }]))
-    const refund = vi.spyOn(movimentacaoService, 'estornar').mockResolvedValue({} as never)
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
-    vi.spyOn(window, 'prompt').mockReturnValue('Erro de lançamento')
-
-    renderPage(<StockMovementsPage />)
-
-    const row = (await screen.findByText(TipoMovimentacaoEstoque.VENDA_FISICA)).closest('tr')
-    expect(row).not.toBeNull()
-    expect(within(row!).getByText('5 → 4')).toBeInTheDocument()
-    await userEvent.click(within(row!).getByRole('button', { name: 'Estornar' }))
-    expect(refund).toHaveBeenCalledWith(20, 'Erro de lançamento')
-    expect(await screen.findByRole('status')).toHaveTextContent('Venda física estornada.')
-  })
-
-  it('mostra erros de carregamento, venda e estorno', async () => {
-    vi.spyOn(seboService, 'buscarPorId').mockRejectedValue(new Error('offline'))
-    vi.spyOn(produtoService, 'listarPorSebo').mockRejectedValue(new Error('offline'))
-    vi.spyOn(movimentacaoService, 'listar').mockRejectedValue(new Error('offline'))
-
-    renderPage(<StockMovementsPage />)
-
-    expect(await screen.findByText('Não foi possível carregar as movimentações.')).toBeInTheDocument()
   })
 })
 

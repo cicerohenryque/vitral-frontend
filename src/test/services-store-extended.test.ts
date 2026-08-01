@@ -40,7 +40,6 @@ describe('contratos completos dos servicos', () => {
     await produtoService.atualizar(7, { titulo: 'Novo' } as never)
     await produtoService.remover(7)
     await produtoService.listarPorSebo(3)
-    await produtoService.registrarVendaFisica(7, 2)
     await pedidoService.buscarFaturamentoMensal(2026)
     await seboService.criar({ cnpj: '12345678000199', descricao: 'Livros' })
     await seboService.atualizarMeu({ cnpj: '12345678000199', descricao: 'Livros raros' })
@@ -48,7 +47,6 @@ describe('contratos completos dos servicos', () => {
     await usuarioService.excluirConta()
     expect(api.post).toHaveBeenCalledWith('/cesta/7', null, { params: { quantidade: 2 } })
     expect(api.put).toHaveBeenCalledWith('/produtos/7', { titulo: 'Novo' })
-    expect(api.post).toHaveBeenCalledWith('/produtos/7/venda-fisica', { quantidade: 2 })
     expect(api.get).toHaveBeenCalledWith('/pedidos/faturamento-mensal', { params: { ano: 2026 } })
   })
 

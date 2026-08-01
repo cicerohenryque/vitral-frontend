@@ -41,6 +41,18 @@
   font-size: 12px;
 }
 
+/* Agrupa um campo com sua mensagem numa unica celula do grid, para que a
+   mensagem nao ocupe a coluna vizinha e desalinhe os campos seguintes. */
+.form-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-field-group .form-field-error,
+.form-field-group .form-field-hint {
+  margin-top: 0;
+}
+
 .form-field-error { color: var(--color-danger); }
 .form-field-hint { color: var(--color-text-muted); }
 

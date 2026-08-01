@@ -300,7 +300,7 @@ describe('MeuSeboPage — branches adicionais', () => {
     vi.spyOn(pedidoService, 'buscarFaturamentoMensal').mockResolvedValue([])
   })
 
-  it('cadastra novo sebo apenas com dados virtuais', async () => {
+  it('cadastra novo sebo com o endereco obrigatorio', async () => {
     useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
     vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('Sebo nao encontrado'))
     const novoSebo = { id: 10, accountId: 1, nome: 'Rute', email: 'rute@teste.com', descricao: 'Desc', telefone: '99', fotoUrl: null }
@@ -309,9 +309,13 @@ describe('MeuSeboPage — branches adicionais', () => {
     renderPage(<MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
+    await userEvent.type(screen.getByLabelText('CEP'), '60123456')
+    await userEvent.type(screen.getByLabelText('Endereço/logradouro'), 'Rua dos Livros')
+    await userEvent.type(screen.getByLabelText('Cidade'), 'Fortaleza')
+    await userEvent.type(screen.getByLabelText('UF'), 'CE')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
     expect(await screen.findByText('Sebo cadastrado com sucesso!')).toBeInTheDocument()
-    expect(seboService.criar).toHaveBeenCalledWith({ cnpj: '12345678000199', descricao: '', telefone: '', fotoUrl: '', tipoOperacao: 'VIRTUAL' })
+    expect(seboService.criar).toHaveBeenCalledWith(expect.objectContaining({ cnpj: '12345678000199', cep: '60123456', logradouro: 'Rua dos Livros', cidade: 'Fortaleza', uf: 'CE' }))
   })
 
   it('envia descricao e telefone do sebo virtual', async () => {
@@ -325,6 +329,10 @@ describe('MeuSeboPage — branches adicionais', () => {
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.type(screen.getByLabelText('Descrição'), 'x')
     await userEvent.type(screen.getByLabelText('Telefone'), '99')
+    await userEvent.type(screen.getByLabelText('CEP'), '60123456')
+    await userEvent.type(screen.getByLabelText('Endereço/logradouro'), 'Rua dos Livros')
+    await userEvent.type(screen.getByLabelText('Cidade'), 'Fortaleza')
+    await userEvent.type(screen.getByLabelText('UF'), 'CE')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
     await waitFor(() => expect(seboService.criar).toHaveBeenCalledWith(expect.objectContaining({ descricao: 'x', telefone: '99' })))
   })
@@ -337,6 +345,10 @@ describe('MeuSeboPage — branches adicionais', () => {
     renderPage(<MeuSeboPage />)
     expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
+    await userEvent.type(screen.getByLabelText('CEP'), '60123456')
+    await userEvent.type(screen.getByLabelText('Endereço/logradouro'), 'Rua dos Livros')
+    await userEvent.type(screen.getByLabelText('Cidade'), 'Fortaleza')
+    await userEvent.type(screen.getByLabelText('UF'), 'CE')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Erro ao salvar o sebo')
   })

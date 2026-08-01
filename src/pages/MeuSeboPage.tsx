@@ -1,15 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { StoreStatus } from '../components/Layout/StorePage'
 import { Button } from '../components/ui/Button'
 import { ImageUploadField } from '../components/ui/ImageUploadField'
 import { Input } from '../components/ui/Input'
 import { seboService } from '../services/seboService'
 import { pedidoService } from '../services/pedidoService'
+import { cepService } from '../services/cepService'
 import { extractErrorMessage } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
-import { StatusConsultaCnpj, StatusVerificacao, TipoOperacaoSebo, type Sebo, type SeboRequest } from '../types/sebo'
+import { StatusConsultaCnpj, StatusVerificacao, type Sebo, type SeboRequest } from '../types/sebo'
 import type { FaturamentoMensal } from '../types/pedido'
 import { daysSince, formatDateBR, formatDateTimeBR } from '../utils/date'
+import { onlyDigits } from '../utils/personalData'
 import './FormPage.css'
 
 const EMPTY: SeboRequest = {
@@ -17,7 +19,6 @@ const EMPTY: SeboRequest = {
   descricao: '',
   telefone: '',
   fotoUrl: '',
-  tipoOperacao: TipoOperacaoSebo.VIRTUAL,
   cep: '',
   logradouro: '',
   cidade: '',
@@ -30,22 +31,12 @@ function formatCnpj(value: string) {
   return digits
     .replace(/^(\d{2})(\d)/, '$1.$2')
     .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-    .replace(/\.(\d{3})(\d)/, '.$1/$2')
-    .replace(/(\d{4})(\d)/, '$1-$2')
+    .replace(/^(\d{2})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3/$4')
+    .replace(/^(\d{2})\.(\d{3})\.(\d{3})\/(\d{4})(\d)/, '$1.$2.$3/$4-$5')
 }
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
 const formatBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
-const modalidadeLabels: Record<TipoOperacaoSebo, string> = {
-  VIRTUAL: 'Totalmente virtual',
-  FISICO: 'Físico',
-  HIBRIDO: 'Híbrido',
-}
-const modalidadeDescricao: Record<TipoOperacaoSebo, string> = {
-  VIRTUAL: 'Atendimento e vendas totalmente online, sem endereço público ou retirada presencial.',
-  FISICO: 'Sebo com atendimento físico. Informe endereço e horário para clientes encontrarem a loja.',
-  HIBRIDO: 'Combina vendas online com atendimento físico/retirada presencial.',
-}
 
 export function MeuSeboPage() {
   const { setSeboId } = useAuth()
@@ -61,6 +52,8 @@ export function MeuSeboPage() {
   const [loadingFaturamento, setLoadingFaturamento] = useState(true)
   const [faturamentoError, setFaturamentoError] = useState<string | null>(null)
   const [consultingCnpj, setConsultingCnpj] = useState(false)
+  const [cepStatus, setCepStatus] = useState<'idle' | 'loading' | 'not-found'>('idle')
+  const ultimoCepConsultado = useRef<string | null>(null)
 
   useEffect(() => {
     let active = true
@@ -74,13 +67,13 @@ export function MeuSeboPage() {
           descricao: sebo.descricao ?? '',
           telefone: sebo.telefone ?? '',
           fotoUrl: sebo.fotoUrl ?? '',
-          tipoOperacao: sebo.tipoOperacao ?? TipoOperacaoSebo.VIRTUAL,
           cep: sebo.cep ?? '',
           logradouro: sebo.logradouro ?? '',
           cidade: sebo.cidade ?? '',
           uf: sebo.uf ?? '',
           horarioFuncionamento: sebo.horarioFuncionamento ?? '',
         })
+        ultimoCepConsultado.current = onlyDigits(sebo.cep ?? '')
       })
       .catch(() => {
         // Ainda nao existe perfil cadastrado para esta conta (ou o backend esta indisponivel);
@@ -116,6 +109,32 @@ export function MeuSeboPage() {
     return () => { active = false }
   }, [ano])
 
+  useEffect(() => {
+    const digits = onlyDigits(form.cep ?? '')
+    if (digits.length !== 8 || digits === ultimoCepConsultado.current) {
+      setCepStatus('idle')
+      return
+    }
+    let active = true
+    setCepStatus('loading')
+    cepService.buscar(digits).then((endereco) => {
+      if (!active) return
+      ultimoCepConsultado.current = digits
+      if (endereco) {
+        setForm((current) => ({
+          ...current,
+          logradouro: endereco.logradouro || current.logradouro,
+          cidade: endereco.cidade || current.cidade,
+          uf: endereco.uf || current.uf,
+        }))
+        setCepStatus('idle')
+      } else {
+        setCepStatus('not-found')
+      }
+    })
+    return () => { active = false }
+  }, [form.cep])
+
   function update<K extends keyof SeboRequest>(key: K, value: SeboRequest[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
@@ -130,16 +149,11 @@ export function MeuSeboPage() {
     }
     setBusy(true)
     try {
-      const tipoOperacao = form.tipoOperacao ?? TipoOperacaoSebo.VIRTUAL
       const payload: SeboRequest = {
         ...form,
-        tipoOperacao,
         cnpj: form.cnpj.replace(/\D/g, ''),
-        cep: tipoOperacao === TipoOperacaoSebo.VIRTUAL ? undefined : form.cep?.replace(/\D/g, ''),
-        logradouro: tipoOperacao === TipoOperacaoSebo.VIRTUAL ? undefined : form.logradouro,
-        cidade: tipoOperacao === TipoOperacaoSebo.VIRTUAL ? undefined : form.cidade,
-        uf: tipoOperacao === TipoOperacaoSebo.VIRTUAL ? undefined : form.uf?.toUpperCase(),
-        horarioFuncionamento: tipoOperacao === TipoOperacaoSebo.VIRTUAL ? undefined : form.horarioFuncionamento,
+        cep: form.cep?.replace(/\D/g, ''),
+        uf: form.uf?.toUpperCase(),
       }
       const saved = existing
         ? await seboService.atualizarMeu(payload)
@@ -154,8 +168,6 @@ export function MeuSeboPage() {
     }
   }
 
-  const selectedTipoOperacao = form.tipoOperacao ?? TipoOperacaoSebo.VIRTUAL
-  const showPhysicalFields = selectedTipoOperacao !== TipoOperacaoSebo.VIRTUAL
   const dataCriacao = formatDateBR(existing?.dataCriacao)
   const ultimaAtividade = formatDateTimeBR(existing?.ultimaAtividade)
   const diasSemAtividade = daysSince(existing?.ultimaAtividade)
@@ -221,8 +233,6 @@ export function MeuSeboPage() {
           </div>
         ) : null}
         <section className="verification-status" role="status" aria-live="polite">
-          <strong>Modalidade:</strong> <span>{modalidadeLabels[selectedTipoOperacao]}</span>
-          <p>{modalidadeDescricao[selectedTipoOperacao]}</p>
           {existing ? (
             <>
               {dataCriacao ? <p><strong>Data de criação:</strong> {dataCriacao}</p> : null}
@@ -260,34 +270,23 @@ export function MeuSeboPage() {
             value={form.descricao ?? ''} onChange={(e) => update('descricao', e.target.value)} />
           <Input id="telefone" label="Telefone"
             value={form.telefone ?? ''} onChange={(e) => update('telefone', e.target.value)} />
-          <label className="vit-input-wrapper">
-            <span className="vit-input-label">Modalidade de operação</span>
-            <select
-              className="vit-input"
-              value={selectedTipoOperacao}
-              onChange={(e) => update('tipoOperacao', e.target.value as TipoOperacaoSebo)}
-            >
-              <option value={TipoOperacaoSebo.VIRTUAL}>Totalmente virtual</option>
-              <option value={TipoOperacaoSebo.FISICO}>Físico</option>
-              <option value={TipoOperacaoSebo.HIBRIDO}>Híbrido</option>
-            </select>
-          </label>
-          {showPhysicalFields ? (
-            <>
-              <Input id="cep" label="CEP" inputMode="numeric" maxLength={9}
-                value={form.cep ?? ''}
-                onChange={(e) => update('cep', e.target.value.replace(/\D/g, '').slice(0, 8))}
-                placeholder="Somente números" />
-              <Input id="logradouro" label="Endereço/logradouro"
-                value={form.logradouro ?? ''} onChange={(e) => update('logradouro', e.target.value)} />
-              <Input id="cidade" label="Cidade"
-                value={form.cidade ?? ''} onChange={(e) => update('cidade', e.target.value)} />
-              <Input id="uf" label="UF" maxLength={2}
-                value={form.uf ?? ''} onChange={(e) => update('uf', e.target.value.toUpperCase().slice(0, 2))} />
-              <Input id="horarioFuncionamento" label="Horário de funcionamento"
-                value={form.horarioFuncionamento ?? ''} onChange={(e) => update('horarioFuncionamento', e.target.value)} />
-            </>
-          ) : null}
+          <div className="form-field-group">
+            <Input id="cep" label="CEP" inputMode="numeric" maxLength={9} required
+              value={form.cep ?? ''}
+              onChange={(e) => update('cep', e.target.value.replace(/\D/g, '').slice(0, 8))}
+              placeholder="Somente números" />
+            {cepStatus === 'loading' ? <small className="form-field-hint">Buscando endereço...</small>
+              : cepStatus === 'not-found' ? <small className="form-field-hint">CEP não encontrado. Preencha o endereço manualmente.</small>
+              : null}
+          </div>
+          <Input id="logradouro" label="Endereço/logradouro" required
+            value={form.logradouro ?? ''} onChange={(e) => update('logradouro', e.target.value)} />
+          <Input id="cidade" label="Cidade" required
+            value={form.cidade ?? ''} onChange={(e) => update('cidade', e.target.value)} />
+          <Input id="uf" label="UF" maxLength={2} required
+            value={form.uf ?? ''} onChange={(e) => update('uf', e.target.value.toUpperCase().slice(0, 2))} />
+          <Input id="horarioFuncionamento" label="Horário de funcionamento (opcional)"
+            value={form.horarioFuncionamento ?? ''} onChange={(e) => update('horarioFuncionamento', e.target.value)} />
           <ImageUploadField
             id="fotoUrl"
             label="Foto do sebo"
@@ -332,15 +331,13 @@ export function MeuSeboPage() {
                 ano,
                 mes: index + 1,
                 vendasOnline: 0,
-                vendasFisicas: 0,
-                estornosReembolsos: 0,
+                reembolsos: 0,
                 total: 0,
               }
             ))
             const valores = relatorio.map((item) => Number(item.total))
             const totalOnline = relatorio.reduce((sum, item) => sum + Number(item.vendasOnline), 0)
-            const totalFisicas = relatorio.reduce((sum, item) => sum + Number(item.vendasFisicas), 0)
-            const totalEstornos = relatorio.reduce((sum, item) => sum + Number(item.estornosReembolsos), 0)
+            const totalReembolsos = relatorio.reduce((sum, item) => sum + Number(item.reembolsos), 0)
             const total = relatorio.reduce((sum, item) => sum + Number(item.total), 0)
             const selecionado = relatorio[mes - 1]
             const max = Math.max(...valores, 1)
@@ -349,15 +346,13 @@ export function MeuSeboPage() {
                 <p className="billing-total">Total em {ano}: <strong>{formatBRL.format(total)}</strong></p>
                 <div className="billing-summary-grid" aria-label={`Resumo financeiro de ${ano}`}>
                   <span>Vendas online <strong>{formatBRL.format(totalOnline)}</strong></span>
-                  <span>Vendas físicas <strong>{formatBRL.format(totalFisicas)}</strong></span>
-                  <span>Estornos/reembolsos <strong>{formatBRL.format(totalEstornos)}</strong></span>
+                  <span>Reembolsos <strong>{formatBRL.format(totalReembolsos)}</strong></span>
                 </div>
                 <div className="billing-month-card" aria-label={`Detalhamento de ${MESES[mes - 1]} de ${ano}`}>
                   <h3>{MESES[mes - 1]}/{ano}</h3>
                   <dl>
                     <div><dt>Vendas online</dt><dd>{formatBRL.format(selecionado.vendasOnline)}</dd></div>
-                    <div><dt>Vendas físicas</dt><dd>{formatBRL.format(selecionado.vendasFisicas)}</dd></div>
-                    <div><dt>Estornos/reembolsos</dt><dd>{formatBRL.format(selecionado.estornosReembolsos)}</dd></div>
+                    <div><dt>Reembolsos</dt><dd>{formatBRL.format(selecionado.reembolsos)}</dd></div>
                     <div><dt>Total</dt><dd>{formatBRL.format(selecionado.total)}</dd></div>
                   </dl>
                 </div>
@@ -373,13 +368,12 @@ export function MeuSeboPage() {
                 </div>
                 <div className="billing-table-scroll">
                   <table className="billing-table">
-                    <thead><tr><th>Mês</th><th>Online</th><th>Físicas</th><th>Estornos</th><th>Total</th></tr></thead>
+                    <thead><tr><th>Mês</th><th>Online</th><th>Reembolsos</th><th>Total</th></tr></thead>
                     <tbody>{relatorio.map((item, index) => (
                       <tr key={MESES[index]}>
                         <td>{MESES[index]}</td>
                         <td>{formatBRL.format(item.vendasOnline)}</td>
-                        <td>{formatBRL.format(item.vendasFisicas)}</td>
-                        <td>{formatBRL.format(item.estornosReembolsos)}</td>
+                        <td>{formatBRL.format(item.reembolsos)}</td>
                         <td>{formatBRL.format(item.total)}</td>
                       </tr>
                     ))}</tbody>

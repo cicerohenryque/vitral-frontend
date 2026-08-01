@@ -5,7 +5,7 @@ import { Pagination } from '../components/ui/Pagination'
 import { extractErrorMessage } from '../services/api'
 import { buscaService } from '../services/buscaService'
 import type { Produto } from '../types/produto'
-import { TipoOperacaoSebo, type Sebo } from '../types/sebo'
+import type { Sebo } from '../types/sebo'
 import { CondicaoProduto } from '../types/produto'
 import './BuscaPage.css'
 import { categoriaService } from '../services/categoriaService'
@@ -25,7 +25,6 @@ export function BuscaPage() {
   const appliedPrecoMax = searchParams.get('precoMax') ?? ''
   const appliedCategoriaId = searchParams.get('categoriaId') ?? ''
   const appliedBookGenre = searchParams.get('bookGenre') ?? ''
-  const appliedTipoOperacao = searchParams.get('tipoOperacao') ?? ''
   const appliedCidade = searchParams.get('cidade') ?? ''
   const appliedUf = searchParams.get('uf') ?? ''
   const requestedPage = Number(searchParams.get('page') ?? '1')
@@ -39,7 +38,6 @@ export function BuscaPage() {
   const [categoriaId, setCategoriaId] = useState(appliedCategoriaId)
   const [bookGenre, setBookGenre] = useState(appliedBookGenre)
   const [categorias, setCategorias] = useState<Categoria[]>([])
-  const [tipoOperacao, setTipoOperacao] = useState(appliedTipoOperacao)
   const [cidade, setCidade] = useState(appliedCidade)
   const [uf, setUf] = useState(appliedUf)
 
@@ -69,10 +67,9 @@ export function BuscaPage() {
     setPrecoMax(appliedPrecoMax)
     setCategoriaId(appliedCategoriaId)
     setBookGenre(appliedBookGenre)
-    setTipoOperacao(appliedTipoOperacao)
     setCidade(appliedCidade)
     setUf(appliedUf)
-  }, [q, appliedCondicao, appliedSeboId, appliedPrecoMin, appliedPrecoMax, appliedCategoriaId, appliedBookGenre, appliedTipoOperacao, appliedCidade, appliedUf])
+  }, [q, appliedCondicao, appliedSeboId, appliedPrecoMin, appliedPrecoMax, appliedCategoriaId, appliedBookGenre, appliedCidade, appliedUf])
 
   useEffect(() => {
     categoriaService.listar().then((page) => setCategorias(getAllowedCategories(page.content))).catch(() => setCategorias([]))
@@ -111,7 +108,6 @@ export function BuscaPage() {
   useEffect(() => {
     const params = {
       q: q || undefined,
-      tipoOperacao: appliedTipoOperacao ? (appliedTipoOperacao as TipoOperacaoSebo) : undefined,
       cidade: appliedCidade || undefined,
       uf: appliedUf || undefined,
       lat: proximidadeAtiva && coords ? coords.lat : undefined,
@@ -135,7 +131,7 @@ export function BuscaPage() {
         setTotalPaginasSebos(0)
       })
       .finally(() => setLoadingSebos(false))
-  }, [q, appliedTipoOperacao, appliedCidade, appliedUf, currentPage, proximidadeAtiva, coords])
+  }, [q, appliedCidade, appliedUf, currentPage, proximidadeAtiva, coords])
 
   function ativarProximidade() {
     if (!('geolocation' in navigator)) {
@@ -224,8 +220,6 @@ export function BuscaPage() {
       setLoadingProdutos(true)
       setErrorProdutos(null)
     } else {
-      if (tipoOperacao) next.set('tipoOperacao', tipoOperacao)
-      else next.delete('tipoOperacao')
       if (cidade.trim()) next.set('cidade', cidade.trim())
       else next.delete('cidade')
       if (uf.trim()) next.set('uf', uf.trim().toUpperCase())
@@ -249,7 +243,6 @@ export function BuscaPage() {
     setPrecoMax('')
     setCategoriaId('')
     setBookGenre('')
-    setTipoOperacao('')
     setCidade('')
     setUf('')
     setLoadingProdutos(true)
@@ -371,15 +364,6 @@ export function BuscaPage() {
                     {geoError ? <p className="busca-proximidade-erro">{geoError}</p> : null}
                   </div>
                   <label className="busca-filtro-label">
-                    Modalidade
-                    <select value={tipoOperacao} onChange={(e) => setTipoOperacao(e.target.value)}>
-                      <option value="">Todas</option>
-                      <option value={TipoOperacaoSebo.VIRTUAL}>Virtual</option>
-                      <option value={TipoOperacaoSebo.FISICO}>Físico</option>
-                      <option value={TipoOperacaoSebo.HIBRIDO}>Híbrido</option>
-                    </select>
-                  </label>
-                  <label className="busca-filtro-label">
                     Cidade
                     <input value={cidade} onChange={(e) => setCidade(e.target.value)} placeholder="ex: Fortaleza" />
                   </label>
@@ -453,9 +437,8 @@ export function BuscaPage() {
                     )}
                     <div className="busca-sebo-info">
                       <h3>{s.nome}</h3>
-                      {s.tipoOperacao ? <p className="busca-sebo-tel">Modalidade: {s.tipoOperacao === TipoOperacaoSebo.VIRTUAL ? 'Virtual' : s.tipoOperacao === TipoOperacaoSebo.FISICO ? 'Físico' : 'Híbrido'}</p> : null}
                       {s.descricao ? <p className="busca-sebo-desc">{s.descricao}</p> : null}
-                      {s.tipoOperacao !== TipoOperacaoSebo.VIRTUAL && (s.cidade || s.uf) ? <p className="busca-sebo-tel">{[s.cidade, s.uf].filter(Boolean).join(' - ')}</p> : null}
+                      {s.cidade || s.uf ? <p className="busca-sebo-tel">{[s.cidade, s.uf].filter(Boolean).join(' - ')}</p> : null}
                       {s.telefone ? <p className="busca-sebo-tel">{s.telefone}</p> : null}
                       {proximidadeAtiva && s.distanciaKm != null ? (
                         <p className="busca-sebo-distancia">📍 {formatarDistancia(s.distanciaKm)} de você</p>

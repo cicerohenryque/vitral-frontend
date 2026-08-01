@@ -6,6 +6,7 @@ import { extractErrorMessage } from '../services/api'
 import { seboService } from '../services/seboService'
 import { StatusVerificacao, type AuditoriaSebo, type DocumentoSebo, type Sebo } from '../types/sebo'
 import { documentLabels, formatBytes } from '../utils/documentSebo'
+import { abrirDocumentoAutenticado } from '../utils/documentoAutenticado'
 import './StockMovementsPage.css'
 
 const cnpj = (value?: string) => value ? value.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') : 'CNPJ não informado'
@@ -70,6 +71,14 @@ export function AdminSeboVerificationPage() {
     }
   }
 
+  async function handleAbrir(url: string) {
+    try {
+      await abrirDocumentoAutenticado(url)
+    } catch (e) {
+      setError(extractErrorMessage(e, 'Não foi possível abrir o documento.'))
+    }
+  }
+
   return (
     <StorePage title="Verificação de sebos" subtitle="Analise documentos e aprove ou rejeite cadastros pendentes.">
       {error ? <div className="flash error" role="alert">{error}</div> : null}
@@ -116,7 +125,7 @@ export function AdminSeboVerificationPage() {
                               <td>{document.contentType || '—'}</td>
                               <td>{date.format(new Date(document.enviadoEm))}</td>
                               <td>{document.status}</td>
-                              <td><a href={document.arquivoUrl} target="_blank" rel="noreferrer">Abrir</a></td>
+                              <td><button type="button" className="link-button" onClick={() => handleAbrir(document.arquivoUrl)}>Abrir</button></td>
                             </tr>
                           ))}
                         </tbody>

@@ -5,6 +5,7 @@ import { extractErrorMessage } from '../services/api'
 import { seboService } from '../services/seboService'
 import { TipoDocumentoSebo, type DocumentoSebo } from '../types/sebo'
 import { documentLabels, formatBytes } from '../utils/documentSebo'
+import { abrirDocumentoAutenticado } from '../utils/documentoAutenticado'
 import './StockMovementsPage.css'
 
 const date = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
@@ -52,6 +53,14 @@ export function SeboDocumentsPage() {
       setError(extractErrorMessage(err, 'Não foi possível enviar o documento.'))
     } finally {
       setBusy(false)
+    }
+  }
+
+  async function handleAbrir(url: string) {
+    try {
+      await abrirDocumentoAutenticado(url)
+    } catch (err) {
+      setError(extractErrorMessage(err, 'Não foi possível abrir o documento.'))
     }
   }
 
@@ -114,7 +123,7 @@ export function SeboDocumentsPage() {
                   <td>{date.format(new Date(item.enviadoEm))}</td>
                   <td>{item.status}</td>
                   <td>{item.motivoRejeicao ?? '—'}</td>
-                  <td><a href={item.arquivoUrl} target="_blank" rel="noreferrer">Abrir</a></td>
+                  <td><button type="button" className="link-button" onClick={() => handleAbrir(item.arquivoUrl)}>Abrir</button></td>
                 </tr>
               ))}
             </tbody>

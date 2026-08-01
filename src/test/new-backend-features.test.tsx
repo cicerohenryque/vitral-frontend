@@ -6,7 +6,6 @@ import { ProductPage } from '../components/Product/ProductPage'
 import { MeuSeboPage } from '../pages/MeuSeboPage'
 import { ProtectedRoute } from '../routes/ProtectedRoute'
 import { cestaService } from '../services/cestaService'
-import { movimentacaoService } from '../services/movimentacaoService'
 import { produtoService } from '../services/produtoService'
 import { pedidoService } from '../services/pedidoService'
 import { seboService } from '../services/seboService'
@@ -15,19 +14,11 @@ import { useAuthStore } from '../store/authStore'
 import { AccountType } from '../types/account'
 import { CondicaoProduto } from '../types/produto'
 import { StatusConsultaCnpj, StatusVerificacao } from '../types/sebo'
-import { isValidIsbn, normalizeIsbn } from '../utils/isbn'
 
 describe('novos contratos do backend', () => {
-  it('valida e normaliza ISBN-10 e ISBN-13', () => {
-    expect(isValidIsbn('0-306-40615-2')).toBe(true)
-    expect(isValidIsbn('978-0-306-40615-7')).toBe(true)
-    expect(isValidIsbn('9780306406158')).toBe(false)
-    expect(normalizeIsbn('0-306-40615-2')).toBe('0306406152')
-  })
-
   it('escolhe vendedor e adiciona o produto correspondente à cesta', async () => {
     useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Cliente', username: 'cliente', email: 'c@x.com', type: AccountType.USUARIO }, seboId: null })
-    vi.spyOn(produtoService, 'buscarPorId').mockResolvedValue({ id: 10, seboId: 2, categoriaId: null, categoriaNome: null, isbn: '9780306406157', titulo: 'Livro', autor: null, descricao: null, preco: 50, estoque: 3, condicao: CondicaoProduto.USADO, fotoUrl: null, ativo: true })
+    vi.spyOn(produtoService, 'buscarPorId').mockResolvedValue({ id: 10, seboId: 2, categoriaId: null, categoriaNome: null, titulo: 'Livro', autor: null, descricao: null, preco: 50, estoque: 3, condicao: CondicaoProduto.USADO, fotoUrl: null, ativo: true })
     vi.spyOn(produtoService, 'listarVendedores').mockResolvedValue([
       { produtoId: 10, seboId: 2, seboNome: 'Sebo A', preco: 50, precoPromocional: 40, precoEfetivo: 40, estoque: 3, condicao: CondicaoProduto.USADO },
       { produtoId: 22, seboId: 4, seboNome: 'Sebo B', preco: 45, precoPromocional: null, precoEfetivo: 45, estoque: 2, condicao: CondicaoProduto.NOVO },
@@ -48,7 +39,6 @@ describe('novos contratos do backend', () => {
       seboId: 2,
       categoriaId: null,
       categoriaNome: null,
-      isbn: null,
       titulo: 'Livro publicado',
       autor: null,
       descricao: null,
@@ -74,7 +64,6 @@ describe('novos contratos do backend', () => {
       seboId: 2,
       categoriaId: null,
       categoriaNome: null,
-      isbn: null,
       titulo: 'Livro antigo',
       autor: null,
       descricao: null,
@@ -100,14 +89,10 @@ describe('novos contratos do backend', () => {
     const post = vi.spyOn(api, 'post').mockResolvedValue({ data: {} })
     const get = vi.spyOn(api, 'get').mockResolvedValue({ data: [] })
     const put = vi.spyOn(api, 'put').mockResolvedValue({ data: {} })
-    await movimentacaoService.registrarVendaFisica({ produtoId: 7, quantidade: 1, valorUnitario: 20 })
-    await movimentacaoService.estornar(9, 'Erro de lançamento')
     const arquivo = new File(['documento'], 'arquivo.png', { type: 'image/png' })
     await seboService.enviarDocumento('CARTAO_CNPJ', arquivo)
     await seboService.listarAuditoria(3)
     await seboService.atualizarVerificacao(3, 'REJEITADO', 'Documento ilegível')
-    expect(post).toHaveBeenCalledWith('/movimentacoes-estoque/vendas-fisicas', { produtoId: 7, quantidade: 1, valorUnitario: 20 })
-    expect(post).toHaveBeenCalledWith('/movimentacoes-estoque/9/estorno', { motivo: 'Erro de lançamento' })
     expect(post).toHaveBeenCalledWith('/sebos/me/documentos', expect.any(FormData), {
       headers: { 'Content-Type': 'multipart/form-data' },
     })

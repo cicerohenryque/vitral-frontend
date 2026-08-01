@@ -60,7 +60,6 @@ export function SideMenu({ onClose }: Props) {
                 <li>
                   <Link to="/painel/ofertas" onClick={onClose}>Minhas Ofertas</Link>
                 </li>
-                <li><Link to="/painel/estoque" onClick={onClose}>Estoque e vendas físicas</Link></li>
                 <li><Link to="/painel/sebo/documentos" onClick={onClose}>Documentos do sebo</Link></li>
               </>
             ) : (

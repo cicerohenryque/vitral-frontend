@@ -87,6 +87,10 @@ describe('fluxos de upload de imagem', () => {
     const file = new File(['imagem'], 'sebo.webp', { type: 'image/webp' })
     await userEvent.upload(screen.getByLabelText('Foto do sebo'), file)
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
+    await userEvent.type(screen.getByLabelText('CEP'), '60123456')
+    await userEvent.type(screen.getByLabelText('Endereço/logradouro'), 'Rua dos Livros')
+    await userEvent.type(screen.getByLabelText('Cidade'), 'Fortaleza')
+    await userEvent.type(screen.getByLabelText('UF'), 'CE')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
 
     await waitFor(() => expect(seboService.criar).toHaveBeenCalledWith(

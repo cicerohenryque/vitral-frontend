@@ -196,7 +196,6 @@ export function ProductPage() {
           </p>
 
           <dl className="product-metadata">
-            {produto.isbn ? <div><dt>ISBN</dt><dd>{produto.isbn}</dd></div> : null}
             <div><dt>Estado</dt><dd>{produto.condicao}</dd></div>
             <div><dt>Categoria</dt><dd>{produto.categoriaNome ?? 'Nao informada'}</dd></div>
             {produto.bookGenre ? <div><dt>Gênero</dt><dd>{bookGenreLabel(produto.bookGenre) ?? produto.bookGenre}</dd></div> : null}

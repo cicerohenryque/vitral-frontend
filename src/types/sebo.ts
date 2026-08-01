@@ -14,13 +14,6 @@ export const StatusConsultaCnpj = {
 } as const
 export type StatusConsultaCnpj = (typeof StatusConsultaCnpj)[keyof typeof StatusConsultaCnpj]
 
-export const TipoOperacaoSebo = {
-  VIRTUAL: 'VIRTUAL',
-  FISICO: 'FISICO',
-  HIBRIDO: 'HIBRIDO',
-} as const
-export type TipoOperacaoSebo = (typeof TipoOperacaoSebo)[keyof typeof TipoOperacaoSebo]
-
 export type ConsultaCnpjResponse = {
   cnpj: string
   razaoSocial: string | null
@@ -34,7 +27,6 @@ export type SeboRequest = {
   descricao?: string
   telefone?: string
   fotoUrl?: string
-  tipoOperacao?: TipoOperacaoSebo
   cep?: string
   logradouro?: string
   cidade?: string
@@ -57,7 +49,6 @@ export type Sebo = {
   descricao: string | null
   telefone: string | null
   fotoUrl: string | null
-  tipoOperacao?: TipoOperacaoSebo | null
   cep?: string | null
   logradouro?: string | null
   cidade?: string | null
