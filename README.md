@@ -73,6 +73,20 @@ Já usam endpoints reais do backend:
 - exclusão de conta de usuário comum e de sebo;
 - proteção de rotas para usuário autenticado e contas `SEBO`.
 
+## Deploy (Vercel)
+
+O frontend é publicado na Vercel e o backend no Render, em domínios diferentes.
+Duas configurações são obrigatórias para o ambiente publicado funcionar:
+
+1. `VITE_API_BASE_URL` precisa apontar para a URL absoluta do backend
+   (ex.: `https://vitral-backend.onrender.com/api/v1`). Sem isso o Axios usa o
+   caminho relativo e as chamadas caem no próprio domínio da Vercel.
+2. O `vercel.json` roteia `/api/v1/uploads/*` para o backend antes do rewrite
+   que serve o SPA. Isso é necessário porque o backend devolve `fotoUrl` e
+   `arquivoUrl` como caminhos relativos: em desenvolvimento o proxy do Vite
+   resolve, mas em produção o navegador buscaria a imagem no domínio da Vercel
+   e o rewrite catch-all responderia `index.html`, quebrando toda tag `<img>`.
+
 ## Validação
 
 Antes de abrir PR ou fazer push, rode:
