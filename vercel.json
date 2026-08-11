@@ -1,6 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
+    {
+      "source": "/api/v1/uploads/:path*",
+      "destination": "https://vitral-backend.onrender.com/api/v1/uploads/:path*"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
