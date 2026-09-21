@@ -39,7 +39,7 @@ export function SellerPage() {
         setTotalProducts(productPage.totalElements)
       })
       .catch((err) => {
-        if (active) setError(extractErrorMessage(err, 'Nao foi possivel carregar este sebo.'))
+        if (active) setError(extractErrorMessage(err, 'Não foi possível carregar este sebo. Volte à busca e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -52,7 +52,7 @@ export function SellerPage() {
 
   if (invalidSellerId) {
     return (
-      <StorePage title="Sebo indisponivel" subtitle="O identificador informado nao e valido.">
+      <StorePage title="Sebo indisponível" subtitle="O identificador informado não é válido.">
         <StoreStatus
           title="ID de sebo invalido"
           description="Confira o link acessado ou procure o sebo novamente pela busca."
@@ -74,7 +74,7 @@ export function SellerPage() {
       ) : null}
       {!loading && error ? (
         <StoreStatus
-          title="Nao foi possivel carregar este sebo"
+          title="Este sebo não foi carregado"
           description={error}
           tone="error"
           action={<Link to="/busca?tab=sebos">Buscar sebos</Link>}

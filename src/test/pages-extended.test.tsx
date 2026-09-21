@@ -55,12 +55,12 @@ describe('paginas principais', () => {
     await userEvent.type(fields[1], '12345678')
     await userEvent.type(screen.getByLabelText('Confirme sua senha:'), 'diferente')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
-    expect(screen.getByText('As senhas nao coincidem')).toBeInTheDocument()
+    expect(screen.getByText('As senhas não coincidem. Digite a mesma senha nos dois campos.')).toBeInTheDocument()
     await userEvent.clear(screen.getByLabelText('Confirme sua senha:'))
     await userEvent.type(screen.getByLabelText('Confirme sua senha:'), '12345678')
     await userEvent.click(screen.getByLabelText('Sou um sebo'))
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
-    expect(await screen.findByText('Confira seu e-mail')).toBeInTheDocument()
+    expect(await screen.findByText('Conta criada com sucesso. Enviamos um link de confirmação para seu e-mail.')).toBeInTheDocument()
     expect(authService.register).toHaveBeenCalledWith(expect.objectContaining({ type: AccountType.SEBO }))
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar outra conta' }))
     expect(screen.getByRole('button', { name: 'Cadastrar' })).toBeInTheDocument()
@@ -82,7 +82,7 @@ describe('paginas principais', () => {
     await userEvent.type(screen.getByLabelText('Usuário ou E-mail:'), account.email)
     await userEvent.type(screen.getByLabelText('Senha:', { selector: '#login-password' }), '12345678')
     await userEvent.click(screen.getByRole('button', { name: 'Entrar' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Falha ao entrar')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível entrar. Confira seus dados e tente novamente.')
   })
 
   it('faz login de sebo mesmo quando buscar perfil falha', async () => {
@@ -119,13 +119,13 @@ describe('paginas principais', () => {
     await userEvent.type(screen.getByLabelText('Confirme sua senha:'), '12345678')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Falha ao cadastrar')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível criar sua conta. Revise os dados e tente novamente.')
   })
 
   it.each([
     ['/confirmar-email', 'Link de confirmação inválido.'],
-    ['/confirmar-email?token=ok', 'E-mail confirmado!'],
-    ['/confirmar-email?token=ruim', 'Confirmação falhou'],
+    ['/confirmar-email?token=ok', 'E-mail confirmado'],
+    ['/confirmar-email?token=ruim', 'Não foi possível confirmar seu e-mail'],
   ])('trata confirmacao de email em %s', async (path, expected) => {
     vi.spyOn(authService, 'confirmarEmail').mockImplementation(async (token) => {
       if (token === 'ruim') throw new Error('expirado')
@@ -170,7 +170,7 @@ describe('paginas principais', () => {
     await userEvent.type(screen.getByLabelText('Nome'), 'Novo nome')
     await userEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Falha ao atualizar perfil')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar seu perfil. Revise os dados e tente novamente.')
   })
 
   it('cadastra perfil de sebo com endereco obrigatorio', async () => {
@@ -197,7 +197,7 @@ describe('paginas principais', () => {
     await userEvent.type(screen.getByLabelText('UF'), 'ce')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
 
-    expect(await screen.findByText('Sebo cadastrado com sucesso!')).toBeInTheDocument()
+    expect(await screen.findByText('Sebo cadastrado com sucesso.')).toBeInTheDocument()
     expect(criarSpy).toHaveBeenCalledWith(expect.objectContaining({
       descricao: 'Livros virtuais',
       cep: '60123456',
@@ -312,7 +312,7 @@ describe('paginas principais', () => {
     await userEvent.type(screen.getByLabelText('Descrição'), 'Novo sebo')
     await userEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
 
-    expect(await screen.findByText('Sebo atualizado com sucesso!')).toBeInTheDocument()
+    expect(await screen.findByText('Dados do sebo atualizados com sucesso.')).toBeInTheDocument()
     expect(seboService.atualizarMeu).toHaveBeenCalledWith(expect.objectContaining({ descricao: 'Novo sebo' }))
   })
 
@@ -331,7 +331,7 @@ describe('paginas principais', () => {
     await userEvent.type(screen.getByLabelText('UF'), 'CE')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Erro ao salvar o sebo')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar os dados do sebo. Revise as informações e tente novamente.')
   })
 
   it('carrega home com produtos e apresenta falha da busca', async () => {
@@ -385,7 +385,7 @@ describe('paginas principais', () => {
 
     vi.spyOn(ofertaService, 'listarAtivas').mockRejectedValue(new Error('offline'))
     renderAt('/ofertas', <OffersPage />)
-    expect(await screen.findByText('Nao foi possivel carregar as ofertas.')).toBeInTheDocument()
+    expect(await screen.findByText('Não foi possível carregar as ofertas. Atualize a página e tente novamente.')).toBeInTheDocument()
   })
 
   it('redireciona visitantes e roles errados em rotas protegidas', async () => {
@@ -442,16 +442,16 @@ describe('paginas principais', () => {
     await userEvent.type(screen.getByLabelText('Senha:', { selector: '#reg-password' }), '123')
     await userEvent.type(screen.getByLabelText('Confirme sua senha:'), '123')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
-    expect(await screen.findByText('A senha deve ter ao menos 8 caracteres')).toBeInTheDocument()
+    expect(await screen.findByText('Crie uma senha com pelo menos 8 caracteres.')).toBeInTheDocument()
   })
 
   it('mostra erro ao carregar produtos e sebos na pagina de busca', async () => {
     vi.spyOn(buscaService, 'buscarProdutos').mockRejectedValue(new Error('offline'))
     vi.spyOn(buscaService, 'buscarSebos').mockRejectedValue(new Error('offline'))
     renderAt('/busca?q=livro', <BuscaPage />)
-    expect(await screen.findByText('Nao foi possivel carregar os produtos.')).toBeInTheDocument()
+    expect(await screen.findByText('Não foi possível carregar os produtos. Ajuste a busca ou tente novamente.')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('tab', { name: /Sebos/ }))
-    expect(await screen.findByText('Nao foi possivel carregar os sebos.')).toBeInTheDocument()
+    expect(await screen.findByText('Não foi possível carregar os sebos. Ajuste a busca ou tente novamente.')).toBeInTheDocument()
   })
 
   it('renderiza paginas informativas e rota inexistente', () => {

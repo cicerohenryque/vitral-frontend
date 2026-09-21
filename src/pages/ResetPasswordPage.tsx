@@ -18,15 +18,15 @@ export function ResetPasswordPage() {
   async function submit(event: React.FormEvent) {
     event.preventDefault()
     setError(null)
-    if (!token) return setError('O link de recuperação é inválido.')
-    if (password.length < 8) return setError('A senha deve ter ao menos 8 caracteres.')
-    if (password !== confirmation) return setError('As senhas não coincidem.')
+    if (!token) return setError('Este link de recuperação é inválido. Solicite um novo link para continuar.')
+    if (password.length < 8) return setError('Crie uma senha com pelo menos 8 caracteres.')
+    if (password !== confirmation) return setError('As senhas não coincidem. Digite a mesma senha nos dois campos.')
     setBusy(true)
     try {
-      const response = await authService.redefinirSenha({ token, password })
-      setSuccess(response.mensagem)
+      await authService.redefinirSenha({ token, password })
+      setSuccess('Senha redefinida com sucesso.')
     } catch (err) {
-      setError(extractErrorMessage(err, 'Não foi possível redefinir sua senha.'))
+      setError(extractErrorMessage(err, 'Não foi possível redefinir sua senha. Solicite um novo link e tente novamente.'))
     } finally {
       setBusy(false)
     }

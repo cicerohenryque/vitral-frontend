@@ -16,10 +16,10 @@ export function ForgotPasswordPage() {
     setBusy(true)
     setError(null)
     try {
-      const response = await authService.solicitarRecuperacao({ email })
-      setSuccess(response.mensagem)
+      await authService.solicitarRecuperacao({ email })
+      setSuccess('Se o e-mail estiver cadastrado, você receberá um link para criar uma nova senha.')
     } catch (err) {
-      setError(extractErrorMessage(err, 'Não foi possível solicitar a recuperação.'))
+      setError(extractErrorMessage(err, 'Não foi possível solicitar a recuperação da senha. Confira o e-mail e tente novamente.'))
     } finally {
       setBusy(false)
     }

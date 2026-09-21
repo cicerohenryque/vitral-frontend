@@ -34,7 +34,7 @@ describe('roteamento e estados preenchidos', () => {
     vi.spyOn(favoritoService, 'remover').mockResolvedValue()
     renderPage(<FavoritesPage />)
     expect(await screen.findByRole('heading', { name: 'Livro Teste' })).toBeInTheDocument()
-    expect(screen.getByText(/Autor nao informado/)).toBeInTheDocument()
+    expect(screen.getByText(/Autor não informado/)).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Remover' }))
     expect(await screen.findByText('Sua lista está vazia')).toBeInTheDocument()
     expect(favoritoService.remover).toHaveBeenCalledWith(7)
@@ -48,7 +48,7 @@ describe('roteamento e estados preenchidos', () => {
     vi.spyOn(favoritoService, 'remover').mockRejectedValue(new Error('falha'))
     renderPage(<FavoritesPage />)
     await userEvent.click(await screen.findByRole('button', { name: 'Remover' }))
-    expect(await screen.findByText('Erro ao carregar favoritos')).toBeInTheDocument()
+    expect(await screen.findByText('Seus favoritos não foram carregados')).toBeInTheDocument()
   })
 
   it('renderiza oferta ativa com desconto calculado', async () => {

@@ -87,7 +87,7 @@ describe('SupportPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Enviar mensagem' }))
 
     expect(await screen.findByRole('status')).toHaveTextContent(
-      'Mensagem enviada com sucesso! Nossa equipe entrará em contato em breve.',
+      'Mensagem enviada com sucesso. Nossa equipe entrará em contato em breve.',
     )
     expect(screen.getByLabelText('Assunto')).toHaveValue('')
     expect(screen.getByLabelText('Mensagem')).toHaveValue('')

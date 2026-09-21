@@ -28,12 +28,12 @@ describe('ramos alternativos e interacoes', () => {
   it('trata produto com id invalido e produto inexistente', async () => {
     const buscar = vi.spyOn(produtoService, 'buscarPorId')
     const invalid = renderRoute('/produto/invalido', '/produto/:productId', <ProductPage />)
-    expect(screen.getByText('Produto invalido')).toBeInTheDocument()
+    expect(screen.getByText('Link de produto inválido')).toBeInTheDocument()
     expect(buscar).not.toHaveBeenCalled()
     invalid.unmount()
     buscar.mockRejectedValue(new Error('404'))
     renderRoute('/produto/99', '/produto/:productId', <ProductPage />)
-    expect(await screen.findByText('Produto nao encontrado')).toBeInTheDocument()
+    expect(await screen.findByText('Produto não encontrado')).toBeInTheDocument()
   })
 
   it('mostra acoes corretas para visitante e sebo autenticado', async () => {
@@ -58,9 +58,9 @@ describe('ramos alternativos e interacoes', () => {
     vi.spyOn(favoritoService, 'favoritar').mockRejectedValue(new Error('falha'))
     renderRoute('/produto/7', '/produto/:productId', <ProductPage />)
     await userEvent.click(await screen.findByRole('button', { name: 'Adicionar à cesta' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Nao foi possivel adicionar à cesta.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível adicionar o produto à cesta. Tente novamente.')
     await userEvent.click(screen.getByRole('button', { name: 'Favoritar' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Nao foi possivel favoritar o produto.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível adicionar o produto aos favoritos. Tente novamente.')
     expect(screen.getAllByText('Sebo').length).toBeGreaterThan(0)
   })
 
@@ -71,7 +71,7 @@ describe('ramos alternativos e interacoes', () => {
     vi.spyOn(seboService, 'buscarPorId').mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(sebo)
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue(emptyPage)
     const failed = renderRoute('/vendedor/3', '/vendedor/:sellerId', <SellerPage />)
-    expect(await screen.findByText('Nao foi possivel carregar este sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Este sebo não foi carregado')).toBeInTheDocument()
     failed.unmount()
     renderRoute('/vendedor/3', '/vendedor/:sellerId', <SellerPage />)
     expect(await screen.findByText('Nenhum produto cadastrado')).toBeInTheDocument()
@@ -87,10 +87,10 @@ describe('ramos alternativos e interacoes', () => {
     vi.spyOn(mensagemService, 'enviar').mockRejectedValue(new Error('falha'))
     renderPage(<MessagesPage />)
     await userEvent.click(await screen.findByRole('button', { name: /Sebo/ }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Nao foi possivel carregar a conversa.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível carregar a conversa. Selecione-a novamente.')
     await userEvent.type(screen.getByRole('textbox', { name: 'Mensagem' }), 'Teste')
     await userEvent.click(screen.getByRole('button', { name: 'Enviar' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Nao foi possivel enviar a mensagem.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível enviar a mensagem. Tente novamente.')
   })
 
   it('renderiza lancamentos preenchidos e erro', async () => {
@@ -99,7 +99,7 @@ describe('ramos alternativos e interacoes', () => {
     expect(await screen.findByRole('link', { name: /Livro/ })).toBeInTheDocument()
     success.unmount()
     renderPage(<ReleasesPage />)
-    expect(await screen.findByText('Erro ao carregar lançamentos')).toBeInTheDocument()
+    expect(await screen.findByText('Os lançamentos não foram carregados')).toBeInTheDocument()
   })
 
   it('pesquisa, abre menu, fecha menu e encerra sessao pelo cabecalho', async () => {

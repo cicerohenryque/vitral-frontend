@@ -89,7 +89,7 @@ export function PerfilPage() {
       ultimoCepConsultado.current = onlyDigits(currentForm.cep)
       setErro(null)
     }).catch((err) => {
-      if (active) setErro(extractErrorMessage(err, 'Falha ao carregar o perfil'))
+      if (active) setErro(extractErrorMessage(err, 'Não foi possível carregar seu perfil. Atualize a página e tente novamente.'))
     }).finally(() => {
       if (active) setLoading(false)
     })
@@ -169,7 +169,7 @@ export function PerfilPage() {
       setInitialForm(updatedForm)
       setSucesso('Perfil atualizado com sucesso.')
     } catch (err) {
-      setErro(extractErrorMessage(err, 'Falha ao atualizar perfil'))
+      setErro(extractErrorMessage(err, 'Não foi possível salvar seu perfil. Revise os dados e tente novamente.'))
     } finally {
       setBusy(false)
     }

@@ -20,7 +20,7 @@ export function OffersPage() {
         setError(null)
       })
       .catch((err) => {
-        if (active) setError(extractErrorMessage(err, 'Nao foi possivel carregar as ofertas.'))
+        if (active) setError(extractErrorMessage(err, 'Não foi possível carregar as ofertas. Atualize a página e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -36,7 +36,7 @@ export function OffersPage() {
       {loading ? (
         <StoreStatus title="Carregando ofertas" description="Buscando as ofertas disponíveis agora." busy />
       ) : error ? (
-        <StoreStatus title="Erro ao carregar ofertas" description={error} tone="error" />
+        <StoreStatus title="As ofertas não foram carregadas" description={error} tone="error" />
       ) : offers.length === 0 ? (
         <StoreStatus
           title="Nenhuma oferta ativa"

@@ -32,7 +32,7 @@ export function HistoryPage() {
         setError(null)
       })
       .catch((err) => {
-        if (active) setError(extractErrorMessage(err, 'Nao foi possivel carregar seu histórico.'))
+        if (active) setError(extractErrorMessage(err, 'Não foi possível carregar seu histórico. Atualize a página e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -50,7 +50,7 @@ export function HistoryPage() {
       const atualizado = await pedidoService.cancelarPedido(id)
       setPedidos((current) => current.map((pedido) => (pedido.id === id ? atualizado : pedido)))
     } catch (err) {
-      setError(extractErrorMessage(err, 'Nao foi possivel cancelar o pedido.'))
+      setError(extractErrorMessage(err, 'Não foi possível cancelar o pedido. Tente novamente.'))
     } finally {
       setBusyId(null)
     }
@@ -61,7 +61,7 @@ export function HistoryPage() {
       {loading ? (
         <StoreStatus title="Carregando histórico" description="Buscando seus pedidos anteriores." busy />
       ) : error ? (
-        <StoreStatus title="Erro ao carregar histórico" description={error} tone="error" />
+        <StoreStatus title="Seu histórico não foi carregado" description={error} tone="error" />
       ) : pedidos.length === 0 ? (
         <StoreStatus
           title="Você ainda não fez pedidos"

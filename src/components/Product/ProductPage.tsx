@@ -49,7 +49,7 @@ export function ProductPage() {
         }
       })
       .catch((err) => {
-        if (active) setError(extractErrorMessage(err, 'Produto nao encontrado.'))
+        if (active) setError(extractErrorMessage(err, 'Não foi possível encontrar este produto. Volte à busca e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -88,10 +88,10 @@ export function ProductPage() {
     setActionMessage(null)
     setActionError(null)
     try {
-      const response = await cestaService.adicionar(selectedProductId)
-      setActionMessage(response.mensagem)
+      await cestaService.adicionar(selectedProductId)
+      setActionMessage('Produto adicionado à cesta com sucesso.')
     } catch (err) {
-      setActionError(extractErrorMessage(err, 'Nao foi possivel adicionar à cesta.'))
+      setActionError(extractErrorMessage(err, 'Não foi possível adicionar o produto à cesta. Tente novamente.'))
     } finally {
       setBusyAction(null)
     }
@@ -103,10 +103,10 @@ export function ProductPage() {
     setActionMessage(null)
     setActionError(null)
     try {
-      const response = await favoritoService.favoritar(selectedProductId ?? produto.id)
-      setActionMessage(response.mensagem)
+      await favoritoService.favoritar(selectedProductId ?? produto.id)
+      setActionMessage('Produto adicionado aos favoritos com sucesso.')
     } catch (err) {
-      setActionError(extractErrorMessage(err, 'Nao foi possivel favoritar o produto.'))
+      setActionError(extractErrorMessage(err, 'Não foi possível adicionar o produto aos favoritos. Tente novamente.'))
     } finally {
       setBusyAction(null)
     }
@@ -114,9 +114,9 @@ export function ProductPage() {
 
   if (invalidProductId) {
     return (
-      <StorePage title="Produto indisponivel" subtitle="Nao foi possivel carregar este item.">
+      <StorePage title="Produto indisponível" subtitle="Não foi possível carregar este item.">
         <StoreStatus
-          title="Produto invalido"
+          title="Link de produto inválido"
           description="Confira o link acessado e tente abrir o produto novamente pela busca."
           tone="error"
         />
@@ -143,9 +143,9 @@ export function ProductPage() {
 
   if (error || !produto) {
     return (
-      <StorePage title="Produto indisponivel" subtitle="Nao foi possivel carregar este item.">
+      <StorePage title="Produto indisponível" subtitle="Não foi possível carregar este item.">
         <StoreStatus
-          title="Produto nao encontrado"
+          title="Produto não encontrado"
           description={error ?? 'Não encontramos este produto no acervo.'}
           tone="error"
           action={<Link to="/busca">Voltar para busca</Link>}
@@ -197,10 +197,10 @@ export function ProductPage() {
 
           <dl className="product-metadata">
             <div><dt>Estado</dt><dd>{produto.condicao}</dd></div>
-            <div><dt>Categoria</dt><dd>{produto.categoriaNome ?? 'Nao informada'}</dd></div>
+            <div><dt>Categoria</dt><dd>{produto.categoriaNome ?? 'Não informada'}</dd></div>
             {produto.bookGenre ? <div><dt>Gênero</dt><dd>{bookGenreLabel(produto.bookGenre) ?? produto.bookGenre}</dd></div> : null}
             {produto.classico ? <div><dt>Curadoria</dt><dd>Clássico</dd></div> : null}
-            <div><dt>Autor</dt><dd>{produto.autor ?? 'Nao informado'}</dd></div>
+            <div><dt>Autor</dt><dd>{produto.autor ?? 'Não informado'}</dd></div>
             <div><dt>Estoque</dt><dd>{produto.estoque ?? 0}</dd></div>
             <div><dt>Disponibilidade</dt><dd>{produto.ativo && Number(produto.estoque ?? 0) > 0 ? 'Disponivel' : 'Indisponivel'}</dd></div>
           </dl>

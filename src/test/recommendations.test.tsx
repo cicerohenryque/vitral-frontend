@@ -52,7 +52,7 @@ describe('recomendações personalizadas', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Limpar histórico de recomendações' }))
 
     expect(recomendacaoService.limparHistorico).toHaveBeenCalledTimes(1)
-    expect(await screen.findByRole('status')).toHaveTextContent('Histórico removido')
+    expect(await screen.findByRole('status')).toHaveTextContent('Histórico de recomendações limpo com sucesso.')
     expect(screen.queryByText('Livro recomendado')).not.toBeInTheDocument()
   })
 

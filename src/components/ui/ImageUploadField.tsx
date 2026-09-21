@@ -29,7 +29,7 @@ export function ImageUploadField({ id, label, value, onChange }: Props) {
       return
     }
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      setError('A imagem deve ter no maximo 5MB.')
+      setError('A imagem deve ter no máximo 5 MB. Escolha um arquivo menor.')
       event.target.value = ''
       return
     }
@@ -39,7 +39,7 @@ export function ImageUploadField({ id, label, value, onChange }: Props) {
       const response = await uploadService.uploadImage(file)
       onChange(response.url)
     } catch (err) {
-      setError(extractErrorMessage(err, 'Nao foi possivel enviar a imagem.'))
+      setError(extractErrorMessage(err, 'Não foi possível enviar a imagem. Tente novamente.'))
     } finally {
       setBusy(false)
       event.target.value = ''

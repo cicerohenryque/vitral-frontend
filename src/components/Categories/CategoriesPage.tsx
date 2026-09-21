@@ -43,7 +43,7 @@ export function CategoriesPage() {
         setError(null)
       })
       .catch((err) => {
-        if (active) setError(extractErrorMessage(err, 'Nao foi possivel carregar as categorias.'))
+        if (active) setError(extractErrorMessage(err, 'Não foi possível carregar as categorias. Atualize a página e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoadingCategories(false)
@@ -67,7 +67,7 @@ export function CategoriesPage() {
         setProducts(page.content)
       })
       .catch((err) => {
-        if (active) setProductError(extractErrorMessage(err, 'Nao foi possivel carregar os produtos da categoria.'))
+        if (active) setProductError(extractErrorMessage(err, 'Não foi possível carregar os produtos desta categoria. Tente novamente.'))
       })
       .finally(() => {
         if (active) setLoadingProducts(false)
@@ -111,7 +111,7 @@ export function CategoriesPage() {
       {loadingCategories ? (
         <StoreStatus title="Carregando categorias" description="Preparando as categorias do acervo." busy />
       ) : error ? (
-        <StoreStatus title="Erro ao carregar categorias" description={error} tone="error" />
+        <StoreStatus title="As categorias não foram carregadas" description={error} tone="error" />
       ) : filteredCategories.length === 0 ? (
         <StoreStatus title="Nenhuma categoria encontrada" description="Tente buscar por outro termo." />
       ) : (
@@ -150,7 +150,7 @@ export function CategoriesPage() {
               {loadingProducts ? (
                 <StoreStatus title="Carregando produtos" description="Buscando produtos desta categoria." busy />
               ) : productError ? (
-                <StoreStatus title="Erro ao carregar produtos" description={productError} tone="error" />
+                <StoreStatus title="Os produtos não foram carregados" description={productError} tone="error" />
               ) : products.length === 0 ? (
                 <StoreStatus
                   title="Nenhum produto nesta categoria"

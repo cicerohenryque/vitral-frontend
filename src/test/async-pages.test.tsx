@@ -40,13 +40,13 @@ describe('estados das telas integradas', () => {
     vi.mocked(favoritoService.listar).mockRejectedValue(new Error('falha'))
     renderPage(<FavoritesPage />)
 
-    expect(await screen.findByText('Nao foi possivel carregar seus favoritos.')).toBeInTheDocument()
+    expect(await screen.findByText('Não foi possível carregar seus favoritos. Atualize a página e tente novamente.')).toBeInTheDocument()
   })
   it('exibe erro quando ofertas nao podem ser carregadas', async () => {
     vi.mocked(ofertaService.listarAtivas).mockRejectedValue(new Error('falha'))
     renderPage(<OffersPage />)
 
-    expect(await screen.findByText('Erro ao carregar ofertas')).toBeInTheDocument()
+    expect(await screen.findByText('As ofertas não foram carregadas')).toBeInTheDocument()
   })
 
   it('exibe ofertas ativas quando o backend retorna dados', async () => {
@@ -65,7 +65,7 @@ describe('estados das telas integradas', () => {
     vi.mocked(produtoService.listarLancamentos).mockRejectedValue(new Error('falha'))
     renderPage(<ReleasesPage />)
 
-    expect(await screen.findByText('Nao foi possivel carregar os lançamentos.')).toBeInTheDocument()
+    expect(await screen.findByText('Não foi possível carregar os lançamentos. Atualize a página e tente novamente.')).toBeInTheDocument()
   })
 
   it('exibe estado vazio quando nao existem lancamentos', async () => {

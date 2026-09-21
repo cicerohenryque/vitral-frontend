@@ -97,7 +97,7 @@ export function BuscaPage() {
         setTotalPaginasProdutos(page.totalPages)
       })
       .catch((err) => {
-        setErrorProdutos(extractErrorMessage(err, 'Nao foi possivel carregar os produtos.'))
+        setErrorProdutos(extractErrorMessage(err, 'Não foi possível carregar os produtos. Ajuste a busca ou tente novamente.'))
         setProdutos([])
         setTotalProdutos(0)
         setTotalPaginasProdutos(0)
@@ -125,7 +125,7 @@ export function BuscaPage() {
         setTotalPaginasSebos(page.totalPages)
       })
       .catch((err) => {
-        setErrorSebos(extractErrorMessage(err, 'Nao foi possivel carregar os sebos.'))
+        setErrorSebos(extractErrorMessage(err, 'Não foi possível carregar os sebos. Ajuste a busca ou tente novamente.'))
         setSebos([])
         setTotalSebos(0)
         setTotalPaginasSebos(0)
@@ -135,7 +135,7 @@ export function BuscaPage() {
 
   function ativarProximidade() {
     if (!('geolocation' in navigator)) {
-      setGeoError('Seu navegador nao suporta geolocalizacao.')
+      setGeoError('Seu navegador não oferece localização. Use os filtros para buscar por região.')
       return
     }
     setGeoLoading(true)
@@ -152,7 +152,7 @@ export function BuscaPage() {
         setSearchParams(next)
       },
       () => {
-        setGeoError('Nao foi possivel obter sua localizacao. Verifique a permissao do navegador.')
+        setGeoError('Não foi possível acessar sua localização. Verifique a permissão do navegador e tente novamente.')
         setGeoLoading(false)
       },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 5 * 60 * 1000 },

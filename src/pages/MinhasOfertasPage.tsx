@@ -82,7 +82,7 @@ export function MinhasOfertasPage() {
       })
       .catch((err) => {
         setOfertas([])
-        setError(extractErrorMessage(err, 'Erro ao listar ofertas'))
+        setError(extractErrorMessage(err, 'Não foi possível carregar suas ofertas. Atualize a página e tente novamente.'))
       })
       .finally(() => setLoading(false))
   }, [page])
@@ -183,27 +183,27 @@ export function MinhasOfertasPage() {
       }
       if (editingId) {
         await ofertaService.atualizar(editingId, payload)
-        setSuccess('Oferta atualizada!')
+        setSuccess('Oferta atualizada com sucesso.')
       } else {
         await ofertaService.criar(payload)
-        setSuccess('Oferta criada!')
+        setSuccess('Oferta criada com sucesso.')
       }
       resetForm()
       load()
     } catch (err) {
-      setError(extractErrorMessage(err, 'Erro ao salvar oferta'))
+      setError(extractErrorMessage(err, 'Não foi possível salvar a oferta. Revise os dados e tente novamente.'))
     } finally {
       setBusy(false)
     }
   }
 
   async function handleRemove(oferta: Oferta) {
-    if (!confirm(`Desativar a oferta de "${oferta.tituloProduto}"?`)) return
+    if (!confirm(`Deseja desativar a oferta de "${oferta.tituloProduto}"? Ela deixará de aparecer para os clientes.`)) return
     try {
       await ofertaService.remover(oferta.id)
       load()
     } catch (err) {
-      setError(extractErrorMessage(err, 'Erro ao desativar oferta'))
+      setError(extractErrorMessage(err, 'Não foi possível desativar a oferta. Tente novamente.'))
     }
   }
 

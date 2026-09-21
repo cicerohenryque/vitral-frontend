@@ -18,10 +18,10 @@ export function ResendConfirmationPage() {
     setBusy(true)
     setError(null)
     try {
-      const response = await authService.reenviarConfirmacao({ email })
-      setSuccess(response.mensagem)
+      await authService.reenviarConfirmacao({ email })
+      setSuccess('Se o e-mail estiver cadastrado, você receberá um novo link de confirmação.')
     } catch (err) {
-      setError(extractErrorMessage(err, 'Não foi possível reenviar a confirmação.'))
+      setError(extractErrorMessage(err, 'Não foi possível enviar um novo link. Confira o e-mail e tente novamente.'))
     } finally {
       setBusy(false)
     }

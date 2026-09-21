@@ -104,7 +104,7 @@ export function SupportPage() {
           {erro && <p className="support-feedback support-feedback--erro" role="alert">{erro}</p>}
           {sucesso && (
             <p className="support-feedback support-feedback--sucesso" role="status">
-              Mensagem enviada com sucesso! Nossa equipe entrará em contato em breve.
+              Mensagem enviada com sucesso. Nossa equipe entrará em contato em breve.
             </p>
           )}
 

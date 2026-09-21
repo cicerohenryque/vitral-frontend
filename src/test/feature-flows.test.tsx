@@ -152,12 +152,12 @@ describe('funcionalidades principais do front', () => {
     renderRoute('/produto/7', '/produto/:productId', <ProductPage />)
 
     await userEvent.click(await screen.findByRole('button', { name: 'Adicionar à cesta' }))
-    expect(await screen.findByText('Adicionado à cesta')).toBeInTheDocument()
+    expect(await screen.findByText('Produto adicionado à cesta com sucesso.')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Favoritar' }))
 
     expect(cestaService.adicionar).toHaveBeenCalledWith(7)
     expect(favoritoService.favoritar).toHaveBeenCalledWith(7)
-    expect(await screen.findByText('Favoritado')).toBeInTheDocument()
+    expect(await screen.findByText('Produto adicionado aos favoritos com sucesso.')).toBeInTheDocument()
   })
 
   it('mostra produto indisponivel e desabilita a acao para compra', async () => {
@@ -213,7 +213,7 @@ describe('funcionalidades principais do front', () => {
     authenticate(AccountType.USUARIO)
     vi.spyOn(pedidoService, 'listarMeusPedidos').mockRejectedValue(new Error('Falha de rede'))
     const errorRender = renderPage(<ReservationsPage />)
-    expect(await screen.findByText('Erro ao carregar reservas')).toBeInTheDocument()
+    expect(await screen.findByText('Suas reservas não foram carregadas')).toBeInTheDocument()
     errorRender.unmount()
 
     vi.spyOn(pedidoService, 'listarMeusPedidos').mockResolvedValue({ ...emptyPage, content: [pedido(StatusPedido.AGUARDANDO_CONFIRMACAO)] })
@@ -282,7 +282,7 @@ describe('funcionalidades principais do front', () => {
     await waitFor(() => expect(produtoService.criar).toHaveBeenCalledWith(expect.objectContaining({
       titulo: 'Novo livro', preco: 35, estoque: 5, categoriaId: 4,
     })))
-    expect(await screen.findByText('Produto cadastrado!')).toBeInTheDocument()
+    expect(await screen.findByText('Produto cadastrado com sucesso.')).toBeInTheDocument()
   })
 })
 

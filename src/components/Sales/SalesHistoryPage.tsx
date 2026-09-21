@@ -31,7 +31,7 @@ export function SalesHistoryPage() {
         setError(null)
       })
       .catch((err) => {
-        if (active) setError(extractErrorMessage(err, 'Nao foi possivel carregar o histórico de vendas.'))
+        if (active) setError(extractErrorMessage(err, 'Não foi possível carregar o histórico de vendas. Atualize a página e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -45,7 +45,7 @@ export function SalesHistoryPage() {
   const visiblePedidos = pedidos.slice(page * pageSize, (page + 1) * pageSize)
   const totalPages = Math.ceil(pedidos.length / pageSize)
   async function refund(pedido: Pedido) {
-    if (!confirm(`Confirma o reembolso integral do pedido #${pedido.id}?`)) return
+    if (!confirm(`Deseja reembolsar integralmente o pedido #${pedido.id}? Esta ação não poderá ser desfeita.`)) return
     setBusyId(pedido.id); setError(null)
     try { const updated = await pedidoService.reembolsar(pedido.id); setPedidos((items) => items.map((item) => item.id === pedido.id ? updated : item)) }
     catch (err) { setError(extractErrorMessage(err, 'Não foi possível reembolsar o pedido.')) }
@@ -57,7 +57,7 @@ export function SalesHistoryPage() {
       {loading ? (
         <StoreStatus title="Carregando histórico" description="Buscando as vendas já processadas." busy />
       ) : error ? (
-        <StoreStatus title="Erro ao carregar histórico" description={error} tone="error" />
+        <StoreStatus title="O histórico de vendas não foi carregado" description={error} tone="error" />
       ) : pedidos.length === 0 ? (
         <StoreStatus
           title="Nenhuma venda processada"

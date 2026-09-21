@@ -69,7 +69,7 @@ export function MessagesPage() {
         setError(null)
       })
       .catch((err) => {
-        if (active) setError(extractErrorMessage(err, 'Nao foi possivel carregar suas mensagens.'))
+        if (active) setError(extractErrorMessage(err, 'Não foi possível carregar suas mensagens. Atualize a página e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -95,7 +95,7 @@ export function MessagesPage() {
         setSendError(null)
       })
       .catch((err) => {
-        if (active) setSendError(extractErrorMessage(err, 'Nao foi possivel carregar a conversa.'))
+        if (active) setSendError(extractErrorMessage(err, 'Não foi possível carregar a conversa. Selecione-a novamente.'))
       })
       .finally(() => {
         if (active) setConversationLoading(false)
@@ -128,7 +128,7 @@ export function MessagesPage() {
       setContent('')
       if (!selectedName) setSelectedName(sent.destinatarioNome)
     } catch (err) {
-      setSendError(extractErrorMessage(err, 'Nao foi possivel enviar a mensagem.'))
+      setSendError(extractErrorMessage(err, 'Não foi possível enviar a mensagem. Tente novamente.'))
     } finally {
       setBusy(false)
     }
@@ -139,7 +139,7 @@ export function MessagesPage() {
       {loading ? (
         <StoreStatus title="Carregando mensagens" description="Buscando suas conversas." busy />
       ) : error ? (
-        <StoreStatus title="Erro ao carregar mensagens" description={error} tone="error" />
+        <StoreStatus title="Suas mensagens não foram carregadas" description={error} tone="error" />
       ) : conversations.length === 0 && !selectedAccountId ? (
         <StoreStatus
           title="Nenhuma conversa ainda"

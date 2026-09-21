@@ -24,7 +24,7 @@ export function SalesOrdersPage() {
         setError(null)
       })
       .catch((err) => {
-        if (active) setError(extractErrorMessage(err, 'Nao foi possivel carregar as compras recebidas.'))
+        if (active) setError(extractErrorMessage(err, 'Não foi possível carregar as compras recebidas. Atualize a página e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -40,7 +40,7 @@ export function SalesOrdersPage() {
       {loading ? (
         <StoreStatus title="Carregando compras" description="Buscando pedidos enviados ao seu sebo." busy />
       ) : error ? (
-        <StoreStatus title="Erro ao carregar compras" description={error} tone="error" />
+        <StoreStatus title="As compras recebidas não foram carregadas" description={error} tone="error" />
       ) : pedidos.length === 0 ? (
         <StoreStatus
           title="Nenhuma compra aguardando confirmação"

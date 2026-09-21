@@ -21,7 +21,7 @@ export function ReleasesPage() {
         setError(null)
       })
       .catch((err) => {
-        if (active) setError(extractErrorMessage(err, 'Nao foi possivel carregar os lançamentos.'))
+        if (active) setError(extractErrorMessage(err, 'Não foi possível carregar os lançamentos. Atualize a página e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -37,7 +37,7 @@ export function ReleasesPage() {
       {loading ? (
         <StoreStatus title="Carregando lançamentos" description="Buscando os produtos mais recentes." busy />
       ) : error ? (
-        <StoreStatus title="Erro ao carregar lançamentos" description={error} tone="error" />
+        <StoreStatus title="Os lançamentos não foram carregados" description={error} tone="error" />
       ) : products.length === 0 ? (
         <StoreStatus
           title="Nenhum lançamento disponível"
