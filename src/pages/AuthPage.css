@@ -39,6 +39,7 @@
   max-width: 1000px;
   margin: 0 auto;
   padding: 0 24px;
+  align-items: start;
 }
 
 .auth-grid-single {
@@ -62,6 +63,12 @@
   color: #6f4026;
   font-size: 0.9rem;
   font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 12px;
+  text-align: center;
 }
 
 .auth-message-dismiss {

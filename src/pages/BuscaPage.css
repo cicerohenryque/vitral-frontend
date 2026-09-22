@@ -81,6 +81,7 @@
   font-family: var(--font-sans);
   font-size: 14px;
   background: var(--color-bg);
+  min-height: 44px;
 }
 
 .busca-filtro-btn {
@@ -95,6 +96,7 @@
   background: var(--color-yellow);
   margin-top: 4px;
   transition: background 0.15s;
+  min-height: 44px;
 }
 
 .busca-filtro-btn:hover { background: var(--color-yellow-hover); }
@@ -128,6 +130,7 @@
   color: var(--color-text-muted);
   cursor: pointer;
   border-radius: var(--radius-pill);
+  min-height: 44px;
   transition: color 0.15s, background 0.15s;
 }
 

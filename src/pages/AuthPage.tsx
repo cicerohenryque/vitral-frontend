@@ -140,7 +140,7 @@ export function AuthPage() {
         ) : (
           <form className="auth-card" onSubmit={handleRegister}>
             <p className="auth-card-title">Ainda não possui conta?</p>
-            <p className="auth-card-subtitle"><em>Cadastra-se:</em></p>
+            <p className="auth-card-subtitle"><em>Cadastre-se:</em></p>
             {regError ? <div className="flash error" role="alert">{regError}</div> : null}
             <Input
               id="reg-name"

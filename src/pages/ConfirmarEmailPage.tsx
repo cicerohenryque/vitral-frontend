@@ -39,20 +39,19 @@ export function ConfirmarEmailPage() {
     if (estado !== 'sucesso') return
 
     intervalRef.current = setInterval(() => {
-      setContador((prev) => {
-        if (prev <= 1) {
-          clearInterval(intervalRef.current!)
-          navigate('/auth', { replace: true })
-          return 0
-        }
-        return prev - 1
-      })
+      setContador((prev) => Math.max(0, prev - 1))
     }, 1000)
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [estado, navigate])
+  }, [estado])
+
+  useEffect(() => {
+    if (estado === 'sucesso' && contador === 0) {
+      navigate('/auth', { replace: true })
+    }
+  }, [contador, estado, navigate])
 
   return (
     <div className="confirmar-email-page">

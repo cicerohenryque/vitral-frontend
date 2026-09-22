@@ -11,7 +11,7 @@ async function login(page: import('@playwright/test').Page, email: string) {
 test.describe.serial('frontend integrado ao backend real', () => {
   test('envia imagem e consulta arquivo enviado pela API real', async ({ request }) => {
     const loginResponse = await request.post('http://127.0.0.1:8081/api/v1/auth/login', {
-      data: { email: 'sebo.e2e@vitral.test', password: 'senha1234' },
+      data: { login: 'sebo.e2e@vitral.test', password: 'senha1234' },
     })
     expect(loginResponse.ok()).toBeTruthy()
     const { token } = await loginResponse.json()
@@ -43,17 +43,17 @@ test.describe.serial('frontend integrado ao backend real', () => {
   test('consulta catalogo, categoria e detalhes sem mocks', async ({ page }) => {
     await page.goto('/')
 
-    await expect(page.getByRole('heading', { name: 'Produtos disponíveis' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Lançamentos|Lancamentos/ })).toBeVisible()
     await expect(page.getByRole('link', { name: /Livro E2E Integrado/ }).first()).toBeVisible()
 
     await page.goto('/categorias')
-    await page.getByRole('button', { name: /Romance E2E/ }).click()
+    await page.getByRole('button', { name: /Livros/ }).click()
     await expect(page.getByRole('link', { name: /Livro E2E Integrado/ })).toBeVisible()
 
     await page.goto('/produto/1')
     await expect(page.getByRole('heading', { name: 'Livro E2E Integrado' })).toBeVisible()
     await expect(page.getByText('Autora E2E')).toBeVisible()
-    await expect(page.getByText('Sebo E2E')).toBeVisible()
+    await expect(page.getByText('Sebo E2E').first()).toBeVisible()
   })
 
   test('busca produtos, aplica filtros e alterna para sebos', async ({ page }) => {
@@ -82,7 +82,7 @@ test.describe.serial('frontend integrado ao backend real', () => {
     await expect(page).toHaveURL(/q=Sebo\+E2E|q=Sebo%20E2E/)
     await expect(page.getByRole('link', { name: /Sebo E2E/ })).toBeVisible()
     await page.getByLabel('Cidade').fill('Fortaleza')
-    await page.getByLabel('Estado (UF)').fill('CE')
+    await page.getByLabel('UF').fill('CE')
     await page.getByRole('button', { name: 'Aplicar' }).click()
 
     await expect(page.getByRole('link', { name: /Sebo E2E/ })).toBeVisible()
@@ -106,7 +106,7 @@ test.describe.serial('frontend integrado ao backend real', () => {
     await expect(page.getByText('2 itens na cesta')).toBeVisible()
 
     await page.goto('/confirmar-pedido')
-    await page.getByRole('button', { name: 'Confirmar pedido' }).click()
+    await page.getByRole('button', { name: 'Pagar e confirmar' }).click()
     await expect(page.getByRole('heading', { name: /Pedido #\d+ enviado/ })).toBeVisible()
 
     await page.goto('/reservas')
@@ -126,7 +126,7 @@ test.describe.serial('frontend integrado ao backend real', () => {
     await expect(page.getByText('1 item na cesta')).toBeVisible()
 
     await page.goto('/confirmar-pedido')
-    await page.getByRole('button', { name: 'Confirmar pedido' }).click()
+    await page.getByRole('button', { name: 'Pagar e confirmar' }).click()
     const confirmation = page.getByRole('heading', { name: /Pedido #\d+ enviado/ })
     await expect(confirmation).toBeVisible()
     const heading = await confirmation.textContent()
@@ -151,18 +151,19 @@ test.describe.serial('frontend integrado ao backend real', () => {
 
   test('cadastra uma conta e confirma um e-mail pela interface', async ({ page }) => {
     await page.goto('/auth')
-    await page.getByLabel('Usuário:').fill('Nova Pessoa E2E')
+    await page.getByLabel('Nome:').fill('Nova Pessoa E2E')
+    await page.getByLabel('Usuário (login):').fill('nova.pessoa.e2e')
     await page.getByLabel('Email:').fill('nova.pessoa.e2e@vitral.test')
     await page.locator('#reg-password').fill('senha1234')
     await page.getByLabel('Confirme sua senha:').fill('senha1234')
     await page.getByRole('button', { name: 'Cadastrar' }).click()
-    await expect(page.getByRole('status')).toContainText('Verifique seu e-mail')
+    await expect(page.getByRole('status')).toContainText('Enviamos um link de confirmação para seu e-mail')
     await page.getByRole('link', { name: 'Não recebeu? Reenviar confirmação' }).click()
     await page.getByRole('button', { name: 'Reenviar link' }).click()
-    await expect(page.getByRole('status')).toContainText('conta estiver pendente')
+    await expect(page.getByRole('status')).toContainText('Se o e-mail estiver cadastrado')
 
     await page.goto('/auth/confirmar?token=11111111-1111-1111-1111-111111111111')
-    await expect(page.getByRole('heading', { name: 'E-mail confirmado!' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'E-mail confirmado' })).toBeVisible()
     await page.getByRole('link', { name: 'Ir para o login agora' }).click()
     await login(page, 'confirmacao.e2e@vitral.test')
   })
@@ -186,7 +187,7 @@ test.describe.serial('frontend integrado ao backend real', () => {
 
   test('pagina o catálogo do sebo sem esconder produtos', async ({ page, request }) => {
     const loginResponse = await request.post('http://127.0.0.1:8081/api/v1/auth/login', {
-      data: { email: 'sebo.e2e@vitral.test', password: 'senha1234' },
+      data: { login: 'sebo.e2e@vitral.test', password: 'senha1234' },
     })
     const { token } = await loginResponse.json()
     for (let index = 1; index <= 11; index += 1) {
@@ -194,6 +195,7 @@ test.describe.serial('frontend integrado ao backend real', () => {
         headers: { Authorization: `Bearer ${token}` },
         data: {
           titulo: `Produto paginado ${index}`,
+          categoriaId: 1,
           preco: 10 + index,
           estoque: 1,
           condicao: 'USADO',
@@ -212,7 +214,7 @@ test.describe.serial('frontend integrado ao backend real', () => {
 
   test('redefine a senha, invalida a sessão antiga e aceita nova recuperação', async ({ page, request }) => {
     const oldLogin = await request.post('http://127.0.0.1:8081/api/v1/auth/login', {
-      data: { email: 'cliente.e2e@vitral.test', password: 'senha1234' },
+      data: { login: 'cliente.e2e@vitral.test', password: 'senha1234' },
     })
     const { token: oldToken } = await oldLogin.json()
 
@@ -243,30 +245,38 @@ test.describe.serial('frontend integrado ao backend real', () => {
     await login(page, 'descartavel.e2e@vitral.test')
     await page.goto('/painel/sebo')
     await expect(page.getByRole('heading', { name: 'Cadastrar perfil do sebo' })).toBeVisible()
+    await page.getByLabel('CNPJ').fill('11222333000181')
     await page.getByLabel('Descrição').fill('Perfil descartável E2E')
+    await page.getByLabel('CEP').fill('60000000')
+    await page.getByLabel('Endereço/logradouro').fill('Rua de Teste')
     await page.getByLabel('Cidade').fill('Fortaleza')
     await page.getByLabel('UF').fill('CE')
     await page.getByRole('button', { name: 'Cadastrar' }).click()
-    await expect(page.getByRole('status')).toContainText('Sebo cadastrado com sucesso')
+    await expect(page.locator('.flash.success')).toContainText('Sebo cadastrado com sucesso', { timeout: 15_000 })
 
     await page.getByLabel('Descrição').fill('Perfil atualizado E2E')
     await page.getByRole('button', { name: 'Atualizar' }).click()
-    await expect(page.getByRole('status')).toContainText('Sebo atualizado com sucesso')
+    await expect(page.locator('.flash.success')).toContainText('Dados do sebo atualizados com sucesso')
 
+    await login(page, 'sebo.e2e@vitral.test')
     await page.goto('/painel/produtos')
     await page.getByLabel('Título').fill('Produto descartável E2E')
     await page.getByLabel('Preço (R$)').fill('25')
+    await page.locator('form.form-grid select').first().selectOption('1')
     await page.getByRole('button', { name: 'Adicionar produto' }).click()
-    await expect(page.getByRole('status')).toContainText('Produto cadastrado')
+    await expect(page.locator('.flash.success')).toContainText('Produto cadastrado')
+    const nextPage = page.getByRole('button', { name: 'Próxima' })
+    if (await nextPage.isVisible()) await nextPage.click()
     const row = page.locator('.produto-table tbody tr').filter({ hasText: 'Produto descartável E2E' })
     await row.getByRole('button', { name: 'Editar' }).click()
     await page.getByLabel('Título').fill('Produto editado E2E')
     await page.getByRole('button', { name: 'Atualizar produto' }).click()
-    await expect(page.getByRole('status')).toContainText('Produto atualizado')
+    await expect(page.locator('.flash.success')).toContainText('Produto atualizado')
     page.once('dialog', (dialog) => dialog.accept())
     await page.locator('.produto-table tbody tr').filter({ hasText: 'Produto editado E2E' }).getByRole('button', { name: 'Remover' }).click()
     await expect(page.getByText('Produto editado E2E')).toHaveCount(0)
 
+    await login(page, 'descartavel.e2e@vitral.test')
     await page.goto('/conta/excluir')
     await page.getByLabel('Confirmação').fill('EXCLUIR')
     await page.getByRole('button', { name: 'Excluir conta' }).click()

@@ -64,7 +64,7 @@ export function SellerPage() {
   }
 
   return (
-    <StorePage title="Perfil do vendedor" subtitle="Conheca o sebo e os itens disponiveis.">
+    <StorePage title="Perfil do vendedor" subtitle="Conheça o sebo e os itens disponíveis.">
       {loading ? (
         <StoreStatus
           title="Carregando sebo"

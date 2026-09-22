@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { ProductCarousel } from '../components/ProductCarousel'
 import { useAuth } from '../hooks/useAuth'
 import { extractErrorMessage } from '../services/api'
@@ -88,9 +89,12 @@ export function HomePage() {
             <button type="button" onClick={retry}>Tentar novamente</button>
           </div>
         ) : null}
-        {!loading && !error && sections.length === 0
-          ? <p className="carousel-empty">Nenhum produto disponível no momento.</p>
-          : null}
+        {!loading && !error && sections.length === 0 ? (
+          <div className="home-empty-state">
+            <p className="carousel-empty">Nenhum produto disponível no momento.</p>
+            <Link className="home-empty-action" to="/categorias">Explorar categorias</Link>
+          </div>
+        ) : null}
         {!loading && !error ? sections.map((section) => (
           <ProductCarousel
             key={section.key}

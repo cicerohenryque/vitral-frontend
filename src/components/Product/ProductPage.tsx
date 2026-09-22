@@ -157,7 +157,7 @@ export function ProductPage() {
   const publicationDate = formatDateBR(produto.dataPublicacao ?? produto.createdAt)
 
   return (
-    <StorePage title="Detalhes do produto" subtitle="Conheca o item antes de solicitar a reserva.">
+    <StorePage title="Detalhes do produto" subtitle="Conheça o item antes de solicitar a reserva.">
       <section className="product-detail">
         <div className="product-gallery">
           <div className="product-main-image">

@@ -22,7 +22,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: './mvnw spring-boot:run -Dspring-boot.run.profiles=e2e',
+      command: './mvnw clean spring-boot:run -Dspring-boot.run.profiles=e2e',
       cwd: '../vitral-backend',
       url: 'http://127.0.0.1:8081/api/v1/categorias',
       timeout: 120_000,
