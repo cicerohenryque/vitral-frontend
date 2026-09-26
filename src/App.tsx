@@ -34,6 +34,7 @@ import { AccountType } from './types/account'
 import { GlobalNavigation } from './components/GlobalNavigation'
 import { SeboDocumentsPage } from './pages/SeboDocumentsPage'
 import { AdminSeboVerificationPage } from './pages/AdminSeboVerificationPage'
+import { AdminPage } from './pages/AdminPage'
 
 function App() {
   return (
@@ -84,6 +85,7 @@ function App() {
         />
         <Route path="/painel/sebo/documentos" element={<ProtectedRoute requireRole={AccountType.SEBO}><SeboDocumentsPage /></ProtectedRoute>} />
         <Route path="/admin/sebos" element={<ProtectedRoute requireRole={AccountType.ADMIN}><AdminSeboVerificationPage /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute requireRole={AccountType.ADMIN}><AdminPage /></ProtectedRoute>} />
 
         <Route
           path="/conta"

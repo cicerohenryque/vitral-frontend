@@ -99,7 +99,7 @@ export function GlobalNavigation() {
         <div className="global-navigation-actions">
           {isAuthenticated ? (
             <>
-              <Link className="global-action" to={isAdmin ? '/admin/sebos' : isSebo ? '/painel/sebo' : '/painel/perfil'}>
+              <Link className="global-action" to={isAdmin ? '/admin' : isSebo ? '/painel/sebo' : '/painel/perfil'}>
                 <UserIcon size={22} />
                 <span>{isAdmin ? 'Administração' : isSebo ? 'Meu Sebo' : 'Meu Perfil'}</span>
               </Link>
