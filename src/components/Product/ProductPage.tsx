@@ -178,32 +178,41 @@ export function ProductPage() {
         </div>
 
         <article className="product-information">
-          <span className="product-category">{produto.categoriaNome ?? produto.condicao}</span>
+          <div className="product-heading-meta">
+            <span className="product-category">{produto.categoriaNome ?? produto.condicao}</span>
+            <span className={`product-availability ${produto.ativo && Number(produto.estoque ?? 0) > 0 ? 'available' : 'unavailable'}`}>
+              {produto.ativo && Number(produto.estoque ?? 0) > 0 ? 'Disponível' : 'Indisponível'}
+            </span>
+          </div>
           <h2>{produto.titulo}</h2>
-          {publicationDate ? <p className="product-description">Publicado em: {publicationDate}</p> : null}
-          {produto.precoPromocional != null && Number(produto.precoPromocional) < Number(produto.preco) ? (
-            <p className="product-price">
-              <s style={{ opacity: 0.6, marginRight: 8, fontWeight: 400 }}>
-                R$ {Number(produto.preco).toFixed(2)}
-              </s>
-              R$ {Number(produto.precoPromocional).toFixed(2)}
-            </p>
-          ) : (
-            <p className="product-price">R$ {Number(produto.preco).toFixed(2)}</p>
-          )}
+          {produto.autor ? <p className="product-author">por {produto.autor}</p> : null}
+          {publicationDate ? <p className="product-publication">Publicado em {publicationDate}</p> : null}
+          <div className="product-price-block">
+            <span className="product-price-label">Preço</span>
+            {produto.precoPromocional != null && Number(produto.precoPromocional) < Number(produto.preco) ? (
+              <div className="product-price-row">
+                <s className="product-price-old">R$ {Number(produto.preco).toFixed(2)}</s>
+                <p className="product-price">R$ {Number(produto.precoPromocional).toFixed(2)}</p>
+              </div>
+            ) : (
+              <p className="product-price">R$ {Number(produto.preco).toFixed(2)}</p>
+            )}
+          </div>
           <p className="product-description">
             {produto.descricao || 'Consulte o vendedor para combinar pagamento, entrega ou retirada.'}
           </p>
 
-          <dl className="product-metadata">
-            <div><dt>Estado</dt><dd>{produto.condicao}</dd></div>
-            <div><dt>Categoria</dt><dd>{produto.categoriaNome ?? 'Nao informada'}</dd></div>
-            {produto.bookGenre ? <div><dt>Gênero</dt><dd>{bookGenreLabel(produto.bookGenre) ?? produto.bookGenre}</dd></div> : null}
-            {produto.classico ? <div><dt>Curadoria</dt><dd>Clássico</dd></div> : null}
-            <div><dt>Autor</dt><dd>{produto.autor ?? 'Nao informado'}</dd></div>
-            <div><dt>Estoque</dt><dd>{produto.estoque ?? 0}</dd></div>
-            <div><dt>Disponibilidade</dt><dd>{produto.ativo && Number(produto.estoque ?? 0) > 0 ? 'Disponivel' : 'Indisponivel'}</dd></div>
-          </dl>
+          <section className="product-information-section" aria-labelledby="product-details-title">
+            <h3 id="product-details-title">Detalhes do item</h3>
+            <dl className="product-metadata">
+              <div><dt>Estado</dt><dd>{produto.condicao}</dd></div>
+              <div><dt>Categoria</dt><dd>{produto.categoriaNome ?? 'Nao informada'}</dd></div>
+              {produto.bookGenre ? <div><dt>Gênero</dt><dd>{bookGenreLabel(produto.bookGenre) ?? produto.bookGenre}</dd></div> : null}
+              {produto.classico ? <div><dt>Curadoria</dt><dd>Clássico</dd></div> : null}
+              {produto.ano ? <div><dt>Ano</dt><dd>{produto.ano}</dd></div> : null}
+              <div><dt>Estoque</dt><dd>{produto.estoque ?? 0}</dd></div>
+            </dl>
+          </section>
 
           <section className="product-sellers" aria-labelledby="product-sellers-title">
             <h3 id="product-sellers-title">Escolha o vendedor</h3>
@@ -283,9 +292,15 @@ export function ProductPage() {
           )}
 
           <Link className="product-seller" to={`/vendedor/${selectedSeller?.seboId ?? produto.seboId}`}>
-            <span>Vendido por</span>
-            <strong>{selectedSeller?.seboNome ?? sebo?.nome ?? `Sebo #${produto.seboId}`}</strong>
-            <small>Ver perfil do vendedor →</small>
+            <div className="product-seller-avatar">
+              {sebo?.fotoUrl ? <img src={sebo.fotoUrl} alt="" /> : <span>{(selectedSeller?.seboNome ?? sebo?.nome ?? 'S').slice(0, 2).toUpperCase()}</span>}
+            </div>
+            <div className="product-seller-copy">
+              <span>Vendido por</span>
+              <strong>{selectedSeller?.seboNome ?? sebo?.nome ?? `Sebo #${produto.seboId}`}</strong>
+              {sebo?.statusVerificacao ? <small>✓ Sebo verificado</small> : <small>Sebo verificado</small>}
+            </div>
+            <span className="product-seller-link">Ver perfil →</span>
           </Link>
         </article>
       </section>

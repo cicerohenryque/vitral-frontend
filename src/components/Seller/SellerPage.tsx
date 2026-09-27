@@ -83,14 +83,16 @@ export function SellerPage() {
       {seller ? (
         <>
           <section className="seller-profile">
-            <div className="seller-avatar">{seller.nome.slice(0, 2).toUpperCase()}</div>
+            <div className="seller-avatar">
+              {seller.fotoUrl ? <img src={seller.fotoUrl} alt={`Logo do ${seller.nome}`} /> : <span>{seller.nome.slice(0, 2).toUpperCase()}</span>}
+            </div>
             <div className="seller-copy">
-              <span>{seller.statusVerificacao === StatusVerificacao.VERIFICADO ? '✓ Sebo verificado' : 'Sebo cadastrado'}</span>
+              <div className="seller-status-row">
+                <span className="seller-status">{seller.statusVerificacao === StatusVerificacao.VERIFICADO ? '✓ Sebo verificado' : 'Sebo cadastrado'}</span>
+                <span className="seller-catalog-count">{totalProducts} {totalProducts === 1 ? 'item disponível' : 'itens disponíveis'}</span>
+              </div>
               <h2>{seller.nome}</h2>
-              {seller.descricao ? <p>{seller.descricao}</p> : null}
-              <dl>
-                <div><dt>Itens disponíveis</dt><dd>{totalProducts}</dd></div>
-              </dl>
+              {seller.descricao ? <p>{seller.descricao}</p> : <p className="seller-no-description">Este sebo ainda não adicionou uma descrição pública.</p>}
             </div>
             <div className="seller-actions">
               <Link to={`/busca?tab=produtos&seboId=${seller.id}`}>Ver produtos</Link>
