@@ -10,9 +10,22 @@ import { CondicaoProduto } from '../types/produto'
 import './BuscaPage.css'
 import { categoriaService } from '../services/categoriaService'
 import type { Categoria } from '../types/categoria'
-import { BOOK_GENRE_OPTIONS, getAllowedCategories, isBookCategory, type BookGenre } from '../constants/productCatalog'
+import { BOOK_GENRE_OPTIONS, bookGenreLabel, getAllowedCategories, isBookCategory, type BookGenre } from '../constants/productCatalog'
 
 type Tab = 'produtos' | 'sebos'
+type ProductFilterParam = 'condicao' | 'seboId' | 'precoMin' | 'precoMax' | 'categoriaId' | 'bookGenre'
+
+const PRODUCT_SORT_OPTIONS = [
+  { value: '', label: 'Ordenação padrão' },
+  { value: 'createdAt,desc', label: 'Mais recentes' },
+  { value: 'preco,asc', label: 'Menor preço' },
+  { value: 'preco,desc', label: 'Maior preço' },
+  { value: 'titulo,asc', label: 'Título: A–Z' },
+] as const
+
+function normalizeProductSort(value: string) {
+  return PRODUCT_SORT_OPTIONS.some((option) => option.value === value) ? value : ''
+}
 
 export function BuscaPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -25,6 +38,7 @@ export function BuscaPage() {
   const appliedPrecoMax = searchParams.get('precoMax') ?? ''
   const appliedCategoriaId = searchParams.get('categoriaId') ?? ''
   const appliedBookGenre = searchParams.get('bookGenre') ?? ''
+  const appliedSort = normalizeProductSort(searchParams.get('sort') ?? '')
   const appliedCidade = searchParams.get('cidade') ?? ''
   const appliedUf = searchParams.get('uf') ?? ''
   const requestedPage = Number(searchParams.get('page') ?? '1')
@@ -40,6 +54,7 @@ export function BuscaPage() {
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [cidade, setCidade] = useState(appliedCidade)
   const [uf, setUf] = useState(appliedUf)
+  const [filterError, setFilterError] = useState<string | null>(null)
 
   const [proximidadeAtiva, setProximidadeAtiva] = useState(false)
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
@@ -84,6 +99,7 @@ export function BuscaPage() {
       precoMax: appliedPrecoMax ? Number(appliedPrecoMax) : undefined,
       categoriaId: appliedCategoriaId ? Number(appliedCategoriaId) : undefined,
       bookGenre: appliedBookGenre ? (appliedBookGenre as BookGenre) : undefined,
+      sort: appliedSort || undefined,
     }
 
     const request = currentPage === 0
@@ -103,7 +119,7 @@ export function BuscaPage() {
         setTotalPaginasProdutos(0)
       })
       .finally(() => setLoadingProdutos(false))
-  }, [q, appliedSeboId, appliedCondicao, appliedPrecoMin, appliedPrecoMax, appliedCategoriaId, appliedBookGenre, currentPage])
+  }, [q, appliedSeboId, appliedCondicao, appliedPrecoMin, appliedPrecoMax, appliedCategoriaId, appliedBookGenre, appliedSort, currentPage])
 
   useEffect(() => {
     const params = {
@@ -201,6 +217,17 @@ export function BuscaPage() {
 
   function aplicarFiltros(e: React.FormEvent) {
     e.preventDefault()
+    const min = precoMin === '' ? null : Number(precoMin)
+    const max = precoMax === '' ? null : Number(precoMax)
+    if (tab === 'produtos' && ((min !== null && min < 0) || (max !== null && max < 0))) {
+      setFilterError('Informe preços iguais ou maiores que zero.')
+      return
+    }
+    if (tab === 'produtos' && min !== null && max !== null && min > max) {
+      setFilterError('O preço mínimo não pode ser maior que o preço máximo.')
+      return
+    }
+    setFilterError(null)
     const next = new URLSearchParams(searchParams)
     next.delete('page')
     if (tab === 'produtos') {
@@ -245,11 +272,52 @@ export function BuscaPage() {
     setBookGenre('')
     setCidade('')
     setUf('')
+    setFilterError(null)
     setLoadingProdutos(true)
     setLoadingSebos(true)
     setErrorProdutos(null)
     setErrorSebos(null)
   }
+
+  function removerFiltro(param: ProductFilterParam) {
+    const next = new URLSearchParams(searchParams)
+    next.delete(param)
+    if (param === 'categoriaId') next.delete('bookGenre')
+    next.delete('page')
+    setFilterError(null)
+    setLoadingProdutos(true)
+    setErrorProdutos(null)
+    setSearchParams(next)
+  }
+
+  function alterarOrdenacao(sort: string) {
+    const next = new URLSearchParams(searchParams)
+    const normalizedSort = normalizeProductSort(sort)
+    if (normalizedSort) next.set('sort', normalizedSort)
+    else next.delete('sort')
+    next.delete('page')
+    setLoadingProdutos(true)
+    setErrorProdutos(null)
+    setSearchParams(next)
+  }
+
+  const activeProductFilters = [
+    appliedCategoriaId ? {
+      param: 'categoriaId',
+      label: `Categoria: ${categorias.find((item) => item.id === Number(appliedCategoriaId))?.nome ?? appliedCategoriaId}`,
+    } : null,
+    appliedBookGenre ? {
+      param: 'bookGenre',
+      label: `Gênero: ${bookGenreLabel(appliedBookGenre as BookGenre) ?? appliedBookGenre}`,
+    } : null,
+    appliedCondicao ? {
+      param: 'condicao',
+      label: `Condição: ${appliedCondicao === CondicaoProduto.NOVO ? 'Novo' : appliedCondicao === CondicaoProduto.SEMINOVO ? 'Seminovo' : 'Usado'}`,
+    } : null,
+    appliedSeboId ? { param: 'seboId', label: `Sebo: ${appliedSeboId}` } : null,
+    appliedPrecoMin ? { param: 'precoMin', label: `A partir de R$ ${Number(appliedPrecoMin).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` } : null,
+    appliedPrecoMax ? { param: 'precoMax', label: `Até R$ ${Number(appliedPrecoMax).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` } : null,
+  ].filter((filter): filter is { param: ProductFilterParam; label: string } => filter !== null)
 
   function mudarPagina(page: number) {
     const next = new URLSearchParams(searchParams)
@@ -280,7 +348,7 @@ export function BuscaPage() {
         <div className="busca-layout">
           <aside className="busca-filtros">
             <form onSubmit={aplicarFiltros}>
-              <h3>Filtros</h3>
+              <h3>Filtrar resultados</h3>
               {tab === 'produtos' ? (
                 <>
                   <label className="busca-filtro-label">
@@ -373,9 +441,10 @@ export function BuscaPage() {
                   </label>
                 </>
               )}
-              <button type="submit" className="busca-filtro-btn">Aplicar</button>
+              {filterError ? <p className="busca-filtro-erro" role="alert">{filterError}</p> : null}
+              <button type="submit" className="busca-filtro-btn">Aplicar filtros</button>
               <button type="button" className="busca-filtro-btn busca-filtro-btn-ghost" onClick={limparFiltros}>
-                Limpar
+                Limpar filtros
               </button>
             </form>
           </aside>
@@ -401,6 +470,37 @@ export function BuscaPage() {
                 Sebos {totalSebos > 0 ? `(${totalSebos})` : ''}
               </button>
             </div>
+
+            {tab === 'produtos' ? (
+              <>
+                <div className="busca-resultados-toolbar">
+                  <p>{loadingProdutos ? 'Buscando produtos...' : `${totalProdutos} ${totalProdutos === 1 ? 'produto encontrado' : 'produtos encontrados'}`}</p>
+                  <label>
+                    Ordenar por
+                    <select value={appliedSort} onChange={(event) => alterarOrdenacao(event.target.value)}>
+                      {PRODUCT_SORT_OPTIONS.map((option) => (
+                        <option key={option.value || 'relevancia'} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                {activeProductFilters.length > 0 ? (
+                  <div className="busca-filtros-ativos" aria-label="Filtros ativos">
+                    {activeProductFilters.map((filter) => (
+                      <button
+                        key={filter.param}
+                        type="button"
+                        onClick={() => removerFiltro(filter.param)}
+                        aria-label={`Remover filtro ${filter.label}`}
+                      >
+                        {filter.label} <span aria-hidden="true">×</span>
+                      </button>
+                    ))}
+                    <button type="button" className="busca-limpar-ativos" onClick={limparFiltros}>Limpar todos</button>
+                  </div>
+                ) : null}
+              </>
+            ) : null}
 
             {tab === 'produtos' ? (
               errorProdutos ? (

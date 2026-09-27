@@ -358,11 +358,11 @@ describe('paginas principais', () => {
     expect(await screen.findByRole('link', { name: /Livro Teste/ })).toBeInTheDocument()
     await userEvent.selectOptions(screen.getByLabelText('Condição'), CondicaoProduto.USADO)
     await userEvent.type(screen.getByLabelText('Preço mín. (R$)'), '10')
-    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar filtros' }))
     await waitFor(() => expect(buscaService.buscarProdutos).toHaveBeenLastCalledWith(expect.objectContaining({ condicao: CondicaoProduto.USADO, precoMin: 10 })))
     await userEvent.click(screen.getByRole('tab', { name: /Sebos/ }))
     expect(await screen.findByRole('heading', { name: 'Sebo Central' })).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Limpar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Limpar filtros' }))
   })
 
   it('carrega categorias e mostra produtos da categoria selecionada', async () => {

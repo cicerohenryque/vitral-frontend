@@ -389,7 +389,7 @@ describe('cobertura de branches restantes', () => {
     await userEvent.clear(screen.getByLabelText('Código do sebo (opcional)'))
     await userEvent.clear(screen.getByLabelText('Preço mín. (R$)'))
     await userEvent.clear(screen.getByLabelText('Preço máx. (R$)'))
-    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar filtros' }))
 
     await waitFor(() => expect(buscarProdutosSpy).toHaveBeenLastCalledWith(expect.objectContaining({ condicao: undefined, seboId: undefined, precoMin: undefined, precoMax: undefined })))
   })
@@ -414,12 +414,49 @@ describe('cobertura de branches restantes', () => {
     await userEvent.type(screen.getByLabelText('Código do sebo (opcional)'), '7')
     await userEvent.type(screen.getByLabelText('Preço mín. (R$)'), '10')
     await userEvent.type(screen.getByLabelText('Preço máx. (R$)'), '50')
-    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar filtros' }))
 
     await waitFor(() => expect(searchSpy).toHaveBeenLastCalledWith(expect.objectContaining({ condicao: CondicaoProduto.NOVO, seboId: 7, precoMin: 10, precoMax: 50 })))
 
-    await userEvent.click(screen.getByRole('button', { name: 'Limpar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Limpar filtros' }))
     expect(await screen.findByText('Nenhum produto encontrado.')).toBeInTheDocument()
+  })
+
+  it('impede aplicar uma faixa de preço inválida', async () => {
+    const searchSpy = vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
+    vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })
+
+    renderWithParams('/busca?tab=produtos', <BuscaPage />)
+    await screen.findByText('Nenhum produto encontrado.')
+    await userEvent.type(screen.getByLabelText('Preço mín. (R$)'), '100')
+    await userEvent.type(screen.getByLabelText('Preço máx. (R$)'), '50')
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar filtros' }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent('O preço mínimo não pode ser maior que o preço máximo.')
+    expect(searchSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('ordena produtos e remove um filtro ativo sem alterar os demais', async () => {
+    const searchSpy = vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
+    vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })
+
+    renderWithParams('/busca?tab=produtos&condicao=NOVO&precoMin=10', <BuscaPage />)
+    await screen.findByText('Nenhum produto encontrado.')
+    await userEvent.selectOptions(screen.getByLabelText('Ordenar por'), 'preco,asc')
+
+    await waitFor(() => expect(searchSpy).toHaveBeenLastCalledWith(expect.objectContaining({
+      condicao: CondicaoProduto.NOVO,
+      precoMin: 10,
+      sort: 'preco,asc',
+    })))
+
+    await userEvent.click(screen.getByRole('button', { name: 'Remover filtro Condição: Novo' }))
+    await waitFor(() => expect(searchSpy).toHaveBeenLastCalledWith(expect.objectContaining({
+      condicao: undefined,
+      precoMin: 10,
+      sort: 'preco,asc',
+    })))
+    expect(screen.getByRole('button', { name: /Remover filtro A partir de R\$/ })).toBeInTheDocument()
   })
 
   it('aplica filtros de busc a de sebos e limpa corretamente', async () => {

@@ -13,6 +13,7 @@ export type BuscaProdutosParams = {
   precoMax?: number
   categoriaId?: number
   bookGenre?: BookGenre
+  sort?: string
 }
 
 export type BuscaSebosParams = {
