@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import './SideMenu.css'
@@ -30,13 +31,44 @@ const seboItems = [
 
 export function SideMenu({ onClose }: Props) {
   const { isAuthenticated, isSebo, isAdmin } = useAuth()
+  const menuRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const menu = menuRef.current
+    const firstFocusable = menu?.querySelector<HTMLElement>('button, a[href]')
+    firstFocusable?.focus()
+  }, [])
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLElement>) {
+    if (event.key !== 'Tab') return
+    const focusable = menuRef.current?.querySelectorAll<HTMLElement>('button, a[href]')
+    if (!focusable?.length) return
+
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault()
+      last.focus()
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault()
+      first.focus()
+    }
+  }
 
   return (
     <>
-      <div className="sidemenu-backdrop" onClick={onClose} />
-      <aside className="sidemenu" id="main-side-menu" aria-label="Menu principal">
+      <div className="sidemenu-backdrop" aria-hidden="true" onClick={onClose} />
+      <aside
+        ref={menuRef}
+        className="sidemenu"
+        id="main-side-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sidemenu-title"
+        onKeyDown={handleKeyDown}
+      >
         <div className="sidemenu-header">
-          <strong>Menu</strong>
+          <strong id="sidemenu-title">Menu</strong>
           <button type="button" className="sidemenu-close" onClick={onClose} aria-label="Fechar menu">
             ×
           </button>

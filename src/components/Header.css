@@ -27,7 +27,6 @@
 .header-search input {
   flex: 1;
   border: none;
-  outline: none;
   background: transparent;
   font-size: 15px;
   padding: 8px 0;
