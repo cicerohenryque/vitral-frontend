@@ -5,19 +5,25 @@ import { StorePage, StoreStatus } from '../Layout/StorePage'
 import { extractErrorMessage } from '../../services/api'
 import { produtoService } from '../../services/produtoService'
 import type { Produto } from '../../types/produto'
+import { Pagination } from '../ui/Pagination'
 
 export function ReleasesPage() {
   const [products, setProducts] = useState<Produto[]>([])
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
+    setLoading(true)
+    setError(null)
     produtoService
-      .listarLancamentos()
-      .then((page) => {
+      .listarLancamentos(page)
+      .then((result) => {
         if (!active) return
-        setProducts(page.content)
+        setProducts(result.content)
+        setTotalPages(result.totalPages)
         setError(null)
       })
       .catch((err) => {
@@ -30,7 +36,7 @@ export function ReleasesPage() {
     return () => {
       active = false
     }
-  }, [])
+  }, [page])
 
   return (
     <StorePage title="Lançamentos" subtitle="As novidades que acabaram de chegar ao Vitral.">
@@ -45,11 +51,14 @@ export function ReleasesPage() {
           action={<Link to="/busca">Ver acervo</Link>}
         />
       ) : (
-        <section className="busca-grid" aria-label="Lançamentos recentes">
-          {products.map((product) => (
-            <ProductCard key={product.id} produto={product} />
-          ))}
-        </section>
+        <>
+          <section className="busca-grid" aria-label="Lançamentos recentes">
+            {products.map((product) => (
+              <ProductCard key={product.id} produto={product} />
+            ))}
+          </section>
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label="Páginas de lançamentos" />
+        </>
       )}
     </StorePage>
   )

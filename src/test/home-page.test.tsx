@@ -64,7 +64,7 @@ describe('HomePage integrada à API centralizada', () => {
     const recent = product(3, 'Recente da API')
     vi.mocked(homeService.carregar).mockResolvedValue(response({
       lancamentos: section('Lançamentos', [release]),
-      classicos: section('Clássicos', [classic]),
+      classicos: section('Clássicos', [classic], 2),
       recentes: section('Adicionados recentemente', [recent]),
     }))
 
@@ -76,6 +76,7 @@ describe('HomePage integrada à API centralizada', () => {
     expect(screen.queryByText('Recente da API')).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Adicionados recentemente' })).not.toBeInTheDocument()
     expect(screen.getAllByText('Sebo Aurora')).toHaveLength(2)
+    expect(screen.getByRole('link', { name: 'Ver todos' })).toHaveAttribute('href', '/classicos')
     expect(homeService.carregar).toHaveBeenCalledTimes(1)
   })
 

@@ -454,6 +454,19 @@ describe('paginas principais', () => {
     expect(await screen.findByText('Não foi possível carregar os sebos. Ajuste a busca ou tente novamente.')).toBeInTheDocument()
   })
 
+  it('permite tentar novamente após uma falha na busca', async () => {
+    const produtosSpy = vi.spyOn(buscaService, 'buscarProdutos')
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce(emptyPage)
+
+    renderAt('/busca?q=livro', <BuscaPage />)
+    expect(await screen.findByText('Os produtos não foram carregados')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+
+    expect(await screen.findByText('Nenhum produto encontrado.')).toBeInTheDocument()
+    expect(produtosSpy).toHaveBeenCalledTimes(2)
+  })
+
   it('renderiza paginas informativas e rota inexistente', () => {
     const { unmount } = renderAt('/ajuda', <HelpPage />)
     expect(screen.getByRole('region', { name: 'Como usar o Vitral' })).toBeInTheDocument()

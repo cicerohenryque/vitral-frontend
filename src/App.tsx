@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { CartPage } from './components/Cart/CartPage'
+import { ClassicsPage } from './components/Classics/ClassicsPage'
 import { CategoriesPage } from './components/Categories/CategoriesPage'
 import { CheckoutPage } from './components/Checkout/CheckoutPage'
 import { DeleteAccountPage } from './components/DeleteAccount/DeleteAccountPage'
@@ -204,6 +205,7 @@ function App() {
         />
         <Route path="/vendedor/:sellerId" element={<SellerPage />} />
         <Route path="/lancamentos" element={<ReleasesPage />} />
+        <Route path="/classicos" element={<ClassicsPage />} />
         <Route
           path="/suporte"
           element={

@@ -22,7 +22,7 @@ function buildSections(home: HomeResponse): RenderSection[] {
     sections.push({ ...home.lancamentos, key: 'lancamentos', viewAllTo: '/lancamentos' })
   }
   if (hasContent(home.classicos)) {
-    sections.push({ ...home.classicos, key: 'classicos' })
+    sections.push({ ...home.classicos, key: 'classicos', viewAllTo: '/classicos' })
   }
   if (hasContent(home.recomendados)) {
     sections.push({ ...home.recomendados, key: 'recomendados', viewAllTo: '/recomendacoes' })
