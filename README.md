@@ -2,6 +2,9 @@
 
 Frontend React + TypeScript do Vitral, integrado ao backend Spring em `/api/v1`.
 
+O histórico técnico e funcional das Sprints 1, 2 e 3 está em
+[docs/SPRINTS.md](docs/SPRINTS.md).
+
 ## Requisitos
 
 - Node.js compatível com Vite 8
@@ -52,7 +55,7 @@ Já usam endpoints reais do backend:
 - perfil do usuário autenticado;
 - cadastro/edição do perfil do sebo;
 - cadastro, edição, listagem e remoção de produtos do sebo;
-- busca de produtos e sebos;
+- busca de produtos e sebos, incluindo descoberta por cidade, UF e proximidade;
 - detalhe real do produto por ID;
 - perfil público real do sebo por ID;
 - categorias e produtos por categoria;
@@ -73,6 +76,43 @@ Já usam endpoints reais do backend:
 - exclusão de conta de usuário comum e de sebo;
 - proteção de rotas para usuário autenticado e contas `SEBO`.
 
+## Descoberta de sebos por localização
+
+Na aba **Sebos** da busca, o usuário pode filtrar por cidade e UF ou selecionar
+**Ordenar por proximidade**. A segunda opção solicita a localização ao navegador
+e permite limitar os resultados a 5, 10, 25, 50 ou 100 km; o valor padrão é
+25 km e também é possível pesquisar sem limite de distância.
+
+Quando a localização está ativa, os resultados são ordenados do sebo mais
+próximo para o mais distante e exibem a distância aproximada. Se o navegador
+não oferecer geolocalização, a permissão for negada ou a obtenção expirar, a
+interface orienta o usuário a continuar pelos filtros de cidade e UF.
+
+As coordenadas são usadas apenas na requisição de busca. Elas não são gravadas
+na URL nem persistidas pelo frontend. A URL mantém somente os filtros que podem
+ser compartilhados, como `cidade`, `uf` e `raioKm`.
+
+O recurso depende de:
+
+- permissão de localização concedida pelo usuário;
+- contexto seguro (`https`) em produção ou `localhost` em desenvolvimento;
+- backend compatível com os parâmetros `lat`, `lng` e `raioKm`.
+
+## Paginação e atualização das telas
+
+As listagens de **Clássicos** e **Lançamentos** são paginadas pelo backend. Ao
+trocar de página, a interface apresenta novamente o estado de carregamento e
+limpa mensagens de erro anteriores, sem carregar o catálogo inteiro em memória.
+
+No painel administrativo, usuários, produtos, sebos, pedidos e auditoria também
+usam paginação. Mudanças de página ou de termo de busca iniciam um novo estado
+de carregamento. Respostas de requisições antigas são ignoradas quando a tela ou
+o filtro muda, evitando que uma resposta atrasada substitua dados mais recentes.
+
+Ao ativar ou desativar usuários e produtos, a linha alterada é atualizada com a
+resposta da API, sem uma segunda consulta completa. Nas listas exclusivas de
+itens inativos, um item reativado é removido imediatamente da visualização.
+
 ## Deploy (Vercel)
 
 O frontend é publicado na Vercel e o backend no Render, em domínios diferentes.
@@ -92,6 +132,11 @@ Duas configurações são obrigatórias para o ambiente publicado funcionar:
 Antes de abrir PR ou fazer push, rode:
 
 ```bash
+npm test -- --run
 npm run lint
 npm run build
 ```
+
+Os testes automatizados cobrem os serviços de busca, ativação e falha da
+geolocalização, alteração do raio, limpeza dos filtros, paginação e principais
+fluxos administrativos.
