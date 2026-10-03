@@ -16,8 +16,6 @@ export function ClassicsPage() {
 
   useEffect(() => {
     let active = true
-    setLoading(true)
-    setError(null)
     produtoService.listarClassicos(page)
       .then((result) => {
         if (!active) return
@@ -34,6 +32,12 @@ export function ClassicsPage() {
     return () => { active = false }
   }, [page])
 
+  function changePage(nextPage: number) {
+    setLoading(true)
+    setError(null)
+    setPage(nextPage)
+  }
+
   return (
     <StorePage title="Clássicos" subtitle="Obras que continuam encantando diferentes gerações.">
       {loading ? (
@@ -47,7 +51,7 @@ export function ClassicsPage() {
           <section className="busca-grid" aria-label="Produtos clássicos">
             {products.map((product) => <ProductCard key={product.id} produto={product} />)}
           </section>
-          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label="Páginas de clássicos" />
+          <Pagination page={page} totalPages={totalPages} onPageChange={changePage} label="Páginas de clássicos" />
         </>
       )}
     </StorePage>

@@ -16,8 +16,6 @@ export function ReleasesPage() {
 
   useEffect(() => {
     let active = true
-    setLoading(true)
-    setError(null)
     produtoService
       .listarLancamentos(page)
       .then((result) => {
@@ -38,6 +36,12 @@ export function ReleasesPage() {
     }
   }, [page])
 
+  function changePage(nextPage: number) {
+    setLoading(true)
+    setError(null)
+    setPage(nextPage)
+  }
+
   return (
     <StorePage title="Lançamentos" subtitle="As novidades que acabaram de chegar ao Vitral.">
       {loading ? (
@@ -57,7 +61,7 @@ export function ReleasesPage() {
               <ProductCard key={product.id} produto={product} />
             ))}
           </section>
-          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} label="Páginas de lançamentos" />
+          <Pagination page={page} totalPages={totalPages} onPageChange={changePage} label="Páginas de lançamentos" />
         </>
       )}
     </StorePage>

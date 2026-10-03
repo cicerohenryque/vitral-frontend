@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { StorePage, StoreStatus } from '../components/Layout/StorePage'
@@ -54,56 +54,71 @@ function UsersPanel({ inactiveOnly = false }: { inactiveOnly?: boolean }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const load = useCallback(() => {
-    setLoading(true)
+  useEffect(() => {
+    let active = true
     adminService.listarUsuarios(page, term, undefined, inactiveOnly ? false : undefined).then((data) => {
+      if (!active) return
       setItems(data.content); setPages(data.totalPages); setError(null)
-    }).catch((e) => setError(extractErrorMessage(e, 'Não foi possível carregar os usuários.')))
-      .finally(() => setLoading(false))
+    }).catch((e) => { if (active) setError(extractErrorMessage(e, 'Não foi possível carregar os usuários.')) })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
   }, [page, term, inactiveOnly])
-  useEffect(() => { load() }, [load])
   async function toggle(item: AdminAccount) {
     const action = item.ativo ? 'desativar' : 'ativar'
     if (!confirm(`Deseja ${action} a conta de ${item.name}?`)) return
-    try { await adminService.alterarStatusUsuario(item.id, !item.ativo); setSuccess(`Conta ${item.ativo ? 'desativada' : 'ativada'} com sucesso.`); load() }
+    try {
+      const updated = await adminService.alterarStatusUsuario(item.id, !item.ativo)
+      setItems((current) => inactiveOnly && updated.ativo ? current.filter((account) => account.id !== item.id) : current.map((account) => account.id === updated.id ? updated : account))
+      setSuccess(`Conta ${item.ativo ? 'desativada' : 'ativada'} com sucesso.`)
+    }
     catch (e) { setError(extractErrorMessage(e, 'Não foi possível alterar o status da conta.')) }
   }
-  return <AdminPanel title="Usuários" term={term} setTerm={(v) => { setPage(0); setTerm(v) }} loading={loading} error={error} empty={!items.length}>
+  function changePage(nextPage: number) { setLoading(true); setError(null); setPage(nextPage) }
+  function changeTerm(value: string) { setLoading(true); setError(null); setPage(0); setTerm(value) }
+  return <AdminPanel title="Usuários" term={term} setTerm={changeTerm} loading={loading} error={error} empty={!items.length}>
     {success ? <div className="flash success" role="status">{success}</div> : null}
     <Table headers={['Nome', 'E-mail', 'Tipo', 'Status', 'Cadastro', 'Ação']}>
       {items.map((item) => <tr key={item.id}><td>{item.name}</td><td>{item.email}</td><td>{item.type}</td><td>{item.ativo ? 'Ativa' : 'Inativa'}</td><td>{date.format(new Date(item.createdAt))}</td><td>{item.type === AccountType.ADMIN ? 'Protegida' : <Button type="button" variant={item.ativo ? 'danger' : 'ghost'} onClick={() => toggle(item)}>{item.ativo ? 'Desativar' : 'Ativar'}</Button>}</td></tr>)}
-    </Table><Pagination page={page} totalPages={pages} onPageChange={setPage} label="Páginas de usuários" />
+    </Table><Pagination page={page} totalPages={pages} onPageChange={changePage} label="Páginas de usuários" />
   </AdminPanel>
 }
 
 function ProductsPanel({ inactiveOnly = false }: { inactiveOnly?: boolean }) {
   const [items, setItems] = useState<AdminProduct[]>([]); const [page, setPage] = useState(0); const [pages, setPages] = useState(0)
   const [term, setTerm] = useState(''); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null)
-  const load = useCallback(() => { setLoading(true); adminService.listarProdutos(page, term, inactiveOnly ? false : undefined).then((d) => { setItems(d.content); setPages(d.totalPages); setError(null) }).catch((e) => setError(extractErrorMessage(e, 'Não foi possível carregar os produtos.'))).finally(() => setLoading(false)) }, [page, term, inactiveOnly])
-  useEffect(() => { load() }, [load])
-  async function toggle(item: AdminProduct) { const action = item.ativo ? 'desativar' : 'ativar'; if (!confirm(`Deseja ${action} o produto "${item.titulo}"?`)) return; try { await adminService.alterarStatusProduto(item.id, !item.ativo); load() } catch (e) { setError(extractErrorMessage(e, 'Não foi possível alterar o produto.')) } }
-  return <AdminPanel title="Produtos" term={term} setTerm={(v) => { setPage(0); setTerm(v) }} loading={loading} error={error} empty={!items.length}>
+  useEffect(() => {
+    let active = true
+    adminService.listarProdutos(page, term, inactiveOnly ? false : undefined).then((d) => { if (active) { setItems(d.content); setPages(d.totalPages); setError(null) } }).catch((e) => { if (active) setError(extractErrorMessage(e, 'Não foi possível carregar os produtos.')) }).finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [page, term, inactiveOnly])
+  async function toggle(item: AdminProduct) { const action = item.ativo ? 'desativar' : 'ativar'; if (!confirm(`Deseja ${action} o produto "${item.titulo}"?`)) return; try { const updated = await adminService.alterarStatusProduto(item.id, !item.ativo); setItems((current) => inactiveOnly && updated.ativo ? current.filter((product) => product.id !== item.id) : current.map((product) => product.id === updated.id ? updated : product)) } catch (e) { setError(extractErrorMessage(e, 'Não foi possível alterar o produto.')) } }
+  function changePage(nextPage: number) { setLoading(true); setError(null); setPage(nextPage) }
+  function changeTerm(value: string) { setLoading(true); setError(null); setPage(0); setTerm(value) }
+  return <AdminPanel title="Produtos" term={term} setTerm={changeTerm} loading={loading} error={error} empty={!items.length}>
     <Table headers={['Produto', 'Sebo', 'Preço', 'Estoque', 'Cadastro', 'Status', 'Ação']}>{items.map((item) => <tr key={item.id}><td>{item.titulo}</td><td>{item.seboNome}</td><td>{money.format(item.preco)}</td><td>{item.estoque ?? 0}</td><td>{date.format(new Date(item.createdAt))}</td><td>{item.ativo ? 'Ativo' : 'Inativo'}</td><td><Button type="button" variant={item.ativo ? 'danger' : 'ghost'} onClick={() => toggle(item)}>{item.ativo ? 'Desativar' : 'Ativar'}</Button></td></tr>)}</Table>
-    <Pagination page={page} totalPages={pages} onPageChange={setPage} label="Páginas de produtos" />
+    <Pagination page={page} totalPages={pages} onPageChange={changePage} label="Páginas de produtos" />
   </AdminPanel>
 }
 
 function StoresPanel() {
   const [items, setItems] = useState<AdminStore[]>([]); const [page, setPage] = useState(0); const [pages, setPages] = useState(0)
   const [term, setTerm] = useState(''); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null)
-  useEffect(() => { setLoading(true); adminService.listarSebos(page, term).then((d) => { setItems(d.content); setPages(d.totalPages); setError(null) }).catch((e) => setError(extractErrorMessage(e, 'Não foi possível carregar os sebos.'))).finally(() => setLoading(false)) }, [page, term])
-  return <AdminPanel title="Sebos" term={term} setTerm={(v) => { setPage(0); setTerm(v) }} loading={loading} error={error} empty={!items.length} action={<Link className="admin-review-link" to="/admin/sebos">Revisar cadastros pendentes</Link>}>
+  useEffect(() => { let active = true; adminService.listarSebos(page, term).then((d) => { if (active) { setItems(d.content); setPages(d.totalPages); setError(null) } }).catch((e) => { if (active) setError(extractErrorMessage(e, 'Não foi possível carregar os sebos.')) }).finally(() => { if (active) setLoading(false) }); return () => { active = false } }, [page, term])
+  function changePage(nextPage: number) { setLoading(true); setError(null); setPage(nextPage) }
+  function changeTerm(value: string) { setLoading(true); setError(null); setPage(0); setTerm(value) }
+  return <AdminPanel title="Sebos" term={term} setTerm={changeTerm} loading={loading} error={error} empty={!items.length} action={<Link className="admin-review-link" to="/admin/sebos">Revisar cadastros pendentes</Link>}>
     <Table headers={['Sebo', 'Responsável', 'Conta', 'Verificação', 'Produtos ativos', 'Produtos inativos', 'Cadastro']}>{items.map((item) => <tr key={item.id}><td>{item.nome}</td><td>{item.responsavel}</td><td>{item.contaAtiva ? 'Ativa' : 'Inativa'}</td><td>{item.status}</td><td>{item.produtosAtivos}</td><td>{item.produtosInativos}</td><td>{date.format(new Date(item.createdAt))}</td></tr>)}</Table>
-    <Pagination page={page} totalPages={pages} onPageChange={setPage} label="Páginas de sebos" />
+    <Pagination page={page} totalPages={pages} onPageChange={changePage} label="Páginas de sebos" />
   </AdminPanel>
 }
 
 function OrdersPanel() {
   const [items, setItems] = useState<AdminOrder[]>([]); const [page, setPage] = useState(0); const [pages, setPages] = useState(0); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null)
-  useEffect(() => { setLoading(true); adminService.listarPedidos(page).then((d) => { setItems(d.content); setPages(d.totalPages); setError(null) }).catch((e) => setError(extractErrorMessage(e, 'Não foi possível carregar os pedidos.'))).finally(() => setLoading(false)) }, [page])
+  useEffect(() => { let active = true; adminService.listarPedidos(page).then((d) => { if (active) { setItems(d.content); setPages(d.totalPages); setError(null) } }).catch((e) => { if (active) setError(extractErrorMessage(e, 'Não foi possível carregar os pedidos.')) }).finally(() => { if (active) setLoading(false) }); return () => { active = false } }, [page])
+  function changePage(nextPage: number) { setLoading(true); setError(null); setPage(nextPage) }
   return <AdminPanel title="Pedidos" loading={loading} error={error} empty={!items.length}>
     <Table headers={['Pedido', 'Usuário', 'Sebo', 'Itens', 'Status', 'Pagamento', 'Total', 'Data']}>{items.map((item) => <tr key={item.id}><td>#{item.id}</td><td>{item.usuarioNome}</td><td>{item.seboNome}</td><td>{item.itens.map((i) => `${i.quantidade}× ${i.titulo}`).join(', ')}</td><td>{item.status}</td><td>{item.statusPagamento}</td><td>{money.format(item.total)}</td><td>{date.format(new Date(item.createdAt))}</td></tr>)}</Table>
-    <Pagination page={page} totalPages={pages} onPageChange={setPage} label="Páginas de pedidos" />
+    <Pagination page={page} totalPages={pages} onPageChange={changePage} label="Páginas de pedidos" />
   </AdminPanel>
 }
 
@@ -114,10 +129,11 @@ function ModerationPanel() {
 function AuditPanel() {
   const [items, setItems] = useState<AdminAudit[]>([]); const [page, setPage] = useState(0); const [pages, setPages] = useState(0)
   const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null)
-  useEffect(() => { setLoading(true); adminService.listarAuditoria(page).then((d) => { setItems(d.content); setPages(d.totalPages); setError(null) }).catch((e) => setError(extractErrorMessage(e, 'Não foi possível carregar a auditoria.'))).finally(() => setLoading(false)) }, [page])
+  useEffect(() => { let active = true; adminService.listarAuditoria(page).then((d) => { if (active) { setItems(d.content); setPages(d.totalPages); setError(null) } }).catch((e) => { if (active) setError(extractErrorMessage(e, 'Não foi possível carregar a auditoria.')) }).finally(() => { if (active) setLoading(false) }); return () => { active = false } }, [page])
+  function changePage(nextPage: number) { setLoading(true); setError(null); setPage(nextPage) }
   return <AdminPanel title="Auditoria" loading={loading} error={error} empty={!items.length}>
     <Table headers={['Data', 'Administrador', 'Ação', 'Entidade', 'Registro', 'Descrição']}>{items.map((item) => <tr key={item.id}><td>{date.format(new Date(item.createdAt))}</td><td>{item.adminNome}<small>{item.adminEmail}</small></td><td>{item.acao}</td><td>{item.entidade}</td><td>#{item.entidadeId}</td><td>{item.descricao}</td></tr>)}</Table>
-    <Pagination page={page} totalPages={pages} onPageChange={setPage} label="Páginas de auditoria" />
+    <Pagination page={page} totalPages={pages} onPageChange={changePage} label="Páginas de auditoria" />
   </AdminPanel>
 }
 
