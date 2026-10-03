@@ -216,6 +216,55 @@
   text-align: center;
 }
 
+.busca-feedback {
+  padding: 36px 24px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  text-align: center;
+  font-family: var(--font-sans);
+}
+
+.busca-feedback strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 17px;
+}
+
+.busca-feedback p {
+  max-width: 520px;
+  margin: 0 auto 16px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.busca-feedback button {
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--color-yellow);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.busca-feedback .busca-feedback-secondary {
+  margin-left: 8px;
+  border-color: var(--color-border);
+  background: transparent;
+}
+
+.busca-feedback-error {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--color-danger, #b3261e) 35%, transparent);
+}
+
+.busca-feedback-error strong { color: var(--color-danger, #b3261e); }
+.busca-resultados-toolbar-sebos { justify-content: flex-start; }
+
 .busca-sebos-lista {
   display: flex;
   flex-direction: column;
@@ -231,6 +280,19 @@
   padding: 16px;
   align-items: flex-start;
   box-shadow: var(--shadow-sm);
+}
+
+.busca-sebo-skeleton {
+  min-height: 106px;
+  border-color: transparent;
+  background: linear-gradient(90deg, var(--color-surface) 25%, var(--color-beige) 50%, var(--color-surface) 75%);
+  background-size: 200% 100%;
+  animation: busca-shimmer 1.4s infinite;
+}
+
+@keyframes busca-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
 }
 
 .busca-sebo-foto {
@@ -344,5 +406,10 @@
   .busca-resultados-toolbar label,
   .busca-resultados-toolbar select {
     width: 100%;
+  }
+
+  .busca-feedback .busca-feedback-secondary {
+    display: block;
+    margin: 8px auto 0;
   }
 }
