@@ -35,7 +35,7 @@ export type AdminProduct = {
 
 export type AdminStore = {
   id: number; nome: string; responsavel: string; contaAtiva: boolean; status: StatusVerificacao; createdAt: string
-  ultimaAtividade: string | null; produtosAtivos: number; produtosInativos: number
+  ultimaAtividade: string | null; produtosAtivos: number; produtosInativos: number; localizacaoDisponivel: boolean
 }
 
 export type AdminDashboard = {

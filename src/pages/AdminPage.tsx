@@ -107,7 +107,7 @@ function StoresPanel() {
   function changePage(nextPage: number) { setLoading(true); setError(null); setPage(nextPage) }
   function changeTerm(value: string) { setLoading(true); setError(null); setPage(0); setTerm(value) }
   return <AdminPanel title="Sebos" term={term} setTerm={changeTerm} loading={loading} error={error} empty={!items.length} action={<Link className="admin-review-link" to="/admin/sebos">Revisar cadastros pendentes</Link>}>
-    <Table headers={['Sebo', 'Responsável', 'Conta', 'Verificação', 'Produtos ativos', 'Produtos inativos', 'Cadastro']}>{items.map((item) => <tr key={item.id}><td>{item.nome}</td><td>{item.responsavel}</td><td>{item.contaAtiva ? 'Ativa' : 'Inativa'}</td><td>{item.status}</td><td>{item.produtosAtivos}</td><td>{item.produtosInativos}</td><td>{date.format(new Date(item.createdAt))}</td></tr>)}</Table>
+    <Table headers={['Sebo', 'Responsável', 'Conta', 'Verificação', 'Localização', 'Produtos ativos', 'Produtos inativos', 'Cadastro']}>{items.map((item) => <tr key={item.id}><td>{item.nome}</td><td>{item.responsavel}</td><td>{item.contaAtiva ? 'Ativa' : 'Inativa'}</td><td>{item.status}</td><td>{item.localizacaoDisponivel ? 'Disponível' : 'Pendente'}</td><td>{item.produtosAtivos}</td><td>{item.produtosInativos}</td><td>{date.format(new Date(item.createdAt))}</td></tr>)}</Table>
     <Pagination page={page} totalPages={pages} onPageChange={changePage} label="Páginas de sebos" />
   </AdminPanel>
 }
