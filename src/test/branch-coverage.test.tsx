@@ -403,6 +403,75 @@ describe('cobertura de branches restantes', () => {
     expect(screen.getByLabelText('UF')).toHaveValue('PB')
   })
 
+  it('ordena sebos próximos e permite limitar o raio de descoberta', async () => {
+    vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
+    const buscarSebosSpy = vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: {
+        getCurrentPosition: (success: PositionCallback) => success({
+          coords: { latitude: -7.115, longitude: -34.8631 },
+        } as GeolocationPosition),
+      },
+    })
+
+    renderWithParams('/busca?tab=sebos', <BuscaPage />)
+    await userEvent.click(await screen.findByRole('button', { name: /Ordenar por proximidade/i }))
+
+    expect(await screen.findByLabelText('Distância máxima')).toHaveValue('25')
+    await waitFor(() => expect(buscarSebosSpy).toHaveBeenLastCalledWith(expect.objectContaining({
+      lat: -7.115,
+      lng: -34.8631,
+      raioKm: 25,
+    })))
+
+    await userEvent.selectOptions(screen.getByLabelText('Distância máxima'), '10')
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar filtros' }))
+    await waitFor(() => expect(buscarSebosSpy).toHaveBeenLastCalledWith(expect.objectContaining({
+      lat: -7.115,
+      lng: -34.8631,
+      raioKm: 10,
+    })))
+
+    await userEvent.click(screen.getByRole('button', { name: 'Limpar filtros' }))
+    expect(screen.queryByLabelText('Distância máxima')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Ordenar por proximidade/i })).toBeInTheDocument()
+    await waitFor(() => expect(buscarSebosSpy).toHaveBeenLastCalledWith(expect.objectContaining({
+      lat: undefined,
+      lng: undefined,
+      raioKm: undefined,
+    })))
+  })
+
+  it('orienta o usuário quando o acesso à localização é bloqueado', async () => {
+    vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
+    const buscarSebosSpy = vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: {
+        getCurrentPosition: (_success: PositionCallback, error: PositionErrorCallback) => error({
+          code: 1,
+          message: 'Permission denied',
+          PERMISSION_DENIED: 1,
+          POSITION_UNAVAILABLE: 2,
+          TIMEOUT: 3,
+        }),
+      },
+    })
+
+    renderWithParams('/busca?tab=sebos', <BuscaPage />)
+    await userEvent.click(await screen.findByRole('button', { name: /Ordenar por proximidade/i }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'A localização foi bloqueada. Autorize o acesso no navegador ou busque por cidade e UF.',
+    )
+    expect(screen.queryByLabelText('Distância máxima')).not.toBeInTheDocument()
+    expect(buscarSebosSpy).not.toHaveBeenCalledWith(expect.objectContaining({
+      lat: expect.any(Number),
+      lng: expect.any(Number),
+    }))
+  })
+
   it('aplica filtros de busca de produtos e limpa corretamente', async () => {
     const searchSpy = vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
     vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })

@@ -50,7 +50,7 @@ describe('regressões de funcionalidades existentes', () => {
       categoriaId: 2,
       bookGenre: BookGenre.FANTASIA,
     }, 3, 12)
-    await buscaService.buscarSebos({ q: 'Centro', cidade: 'Campina Grande', uf: 'PB', lat: -7.23, lng: -35.88 }, 2, 8)
+    await buscaService.buscarSebos({ q: 'Centro', cidade: 'Campina Grande', uf: 'PB', lat: -7.23, lng: -35.88, raioKm: 25 }, 2, 8)
 
     expect(get).toHaveBeenNthCalledWith(1, '/busca/produtos', {
       params: {
@@ -66,7 +66,7 @@ describe('regressões de funcionalidades existentes', () => {
       },
     })
     expect(get).toHaveBeenNthCalledWith(2, '/busca/sebos', {
-      params: { q: 'Centro', cidade: 'Campina Grande', uf: 'PB', lat: -7.23, lng: -35.88, page: 2, size: 8 },
+      params: { q: 'Centro', cidade: 'Campina Grande', uf: 'PB', lat: -7.23, lng: -35.88, raioKm: 25, page: 2, size: 8 },
     })
   })
 })
