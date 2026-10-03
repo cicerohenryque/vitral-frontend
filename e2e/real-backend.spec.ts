@@ -88,6 +88,25 @@ test.describe.serial('frontend integrado ao backend real', () => {
     await expect(page.getByRole('link', { name: /Sebo E2E/ })).toBeVisible()
   })
 
+  test('descobre sebos próximos e limpa a localização', async ({ page, context }) => {
+    await context.grantPermissions(['geolocation'], { origin: 'http://127.0.0.1:4173' })
+    await context.setGeolocation({ latitude: -3.7319, longitude: -38.5267 })
+    await page.goto('/busca?tab=sebos')
+
+    await page.getByRole('button', { name: /Ordenar por proximidade/ }).click()
+    await expect(page.getByLabel('Distância máxima')).toHaveValue('25')
+    await page.getByLabel('Distância máxima').selectOption('10')
+    await page.getByRole('button', { name: 'Aplicar filtros' }).click()
+
+    await expect(page).toHaveURL(/raioKm=10/)
+    await expect(page.getByRole('link', { name: /Sebo E2E/ })).toBeVisible()
+    await expect(page.locator('.busca-sebo-distancia')).toContainText('de você')
+
+    await page.getByRole('button', { name: 'Limpar filtros' }).click()
+    await expect(page).not.toHaveURL(/raioKm=/)
+    await expect(page.getByRole('button', { name: /Ordenar por proximidade/ })).toBeVisible()
+  })
+
   test('autentica e conclui favorito, cesta e pedido pela API real', async ({ page }) => {
     await login(page, 'cliente.e2e@vitral.test')
 
