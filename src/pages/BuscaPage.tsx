@@ -22,7 +22,6 @@ const PRODUCT_SORT_OPTIONS = [
   { value: 'preco,desc', label: 'Maior preço' },
   { value: 'titulo,asc', label: 'Título: A–Z' },
 ] as const
-
 function normalizeProductSort(value: string) {
   return PRODUCT_SORT_OPTIONS.some((option) => option.value === value) ? value : ''
 }
@@ -41,6 +40,7 @@ export function BuscaPage() {
   const appliedSort = normalizeProductSort(searchParams.get('sort') ?? '')
   const appliedCidade = searchParams.get('cidade') ?? ''
   const appliedUf = searchParams.get('uf') ?? ''
+  const appliedRaioKm = searchParams.get('raioKm') ?? ''
   const requestedPage = Number(searchParams.get('page') ?? '1')
   const currentPage = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage - 1 : 0
 
@@ -54,6 +54,7 @@ export function BuscaPage() {
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [cidade, setCidade] = useState(appliedCidade)
   const [uf, setUf] = useState(appliedUf)
+  const [raioKm, setRaioKm] = useState(appliedRaioKm || '25')
   const [filterError, setFilterError] = useState<string | null>(null)
 
   const [proximidadeAtiva, setProximidadeAtiva] = useState(false)
@@ -86,7 +87,8 @@ export function BuscaPage() {
     setBookGenre(appliedBookGenre)
     setCidade(appliedCidade)
     setUf(appliedUf)
-  }, [q, appliedCondicao, appliedSeboId, appliedPrecoMin, appliedPrecoMax, appliedCategoriaId, appliedBookGenre, appliedCidade, appliedUf])
+    setRaioKm(appliedRaioKm || '25')
+  }, [q, appliedCondicao, appliedSeboId, appliedPrecoMin, appliedPrecoMax, appliedCategoriaId, appliedBookGenre, appliedCidade, appliedUf, appliedRaioKm])
 
   useEffect(() => {
     categoriaService.listar().then((page) => setCategorias(getAllowedCategories(page.content))).catch(() => setCategorias([]))
@@ -137,6 +139,7 @@ export function BuscaPage() {
       uf: appliedUf || undefined,
       lat: proximidadeAtiva && coords ? coords.lat : undefined,
       lng: proximidadeAtiva && coords ? coords.lng : undefined,
+      raioKm: proximidadeAtiva && coords && appliedRaioKm ? Number(appliedRaioKm) : undefined,
     }
 
     const request = currentPage === 0
@@ -159,7 +162,7 @@ export function BuscaPage() {
       })
       .finally(() => { if (current) setLoadingSebos(false) })
     return () => { current = false }
-  }, [tab, q, appliedCidade, appliedUf, currentPage, proximidadeAtiva, coords, storeRequestVersion])
+  }, [tab, q, appliedCidade, appliedUf, appliedRaioKm, currentPage, proximidadeAtiva, coords, storeRequestVersion])
 
   function ativarProximidade() {
     if (!('geolocation' in navigator)) {
@@ -176,11 +179,17 @@ export function BuscaPage() {
         setLoadingSebos(true)
         setErrorSebos(null)
         const next = new URLSearchParams(searchParams)
+        next.set('raioKm', raioKm || '25')
         next.delete('page')
         setSearchParams(next)
       },
-      () => {
-        setGeoError('Não foi possível acessar sua localização. Verifique a permissão do navegador e tente novamente.')
+      (error) => {
+        const message = error.code === error.PERMISSION_DENIED
+          ? 'A localização foi bloqueada. Autorize o acesso no navegador ou busque por cidade e UF.'
+          : error.code === error.TIMEOUT
+            ? 'A localização demorou para responder. Tente novamente ou busque por cidade e UF.'
+            : 'Sua localização não está disponível agora. Tente novamente ou busque por cidade e UF.'
+        setGeoError(message)
         setGeoLoading(false)
       },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 5 * 60 * 1000 },
@@ -193,6 +202,7 @@ export function BuscaPage() {
     setLoadingSebos(true)
     setErrorSebos(null)
     const next = new URLSearchParams(searchParams)
+    next.delete('raioKm')
     next.delete('page')
     setSearchParams(next)
   }
@@ -287,6 +297,8 @@ export function BuscaPage() {
       else next.delete('cidade')
       if (uf.trim()) next.set('uf', uf.trim().toUpperCase())
       else next.delete('uf')
+      if (proximidadeAtiva && raioKm) next.set('raioKm', raioKm)
+      else next.delete('raioKm')
       if (next.toString() === searchParams.toString()) return
       setLoadingSebos(true)
       setErrorSebos(null)
@@ -308,6 +320,7 @@ export function BuscaPage() {
     setBookGenre('')
     setCidade('')
     setUf('')
+    setRaioKm('25')
     setFilterError(null)
     setLoadingProdutos(true)
     setLoadingSebos(true)
@@ -466,8 +479,21 @@ export function BuscaPage() {
                         📍 Ordenado por proximidade — cancelar
                       </button>
                     )}
-                    {geoError ? <p className="busca-proximidade-erro">{geoError}</p> : null}
+                    {geoError ? <p className="busca-proximidade-erro" role="alert">{geoError}</p> : null}
                   </div>
+                  {proximidadeAtiva ? (
+                    <label className="busca-filtro-label">
+                      Distância máxima
+                      <select value={raioKm} onChange={(e) => setRaioKm(e.target.value)}>
+                        <option value="">Sem limite</option>
+                        <option value="5">Até 5 km</option>
+                        <option value="10">Até 10 km</option>
+                        <option value="25">Até 25 km</option>
+                        <option value="50">Até 50 km</option>
+                        <option value="100">Até 100 km</option>
+                      </select>
+                    </label>
+                  ) : null}
                   <label className="busca-filtro-label">
                     Cidade
                     <input value={cidade} onChange={(e) => setCidade(e.target.value)} placeholder="ex: Fortaleza" />

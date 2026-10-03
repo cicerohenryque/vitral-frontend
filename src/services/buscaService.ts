@@ -22,6 +22,7 @@ export type BuscaSebosParams = {
   uf?: string
   lat?: number
   lng?: number
+  raioKm?: number
 }
 
 export const buscaService = {
