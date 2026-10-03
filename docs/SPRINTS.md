@@ -98,6 +98,9 @@ deve ser atualizado quando uma funcionalidade destas sprints mudar.
   exibidos pelo painel.
 - A interface atualiza localmente itens alterados e ignora respostas atrasadas,
   evitando consultas redundantes e dados fora de ordem.
+- A lista administrativa de sebos identifica quando a localização está
+  disponível ou pendente, facilitando a correção de cadastros que não aparecem
+  em buscas limitadas por raio.
 
 ## Sprint 3 — Melhorias priorizadas e localização
 
@@ -129,6 +132,8 @@ deve ser atualizado quando uma funcionalidade destas sprints mudar.
   cobertos por testes de interface.
 - A suíte também cobre feedback, acessibilidade, administração, recomendações,
   filtros, paginação e fluxos integrados existentes.
+- Um cenário Playwright usa navegador e backend reais para autorizar uma posição,
+  alterar o raio, conferir a distância e limpar a localização.
 
 ## Validação da entrega
 
@@ -140,9 +145,9 @@ npm run lint
 npm run build
 ```
 
-Na validação desta branch, 356 testes do frontend foram aprovados, além do lint
-e do build de produção. O número é um retrato desta entrega e pode aumentar com
-novos testes.
+A integração contínua executa testes, lint e build de produção em cada push e
+pull request. O resultado e a quantidade atual de testes devem ser consultados
+no job **Frontend CI**, evitando totais fixos que ficam desatualizados.
 
 ## Limites conhecidos
 

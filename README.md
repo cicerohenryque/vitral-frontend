@@ -140,3 +140,10 @@ npm run build
 Os testes automatizados cobrem os serviços de busca, ativação e falha da
 geolocalização, alteração do raio, limpeza dos filtros, paginação e principais
 fluxos administrativos.
+
+O workflow **Frontend CI** executa testes, lint e build em pushes e pull
+requests. O fluxo integrado de localização pode ser validado localmente com:
+
+```bash
+npm run test:e2e -- --grep "descobre sebos próximos"
+```
