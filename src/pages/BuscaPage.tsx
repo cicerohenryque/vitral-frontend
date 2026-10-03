@@ -22,8 +22,13 @@ const PRODUCT_SORT_OPTIONS = [
   { value: 'preco,desc', label: 'Maior preço' },
   { value: 'titulo,asc', label: 'Título: A–Z' },
 ] as const
+const STORE_RADIUS_OPTIONS = new Set(['5', '10', '25', '50', '100'])
 function normalizeProductSort(value: string) {
   return PRODUCT_SORT_OPTIONS.some((option) => option.value === value) ? value : ''
+}
+
+function normalizeStoreRadius(value: string) {
+  return value === '' || STORE_RADIUS_OPTIONS.has(value) ? value : '25'
 }
 
 export function BuscaPage() {
@@ -40,7 +45,7 @@ export function BuscaPage() {
   const appliedSort = normalizeProductSort(searchParams.get('sort') ?? '')
   const appliedCidade = searchParams.get('cidade') ?? ''
   const appliedUf = searchParams.get('uf') ?? ''
-  const appliedRaioKm = searchParams.get('raioKm') ?? ''
+  const appliedRaioKm = normalizeStoreRadius(searchParams.get('raioKm') ?? '')
   const requestedPage = Number(searchParams.get('page') ?? '1')
   const currentPage = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage - 1 : 0
 
@@ -179,7 +184,7 @@ export function BuscaPage() {
         setLoadingSebos(true)
         setErrorSebos(null)
         const next = new URLSearchParams(searchParams)
-        next.set('raioKm', raioKm || '25')
+        next.set('raioKm', normalizeStoreRadius(raioKm) || '25')
         next.delete('page')
         setSearchParams(next)
       },
@@ -321,6 +326,9 @@ export function BuscaPage() {
     setCidade('')
     setUf('')
     setRaioKm('25')
+    setProximidadeAtiva(false)
+    setCoords(null)
+    setGeoError(null)
     setFilterError(null)
     setLoadingProdutos(true)
     setLoadingSebos(true)
