@@ -147,3 +147,10 @@ requests. O fluxo integrado de localização pode ser validado localmente com:
 ```bash
 npm run test:e2e -- --grep "descobre sebos próximos"
 ```
+
+### Preview na Vercel
+
+Se a Vercel mostrar `Deployment was blocked` com o CI aprovado, um administrador
+do projeto `vitral2` deve autorizar a branch em **Settings → Git** ou manter a
+regra de que somente `development` gera deploy. Essa permissão pertence à conta
+da Vercel e não pode ser alterada pelo código do repositório.
