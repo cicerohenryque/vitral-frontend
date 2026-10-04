@@ -20,10 +20,10 @@ const produto = { id: 7, seboId: 3, categoriaId: 2, categoriaNome: 'Romance', ti
 describe('roteamento e estados preenchidos', () => {
   beforeEach(() => useAuthStore.setState({ token: null, account: null, seboId: null }))
 
-  it('inicializa o roteador completo e resolve rota publica', () => {
+  it('inicializa o roteador completo e resolve rota publica', async () => {
     window.history.pushState({}, '', '/ajuda')
     render(<App />)
-    expect(screen.getByRole('region', { name: 'Como usar o Vitral' })).toBeInTheDocument()
+    expect(await screen.findByRole('region', { name: 'Como usar o Vitral' })).toBeInTheDocument()
   })
 
   it('lista e remove um favorito', async () => {

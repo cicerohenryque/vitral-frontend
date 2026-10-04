@@ -1,46 +1,54 @@
+import { lazy, Suspense } from 'react'
+import type { ComponentType } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { CartPage } from './components/Cart/CartPage'
-import { ClassicsPage } from './components/Classics/ClassicsPage'
-import { CategoriesPage } from './components/Categories/CategoriesPage'
-import { CheckoutPage } from './components/Checkout/CheckoutPage'
-import { DeleteAccountPage } from './components/DeleteAccount/DeleteAccountPage'
-import { FavoritesPage } from './components/Favorites/FavoritesPage'
-import { HelpPage } from './components/Help/HelpPage'
-import { HistoryPage } from './components/History/HistoryPage'
-import { MessagesPage } from './components/Messages/MessagesPage'
-import { OffersPage } from './components/Offers/OffersPage'
-import { ProductPage } from './components/Product/ProductPage'
-import { ReleasesPage } from './components/Releases/ReleasesPage'
-import { ReservationsPage } from './components/Reservations/ReservationsPage'
-import { SaleConfirmationPage } from './components/Sales/SaleConfirmationPage'
-import { SalesHistoryPage } from './components/Sales/SalesHistoryPage'
-import { SalesOrdersPage } from './components/Sales/SalesOrdersPage'
-import { SellerPage } from './components/Seller/SellerPage'
-import { SupportPage } from './components/Support/SupportPage'
-import { AuthPage } from './pages/AuthPage'
-import { BuscaPage } from './pages/BuscaPage'
-import { ConfirmarEmailPage } from './pages/ConfirmarEmailPage'
-import { HomePage } from './pages/HomePage'
-import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
-import { ResetPasswordPage } from './pages/ResetPasswordPage'
-import { ResendConfirmationPage } from './pages/ResendConfirmationPage'
-import { MeuSeboPage } from './pages/MeuSeboPage'
-import { MeusProdutosPage } from './pages/MeusProdutosPage'
-import { MinhasOfertasPage } from './pages/MinhasOfertasPage'
-import { NotFoundPage } from './pages/NotFoundPage'
-import { PerfilPage } from './pages/PerfilPage'
-import { RecomendacoesPage } from './pages/RecomendacoesPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { AccountType } from './types/account'
 import { GlobalNavigation } from './components/GlobalNavigation'
-import { SeboDocumentsPage } from './pages/SeboDocumentsPage'
-import { AdminSeboVerificationPage } from './pages/AdminSeboVerificationPage'
-import { AdminPage } from './pages/AdminPage'
+
+const lazyPage = <T extends Record<K, ComponentType>, K extends keyof T>(
+  loader: () => Promise<T>, exportName: K,
+) => lazy(() => loader().then((module) => ({ default: module[exportName] })))
+
+const CartPage = lazyPage(() => import('./components/Cart/CartPage'), 'CartPage')
+const ClassicsPage = lazyPage(() => import('./components/Classics/ClassicsPage'), 'ClassicsPage')
+const CategoriesPage = lazyPage(() => import('./components/Categories/CategoriesPage'), 'CategoriesPage')
+const CheckoutPage = lazyPage(() => import('./components/Checkout/CheckoutPage'), 'CheckoutPage')
+const DeleteAccountPage = lazyPage(() => import('./components/DeleteAccount/DeleteAccountPage'), 'DeleteAccountPage')
+const FavoritesPage = lazyPage(() => import('./components/Favorites/FavoritesPage'), 'FavoritesPage')
+const HelpPage = lazyPage(() => import('./components/Help/HelpPage'), 'HelpPage')
+const HistoryPage = lazyPage(() => import('./components/History/HistoryPage'), 'HistoryPage')
+const MessagesPage = lazyPage(() => import('./components/Messages/MessagesPage'), 'MessagesPage')
+const OffersPage = lazyPage(() => import('./components/Offers/OffersPage'), 'OffersPage')
+const ProductPage = lazyPage(() => import('./components/Product/ProductPage'), 'ProductPage')
+const ReleasesPage = lazyPage(() => import('./components/Releases/ReleasesPage'), 'ReleasesPage')
+const ReservationsPage = lazyPage(() => import('./components/Reservations/ReservationsPage'), 'ReservationsPage')
+const SaleConfirmationPage = lazyPage(() => import('./components/Sales/SaleConfirmationPage'), 'SaleConfirmationPage')
+const SalesHistoryPage = lazyPage(() => import('./components/Sales/SalesHistoryPage'), 'SalesHistoryPage')
+const SalesOrdersPage = lazyPage(() => import('./components/Sales/SalesOrdersPage'), 'SalesOrdersPage')
+const SellerPage = lazyPage(() => import('./components/Seller/SellerPage'), 'SellerPage')
+const SupportPage = lazyPage(() => import('./components/Support/SupportPage'), 'SupportPage')
+const AuthPage = lazyPage(() => import('./pages/AuthPage'), 'AuthPage')
+const BuscaPage = lazyPage(() => import('./pages/BuscaPage'), 'BuscaPage')
+const ConfirmarEmailPage = lazyPage(() => import('./pages/ConfirmarEmailPage'), 'ConfirmarEmailPage')
+const HomePage = lazyPage(() => import('./pages/HomePage'), 'HomePage')
+const ForgotPasswordPage = lazyPage(() => import('./pages/ForgotPasswordPage'), 'ForgotPasswordPage')
+const ResetPasswordPage = lazyPage(() => import('./pages/ResetPasswordPage'), 'ResetPasswordPage')
+const ResendConfirmationPage = lazyPage(() => import('./pages/ResendConfirmationPage'), 'ResendConfirmationPage')
+const MeuSeboPage = lazyPage(() => import('./pages/MeuSeboPage'), 'MeuSeboPage')
+const MeusProdutosPage = lazyPage(() => import('./pages/MeusProdutosPage'), 'MeusProdutosPage')
+const MinhasOfertasPage = lazyPage(() => import('./pages/MinhasOfertasPage'), 'MinhasOfertasPage')
+const NotFoundPage = lazyPage(() => import('./pages/NotFoundPage'), 'NotFoundPage')
+const PerfilPage = lazyPage(() => import('./pages/PerfilPage'), 'PerfilPage')
+const RecomendacoesPage = lazyPage(() => import('./pages/RecomendacoesPage'), 'RecomendacoesPage')
+const SeboDocumentsPage = lazyPage(() => import('./pages/SeboDocumentsPage'), 'SeboDocumentsPage')
+const AdminSeboVerificationPage = lazyPage(() => import('./pages/AdminSeboVerificationPage'), 'AdminSeboVerificationPage')
+const AdminPage = lazyPage(() => import('./pages/AdminPage'), 'AdminPage')
 
 function App() {
   return (
     <BrowserRouter>
       <GlobalNavigation />
+      <Suspense fallback={<main aria-busy="true" aria-live="polite">Carregando página...</main>}>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/auth" element={<AuthPage />} />
@@ -217,6 +225,7 @@ function App() {
         <Route path="/ajuda" element={<HelpPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
   )
 }
