@@ -115,6 +115,10 @@ itens inativos, um item reativado é removido imediatamente da visualização.
 
 ## Deploy (Vercel)
 
+A política de branches, critérios de promoção e rollback está documentada em
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). As branches permitidas para Preview
+também estão declaradas no `vercel.json`.
+
 O frontend é publicado na Vercel e o backend no Render, em domínios diferentes.
 Duas configurações são obrigatórias para o ambiente publicado funcionar:
 
@@ -136,6 +140,10 @@ npm test -- --run
 npm run lint
 npm run build
 ```
+
+O build divide as páginas por rota e valida um orçamento de 275 kB para o
+JavaScript inicial. O limite pode ser reduzido gradualmente ou sobrescrito em
+uma medição controlada com `BUNDLE_ENTRY_LIMIT_KB`.
 
 Os testes automatizados cobrem os serviços de busca, ativação e falha da
 geolocalização, alteração do raio, limpeza dos filtros, paginação e principais
