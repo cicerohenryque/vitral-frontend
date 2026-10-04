@@ -103,11 +103,22 @@ function ProductsPanel({ inactiveOnly = false }: { inactiveOnly?: boolean }) {
 function StoresPanel() {
   const [items, setItems] = useState<AdminStore[]>([]); const [page, setPage] = useState(0); const [pages, setPages] = useState(0)
   const [term, setTerm] = useState(''); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null); const [geocodingId, setGeocodingId] = useState<number | null>(null)
   useEffect(() => { let active = true; adminService.listarSebos(page, term).then((d) => { if (active) { setItems(d.content); setPages(d.totalPages); setError(null) } }).catch((e) => { if (active) setError(extractErrorMessage(e, 'Não foi possível carregar os sebos.')) }).finally(() => { if (active) setLoading(false) }); return () => { active = false } }, [page, term])
   function changePage(nextPage: number) { setLoading(true); setError(null); setPage(nextPage) }
   function changeTerm(value: string) { setLoading(true); setError(null); setPage(0); setTerm(value) }
+  async function geocode(item: AdminStore) {
+    setGeocodingId(item.id); setError(null); setSuccess(null)
+    try {
+      const updated = await adminService.geocodificarSebo(item.id)
+      setItems((current) => current.map((store) => store.id === updated.id ? updated : store))
+      setSuccess(updated.localizacaoDisponivel ? 'Localização do sebo atualizada com sucesso.' : 'O endereço ainda não pôde ser localizado. Revise o cadastro do sebo.')
+    } catch (e) { setError(extractErrorMessage(e, 'Não foi possível atualizar a localização do sebo.')) }
+    finally { setGeocodingId(null) }
+  }
   return <AdminPanel title="Sebos" term={term} setTerm={changeTerm} loading={loading} error={error} empty={!items.length} action={<Link className="admin-review-link" to="/admin/sebos">Revisar cadastros pendentes</Link>}>
-    <Table headers={['Sebo', 'Responsável', 'Conta', 'Verificação', 'Localização', 'Produtos ativos', 'Produtos inativos', 'Cadastro']}>{items.map((item) => <tr key={item.id}><td>{item.nome}</td><td>{item.responsavel}</td><td>{item.contaAtiva ? 'Ativa' : 'Inativa'}</td><td>{item.status}</td><td>{item.localizacaoDisponivel ? 'Disponível' : 'Pendente'}</td><td>{item.produtosAtivos}</td><td>{item.produtosInativos}</td><td>{date.format(new Date(item.createdAt))}</td></tr>)}</Table>
+    {success ? <div className="flash success" role="status">{success}</div> : null}
+    <Table headers={['Sebo', 'Responsável', 'Conta', 'Verificação', 'Localização', 'Produtos ativos', 'Produtos inativos', 'Cadastro']}>{items.map((item) => <tr key={item.id}><td>{item.nome}</td><td>{item.responsavel}</td><td>{item.contaAtiva ? 'Ativa' : 'Inativa'}</td><td>{item.status}</td><td>{item.localizacaoDisponivel ? 'Disponível' : <Button type="button" variant="ghost" aria-label={`Tentar localizar ${item.nome} novamente`} disabled={geocodingId !== null} onClick={() => geocode(item)}>{geocodingId === item.id ? 'Localizando...' : 'Tentar novamente'}</Button>}</td><td>{item.produtosAtivos}</td><td>{item.produtosInativos}</td><td>{date.format(new Date(item.createdAt))}</td></tr>)}</Table>
     <Pagination page={page} totalPages={pages} onPageChange={changePage} label="Páginas de sebos" />
   </AdminPanel>
 }

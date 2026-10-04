@@ -17,6 +17,7 @@ vi.mock('../services/adminService', () => ({
     listarProdutos: vi.fn(),
     alterarStatusProduto: vi.fn(),
     listarSebos: vi.fn(),
+    geocodificarSebo: vi.fn(),
     listarPedidos: vi.fn(),
     listarAuditoria: vi.fn(),
   },
@@ -113,6 +114,48 @@ describe('administração', () => {
     await user.click(screen.getByRole('button', { name: 'Auditoria' }))
     expect(await screen.findByText('Conta desativada')).toBeInTheDocument()
     expect(screen.queryByText(/passwordHash|token|cpf/i)).not.toBeInTheDocument()
+  })
+
+  it('permite tentar novamente a localização de um sebo pendente', async () => {
+    const user = userEvent.setup()
+    const store = {
+      id: 7, nome: 'Sebo Central', responsavel: 'João', contaAtiva: true,
+      status: 'VERIFICADO' as const, createdAt: '2026-01-03T10:00:00Z', ultimaAtividade: null,
+      produtosAtivos: 4, produtosInativos: 1, localizacaoDisponivel: false,
+    }
+    vi.mocked(adminService.listarSebos).mockResolvedValue({
+      ...emptyPage, totalElements: 1, totalPages: 1, content: [store],
+    })
+    vi.mocked(adminService.geocodificarSebo).mockResolvedValue({ ...store, localizacaoDisponivel: true })
+
+    render(<MemoryRouter><AdminPage /></MemoryRouter>)
+    await user.click(screen.getByRole('button', { name: 'Sebos' }))
+    await user.click(await screen.findByRole('button', { name: 'Tentar localizar Sebo Central novamente' }))
+
+    expect(adminService.geocodificarSebo).toHaveBeenCalledWith(7)
+    expect(await screen.findByRole('status')).toHaveTextContent('Localização do sebo atualizada com sucesso.')
+    expect(screen.getByText('Disponível')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Tentar localizar Sebo Central novamente' })).not.toBeInTheDocument()
+  })
+
+  it('mantém a nova tentativa disponível quando a localização não é encontrada', async () => {
+    const user = userEvent.setup()
+    const store = {
+      id: 8, nome: 'Sebo Bairro', responsavel: 'Ana', contaAtiva: true,
+      status: 'PENDENTE' as const, createdAt: '2026-01-04T10:00:00Z', ultimaAtividade: null,
+      produtosAtivos: 0, produtosInativos: 0, localizacaoDisponivel: false,
+    }
+    vi.mocked(adminService.listarSebos).mockResolvedValue({
+      ...emptyPage, totalElements: 1, totalPages: 1, content: [store],
+    })
+    vi.mocked(adminService.geocodificarSebo).mockResolvedValue(store)
+
+    render(<MemoryRouter><AdminPage /></MemoryRouter>)
+    await user.click(screen.getByRole('button', { name: 'Sebos' }))
+    await user.click(await screen.findByRole('button', { name: 'Tentar localizar Sebo Bairro novamente' }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent('O endereço ainda não pôde ser localizado.')
+    expect(screen.getByRole('button', { name: 'Tentar localizar Sebo Bairro novamente' })).toBeEnabled()
   })
 })
 

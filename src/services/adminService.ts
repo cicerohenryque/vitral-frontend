@@ -36,6 +36,10 @@ export const adminService = {
     })
     return data
   },
+  async geocodificarSebo(id: number): Promise<AdminStore> {
+    const { data } = await api.put<AdminStore>(`/admin/sebos/${id}/geocodificar`)
+    return data
+  },
   async listarPedidos(page = 0, status?: StatusPedido): Promise<Page<AdminOrder>> {
     const { data } = await api.get<Page<AdminOrder>>('/admin/pedidos', {
       params: { page, size: 20, status },
