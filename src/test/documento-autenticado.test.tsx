@@ -79,6 +79,6 @@ describe('abertura autenticada de documentos de verificacao', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Abrir' }))
 
-    expect(await screen.findByText('Não foi possível abrir o documento.')).toBeInTheDocument()
+    expect(await screen.findByText('Não foi possível abrir o documento. Tente novamente.')).toBeInTheDocument()
   })
 })

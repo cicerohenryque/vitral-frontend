@@ -79,7 +79,7 @@ export function MeusProdutosPage() {
       })
       .catch((err) => {
         setProdutos([])
-        setError(extractErrorMessage(err, 'Erro ao listar produtos'))
+        setError(extractErrorMessage(err, 'Não foi possível carregar seus produtos. Atualize a página e tente novamente.'))
       })
       .finally(() => setLoading(false))
   }, [page, seboId])
@@ -200,27 +200,27 @@ export function MeusProdutosPage() {
       }
       if (editingId) {
         await produtoService.atualizar(editingId, payload)
-        setSuccess('Produto atualizado!')
+        setSuccess('Produto atualizado com sucesso.')
       } else {
         await produtoService.criar(payload)
-        setSuccess('Produto cadastrado!')
+        setSuccess('Produto cadastrado com sucesso.')
       }
       resetForm()
       load()
     } catch (err) {
-      setError(extractErrorMessage(err, 'Erro ao salvar produto'))
+      setError(extractErrorMessage(err, 'Não foi possível salvar o produto. Revise os dados e tente novamente.'))
     } finally {
       setBusy(false)
     }
   }
 
   async function handleRemove(p: Produto) {
-    if (!confirm(`Remover "${p.titulo}"?`)) return
+    if (!confirm(`Deseja excluir o produto "${p.titulo}"? Esta ação não poderá ser desfeita.`)) return
     try {
       await produtoService.remover(p.id)
       load()
     } catch (err) {
-      setError(extractErrorMessage(err, 'Erro ao remover produto'))
+      setError(extractErrorMessage(err, 'Não foi possível excluir o produto. Tente novamente.'))
     }
   }
 

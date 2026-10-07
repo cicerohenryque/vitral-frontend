@@ -31,7 +31,7 @@ export function ReservationsPage() {
         setError(null)
       })
       .catch((err) => {
-        if (active) setError(extractErrorMessage(err, 'Nao foi possivel carregar suas reservas.'))
+        if (active) setError(extractErrorMessage(err, 'Não foi possível carregar suas reservas. Atualize a página e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -49,7 +49,7 @@ export function ReservationsPage() {
       await pedidoService.cancelarPedido(id)
       setPedidos((current) => current.filter((pedido) => pedido.id !== id))
     } catch (err) {
-      setError(extractErrorMessage(err, 'Nao foi possivel cancelar o pedido.'))
+      setError(extractErrorMessage(err, 'Não foi possível cancelar o pedido. Tente novamente.'))
     } finally {
       setBusyId(null)
     }
@@ -60,7 +60,7 @@ export function ReservationsPage() {
       {loading ? (
         <StoreStatus title="Carregando reservas" description="Buscando seus pedidos em aberto." busy />
       ) : error ? (
-        <StoreStatus title="Erro ao carregar reservas" description={error} tone="error" />
+        <StoreStatus title="Suas reservas não foram carregadas" description={error} tone="error" />
       ) : pedidos.length === 0 ? (
         <StoreStatus
           title="Nenhuma reserva em aberto"

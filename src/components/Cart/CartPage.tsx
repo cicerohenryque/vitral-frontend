@@ -32,7 +32,7 @@ export function CartPage() {
       .catch((err) => {
         if (!active) return
         setItems([])
-        setError(extractErrorMessage(err, 'Nao foi possivel carregar a cesta.'))
+        setError(extractErrorMessage(err, 'Não foi possível carregar sua cesta. Atualize a página e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -50,7 +50,7 @@ export function CartPage() {
       await cestaService.remover(produtoId)
       setItems((current) => current.filter((item) => item.produtoId !== produtoId))
     } catch (err) {
-      setError(extractErrorMessage(err, 'Nao foi possivel remover o item da cesta.'))
+      setError(extractErrorMessage(err, 'Não foi possível remover o item da cesta. Tente novamente.'))
     } finally {
       setBusyId(null)
     }
@@ -74,7 +74,7 @@ export function CartPage() {
         ),
       )
     } catch (err) {
-      setError(extractErrorMessage(err, 'Nao foi possivel atualizar a quantidade.'))
+      setError(extractErrorMessage(err, 'Não foi possível atualizar a quantidade. Tente novamente.'))
     } finally {
       setBusyId(null)
     }
@@ -89,7 +89,7 @@ export function CartPage() {
       {loading ? (
         <StoreStatus title="Carregando carrinho" description="Buscando os itens salvos na sua cesta." busy />
       ) : error ? (
-        <StoreStatus title="Erro ao carregar carrinho" description={error} tone="error" />
+        <StoreStatus title="Seu carrinho não foi carregado" description={error} tone="error" />
       ) : items.length === 0 ? (
         <StoreStatus
           title="Seu carrinho está vazio"
@@ -114,7 +114,7 @@ export function CartPage() {
                 </Link>
                 <div className="store-list-copy">
                   <h2>{item.titulo}</h2>
-                  <p>{item.autor ?? 'Autor nao informado'} · {item.condicao}</p>
+                  <p>{item.autor ?? 'Autor não informado'} · {item.condicao}</p>
                   <p>Estoque disponível: {item.estoqueDisponivel}</p>
                   <strong className="store-list-price">
                     {item.precoOriginal != null && Number(item.precoOriginal) > Number(item.preco) ? (

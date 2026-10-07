@@ -93,7 +93,7 @@ describe('cobertura focada em recuperação de senha', () => {
     await userEvent.type(screen.getByLabelText('E-mail:'), 'rute@vitral.com')
     await userEvent.click(screen.getByRole('button', { name: 'Enviar link' }))
 
-    expect(await screen.findByRole('status')).toHaveTextContent('Confira seu e-mail')
+    expect(await screen.findByRole('status')).toHaveTextContent('Se o e-mail estiver cadastrado, você receberá um link para criar uma nova senha.')
     expect(authService.solicitarRecuperacao).toHaveBeenCalledWith({ email: 'rute@vitral.com' })
     expect(screen.getByRole('button', { name: 'Enviar link' })).toBeDisabled()
   })
@@ -105,7 +105,7 @@ describe('cobertura focada em recuperação de senha', () => {
     await userEvent.type(screen.getByLabelText('E-mail:'), 'rute@vitral.com')
     await userEvent.click(screen.getByRole('button', { name: 'Enviar link' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível solicitar a recuperação.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível solicitar a recuperação da senha. Confira o e-mail e tente novamente.')
   })
 
   it('valida token e senhas antes de redefinir senha', async () => {
@@ -114,14 +114,14 @@ describe('cobertura focada em recuperação de senha', () => {
     await userEvent.type(screen.getByLabelText('Nova senha:'), '12345678')
     await userEvent.type(screen.getByLabelText('Confirme a nova senha:'), '12345678')
     await userEvent.click(screen.getByRole('button', { name: 'Redefinir senha' }))
-    expect(screen.getByRole('alert')).toHaveTextContent('O link de recuperação é inválido.')
+    expect(screen.getByRole('alert')).toHaveTextContent('Este link de recuperação é inválido. Solicite um novo link para continuar.')
     first.unmount()
 
     renderPage(<ResetPasswordPage />, '/resetar-senha?token=abc')
     await userEvent.type(screen.getByLabelText('Nova senha:'), '123')
     await userEvent.type(screen.getByLabelText('Confirme a nova senha:'), '123')
     await userEvent.click(screen.getByRole('button', { name: 'Redefinir senha' }))
-    expect(screen.getByRole('alert')).toHaveTextContent('A senha deve ter ao menos 8 caracteres.')
+    expect(screen.getByRole('alert')).toHaveTextContent('Crie uma senha com pelo menos 8 caracteres.')
   })
 
   it('redefine senha com sucesso e mostra link de login', async () => {
@@ -132,7 +132,7 @@ describe('cobertura focada em recuperação de senha', () => {
     await userEvent.type(screen.getByLabelText('Confirme a nova senha:'), '12345678')
     await userEvent.click(screen.getByRole('button', { name: 'Redefinir senha' }))
 
-    expect(await screen.findByRole('status')).toHaveTextContent('Senha alterada')
+    expect(await screen.findByRole('status')).toHaveTextContent('Senha redefinida com sucesso.')
     expect(screen.getByRole('link', { name: 'Entrar' })).toHaveAttribute('href', '/auth')
     expect(authService.redefinirSenha).toHaveBeenCalledWith({ token: 'abc', password: '12345678' })
   })
@@ -210,7 +210,7 @@ describe('cobertura focada no painel admin de verificação', () => {
     renderPage(<AdminSeboVerificationPage />)
 
     await userEvent.click(await screen.findByRole('button', { name: 'Rejeitar' }))
-    expect(screen.getByRole('alert')).toHaveTextContent('O motivo é obrigatório para rejeitar.')
+    expect(screen.getByRole('alert')).toHaveTextContent('Informe o motivo da rejeição para orientar o responsável pelo sebo.')
     expect(review).not.toHaveBeenCalled()
 
     await userEvent.click(screen.getByRole('button', { name: 'Rejeitar' }))
@@ -235,7 +235,7 @@ describe('cobertura focada no painel admin de verificação', () => {
     renderPage(<AdminSeboVerificationPage />)
 
     await userEvent.click(await screen.findByRole('button', { name: 'Ver documentos e auditoria' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível carregar os detalhes.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível carregar os detalhes do sebo. Tente novamente.')
   })
 })
 
@@ -273,7 +273,7 @@ describe('cobertura focada em documentos do sebo', () => {
     fireEvent.submit(fileInput.closest('form')!)
 
     expect(upload).toHaveBeenCalledWith(TipoDocumentoSebo.CARTAO_CNPJ, file)
-    expect(await screen.findByRole('status')).toHaveTextContent('Documento enviado. A verificação retornou para PENDENTE.')
+    expect(await screen.findByRole('status')).toHaveTextContent('Documento enviado com sucesso. O cadastro voltou para análise.')
   })
 
   it('mostra vazio, valida arquivo obrigatório e exibe erro remoto', async () => {
@@ -341,7 +341,7 @@ describe('cobertura focada em minhas ofertas', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Criar oferta' }))
 
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ produtoId: 7, precoPromocional: 59.9, descricao: 'Semana do livro', ativa: true }))
-    expect(await screen.findByRole('status')).toHaveTextContent('Oferta criada!')
+    expect(await screen.findByRole('status')).toHaveTextContent('Oferta criada com sucesso.')
   })
 
   it('edita e desativa oferta existente', async () => {

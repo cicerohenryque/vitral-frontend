@@ -9,6 +9,7 @@ import type { Categoria } from '../../types/categoria'
 import type { Produto } from '../../types/produto'
 import './CategoriesPage.css'
 import { BOOK_GENRE_OPTIONS, getAllowedCategories, isBookCategory, type BookGenre } from '../../constants/productCatalog'
+import { Pagination } from '../ui/Pagination'
 
 export function CategoriesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -19,6 +20,8 @@ export function CategoriesPage() {
   const [query, setQuery] = useState('')
   const [categories, setCategories] = useState<Categoria[]>([])
   const [products, setProducts] = useState<Produto[]>([])
+  const [productPage, setProductPage] = useState(0)
+  const [productTotalPages, setProductTotalPages] = useState(0)
   const [loadingCategories, setLoadingCategories] = useState(true)
   const [loadingProducts, setLoadingProducts] = useState(hasSelectedCategory)
   const [error, setError] = useState<string | null>(null)
@@ -43,7 +46,7 @@ export function CategoriesPage() {
         setError(null)
       })
       .catch((err) => {
-        if (active) setError(extractErrorMessage(err, 'Nao foi possivel carregar as categorias.'))
+        if (active) setError(extractErrorMessage(err, 'Não foi possível carregar as categorias. Atualize a página e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoadingCategories(false)
@@ -61,13 +64,14 @@ export function CategoriesPage() {
     }
 
     produtoService
-      .listarPorCategoria(selectedId, 0, 20, selectedGenre || undefined)
+      .listarPorCategoria(selectedId, productPage, 20, selectedGenre || undefined)
       .then((page) => {
         if (!active) return
         setProducts(page.content)
+        setProductTotalPages(page.totalPages)
       })
       .catch((err) => {
-        if (active) setProductError(extractErrorMessage(err, 'Nao foi possivel carregar os produtos da categoria.'))
+        if (active) setProductError(extractErrorMessage(err, 'Não foi possível carregar os produtos desta categoria. Tente novamente.'))
       })
       .finally(() => {
         if (active) setLoadingProducts(false)
@@ -76,15 +80,17 @@ export function CategoriesPage() {
     return () => {
       active = false
     }
-  }, [hasSelectedCategory, selectedId, selectedGenre])
+  }, [hasSelectedCategory, selectedId, selectedGenre, productPage])
 
   function selectCategory(category: Categoria) {
+    setProductPage(0)
     setLoadingProducts(true)
     setProductError(null)
     setSearchParams({ categoriaId: String(category.id) })
   }
 
   function selectGenre(value: string) {
+    setProductPage(0)
     setLoadingProducts(true)
     setProductError(null)
     const next = new URLSearchParams(searchParams)
@@ -111,7 +117,7 @@ export function CategoriesPage() {
       {loadingCategories ? (
         <StoreStatus title="Carregando categorias" description="Preparando as categorias do acervo." busy />
       ) : error ? (
-        <StoreStatus title="Erro ao carregar categorias" description={error} tone="error" />
+        <StoreStatus title="As categorias não foram carregadas" description={error} tone="error" />
       ) : filteredCategories.length === 0 ? (
         <StoreStatus title="Nenhuma categoria encontrada" description="Tente buscar por outro termo." />
       ) : (
@@ -150,18 +156,21 @@ export function CategoriesPage() {
               {loadingProducts ? (
                 <StoreStatus title="Carregando produtos" description="Buscando produtos desta categoria." busy />
               ) : productError ? (
-                <StoreStatus title="Erro ao carregar produtos" description={productError} tone="error" />
+                <StoreStatus title="Os produtos não foram carregados" description={productError} tone="error" />
               ) : products.length === 0 ? (
                 <StoreStatus
                   title="Nenhum produto nesta categoria"
                   description="Quando os sebos publicarem itens nessa categoria, eles aparecerão aqui."
                 />
               ) : (
-                <div className="busca-grid">
-                  {products.map((product) => (
-                    <ProductCard key={product.id} produto={product} />
-                  ))}
-                </div>
+                <>
+                  <div className="busca-grid">
+                    {products.map((product) => (
+                      <ProductCard key={product.id} produto={product} />
+                    ))}
+                  </div>
+                  <Pagination page={productPage} totalPages={productTotalPages} onPageChange={setProductPage} label="Páginas de produtos da categoria" />
+                </>
               )}
             </section>
           ) : null}

@@ -26,7 +26,7 @@ export function SeboDocumentsPage() {
         setItems(data)
         setError(null)
       })
-      .catch((e) => setError(extractErrorMessage(e, 'Não foi possível carregar os documentos.')))
+      .catch((e) => setError(extractErrorMessage(e, 'Não foi possível carregar os documentos. Atualize a página e tente novamente.')))
       .finally(() => setLoading(false))
   }, [])
 
@@ -47,10 +47,10 @@ export function SeboDocumentsPage() {
     try {
       await seboService.enviarDocumento(tipo, arquivo)
       setArquivo(null)
-      setSuccess('Documento enviado. A verificação retornou para PENDENTE.')
+      setSuccess('Documento enviado com sucesso. O cadastro voltou para análise.')
       load()
     } catch (err) {
-      setError(extractErrorMessage(err, 'Não foi possível enviar o documento.'))
+      setError(extractErrorMessage(err, 'Não foi possível enviar o documento. Confira o arquivo e tente novamente.'))
     } finally {
       setBusy(false)
     }
@@ -60,7 +60,7 @@ export function SeboDocumentsPage() {
     try {
       await abrirDocumentoAutenticado(url)
     } catch (err) {
-      setError(extractErrorMessage(err, 'Não foi possível abrir o documento.'))
+      setError(extractErrorMessage(err, 'Não foi possível abrir o documento. Tente novamente.'))
     }
   }
 

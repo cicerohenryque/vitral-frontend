@@ -25,12 +25,12 @@ export function ConfirmarEmailPage() {
 
     authService
       .confirmarEmail(token)
-      .then((res) => {
-        setMensagem(res.mensagem)
+      .then(() => {
+        setMensagem('Seu e-mail foi confirmado. Agora você já pode entrar na sua conta.')
         setEstado('sucesso')
       })
       .catch((err) => {
-        setMensagem(extractErrorMessage(err, 'Não foi possível confirmar o e-mail.'))
+        setMensagem(extractErrorMessage(err, 'Não foi possível confirmar seu e-mail. Solicite um novo link e tente novamente.'))
         setEstado('erro')
       })
   }, [token])
@@ -39,20 +39,19 @@ export function ConfirmarEmailPage() {
     if (estado !== 'sucesso') return
 
     intervalRef.current = setInterval(() => {
-      setContador((prev) => {
-        if (prev <= 1) {
-          clearInterval(intervalRef.current!)
-          navigate('/auth', { replace: true })
-          return 0
-        }
-        return prev - 1
-      })
+      setContador((prev) => Math.max(0, prev - 1))
     }, 1000)
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [estado, navigate])
+  }, [estado])
+
+  useEffect(() => {
+    if (estado === 'sucesso' && contador === 0) {
+      navigate('/auth', { replace: true })
+    }
+  }, [contador, estado, navigate])
 
   return (
     <div className="confirmar-email-page">
@@ -65,7 +64,7 @@ export function ConfirmarEmailPage() {
         ) : estado === 'sucesso' ? (
           <>
             <div className="confirmar-email-icon">✓</div>
-            <h2>E-mail confirmado!</h2>
+            <h2>E-mail confirmado</h2>
             <div className="flash success" role="status">{mensagem}</div>
             <p className="confirmar-email-hint">
               Redirecionando para o login em {contador} segundo{contador !== 1 ? 's' : ''}...
@@ -75,7 +74,7 @@ export function ConfirmarEmailPage() {
         ) : (
           <>
             <div className="confirmar-email-icon">!</div>
-            <h2>Confirmação falhou</h2>
+            <h2>Não foi possível confirmar seu e-mail</h2>
             <div className="flash error" role="alert">{mensagem}</div>
             <p className="confirmar-email-hint">
               O link pode ter expirado ou já ter sido utilizado.

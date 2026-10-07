@@ -36,14 +36,19 @@ api.interceptors.response.use(
   },
 )
 
-export function extractErrorMessage(error: unknown, fallback = 'Erro inesperado'): string {
+export function extractErrorMessage(
+  error: unknown,
+  fallback = 'Não foi possível concluir esta ação. Tente novamente.',
+): string {
   if (error instanceof AxiosError) {
     const apiError = error.response?.data as ApiError | undefined
     if (apiError?.fieldErrors?.length) {
       return apiError.fieldErrors.map((f) => `${f.field}: ${f.message}`).join(' | ')
     }
     if (apiError?.message) return apiError.message
-    if (error.message) return error.message
+    if (!error.response) {
+      return 'Não foi possível conectar ao serviço. Verifique sua conexão e tente novamente.'
+    }
   }
   return fallback
 }

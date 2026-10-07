@@ -30,7 +30,7 @@ export function AdminSeboVerificationPage() {
         setTotalPages(result.totalPages)
         setError(null)
       })
-      .catch((e) => setError(extractErrorMessage(e, 'Não foi possível carregar os sebos pendentes.')))
+      .catch((e) => setError(extractErrorMessage(e, 'Não foi possível carregar os sebos pendentes. Atualize a página e tente novamente.')))
       .finally(() => setLoading(false))
   }, [page])
 
@@ -48,17 +48,19 @@ export function AdminSeboVerificationPage() {
       setDocs((current) => ({ ...current, [id]: documents }))
       setAudits((current) => ({ ...current, [id]: audit }))
     } catch (e) {
-      setError(extractErrorMessage(e, 'Não foi possível carregar os detalhes.'))
+      setError(extractErrorMessage(e, 'Não foi possível carregar os detalhes do sebo. Tente novamente.'))
     }
   }
 
   async function review(item: Sebo, status: StatusVerificacao) {
-    if (!confirm(`${status === StatusVerificacao.VERIFICADO ? 'Aprovar' : 'Rejeitar'} o sebo ${item.nome}?`)) return
+    if (!confirm(status === StatusVerificacao.VERIFICADO
+      ? `Deseja aprovar o sebo "${item.nome}"? O cadastro será liberado para publicar produtos e ofertas.`
+      : `Deseja rejeitar o sebo "${item.nome}"? O cadastro permanecerá bloqueado até o envio de novos documentos.`)) return
     let motivo: string | undefined
     if (status === StatusVerificacao.REJEITADO) {
       motivo = prompt('Informe o motivo obrigatório da rejeição:')?.trim()
       if (!motivo) {
-        setError('O motivo é obrigatório para rejeitar.')
+        setError('Informe o motivo da rejeição para orientar o responsável pelo sebo.')
         return
       }
     }
@@ -67,7 +69,7 @@ export function AdminSeboVerificationPage() {
       setSuccess(`Sebo ${status === StatusVerificacao.VERIFICADO ? 'aprovado' : 'rejeitado'} com sucesso.`)
       load()
     } catch (e) {
-      setError(extractErrorMessage(e, 'Não foi possível revisar o sebo.'))
+      setError(extractErrorMessage(e, 'Não foi possível concluir a análise do sebo. Tente novamente.'))
     }
   }
 
@@ -75,7 +77,7 @@ export function AdminSeboVerificationPage() {
     try {
       await abrirDocumentoAutenticado(url)
     } catch (e) {
-      setError(extractErrorMessage(e, 'Não foi possível abrir o documento.'))
+      setError(extractErrorMessage(e, 'Não foi possível abrir o documento. Tente novamente.'))
     }
   }
 

@@ -55,7 +55,7 @@ export function AuthPage() {
       }
       navigate('/')
     } catch (err) {
-      setLoginError(extractErrorMessage(err, 'Falha ao entrar'))
+      setLoginError(extractErrorMessage(err, 'Não foi possível entrar. Confira seus dados e tente novamente.'))
     } finally {
       setLoginBusy(false)
     }
@@ -65,25 +65,25 @@ export function AuthPage() {
     e.preventDefault()
     setRegError(null)
     if (regPassword !== regConfirm) {
-      setRegError('As senhas nao coincidem')
+      setRegError('As senhas não coincidem. Digite a mesma senha nos dois campos.')
       return
     }
     if (regPassword.length < 8) {
-      setRegError('A senha deve ter ao menos 8 caracteres')
+      setRegError('Crie uma senha com pelo menos 8 caracteres.')
       return
     }
     setRegBusy(true)
     try {
-      const res = await authService.register({
+      await authService.register({
         name: regName,
         username: regUsername,
         email: regEmail,
         password: regPassword,
         type: regType,
       })
-      setRegSuccess(res.mensagem)
+      setRegSuccess('Conta criada com sucesso. Enviamos um link de confirmação para seu e-mail.')
     } catch (err) {
-      setRegError(extractErrorMessage(err, 'Falha ao cadastrar'))
+      setRegError(extractErrorMessage(err, 'Não foi possível criar sua conta. Revise os dados e tente novamente.'))
     } finally {
       setRegBusy(false)
     }
@@ -140,7 +140,7 @@ export function AuthPage() {
         ) : (
           <form className="auth-card" onSubmit={handleRegister}>
             <p className="auth-card-title">Ainda não possui conta?</p>
-            <p className="auth-card-subtitle"><em>Cadastra-se:</em></p>
+            <p className="auth-card-subtitle"><em>Cadastre-se:</em></p>
             {regError ? <div className="flash error" role="alert">{regError}</div> : null}
             <Input
               id="reg-name"

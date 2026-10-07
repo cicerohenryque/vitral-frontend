@@ -23,7 +23,7 @@ export function FavoritesPage() {
       .catch((err) => {
         if (!active) return
         setFavoritos([])
-        setError(extractErrorMessage(err, 'Nao foi possivel carregar seus favoritos.'))
+        setError(extractErrorMessage(err, 'Não foi possível carregar seus favoritos. Atualize a página e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -41,7 +41,7 @@ export function FavoritesPage() {
       await favoritoService.remover(produtoId)
       setFavoritos((items) => items.filter((item) => item.produtoId !== produtoId))
     } catch (err) {
-      setError(extractErrorMessage(err, 'Nao foi possivel remover o favorito.'))
+      setError(extractErrorMessage(err, 'Não foi possível remover o produto dos favoritos. Tente novamente.'))
     } finally {
       setBusyId(null)
     }
@@ -56,7 +56,7 @@ export function FavoritesPage() {
       {loading ? (
         <StoreStatus title="Carregando favoritos" description="Buscando seus itens salvos." busy />
       ) : error ? (
-        <StoreStatus title="Erro ao carregar favoritos" description={error} tone="error" />
+        <StoreStatus title="Seus favoritos não foram carregados" description={error} tone="error" />
       ) : favoritos.length === 0 ? (
         <StoreStatus
           title="Sua lista está vazia"
@@ -72,7 +72,7 @@ export function FavoritesPage() {
               </Link>
               <div className="store-list-copy">
                 <h2>{item.titulo}</h2>
-                <p>{item.autor ?? 'Autor nao informado'} · {item.condicao}</p>
+                <p>{item.autor ?? 'Autor não informado'} · {item.condicao}</p>
                 <strong className="store-list-price">
                   {item.precoPromocional != null && Number(item.precoPromocional) < Number(item.preco) ? (
                     <>

@@ -44,7 +44,7 @@ describe('recomendações personalizadas', () => {
     expect(recomendacaoService.listar).toHaveBeenCalledWith(0, 20)
   })
 
-  it('limpa o histórico após confirmação e remove as sugestões carregadas', async () => {
+  it('limpa o histórico após confirmação e recarrega o fallback', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true)
     renderRecommendations()
     await screen.findByText('Livro recomendado')
@@ -52,8 +52,16 @@ describe('recomendações personalizadas', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Limpar histórico de recomendações' }))
 
     expect(recomendacaoService.limparHistorico).toHaveBeenCalledTimes(1)
-    expect(await screen.findByRole('status')).toHaveTextContent('Histórico removido')
-    expect(screen.queryByText('Livro recomendado')).not.toBeInTheDocument()
+    expect(await screen.findByRole('status')).toHaveTextContent('Histórico de recomendações limpo com sucesso.')
+    await waitFor(() => expect(recomendacaoService.listar).toHaveBeenCalledTimes(2))
+    expect(screen.getByText('Livro recomendado')).toBeInTheDocument()
+  })
+
+  it('remove produtos duplicados recebidos da API', async () => {
+    vi.mocked(recomendacaoService.listar).mockResolvedValue({ ...page, content: [product, product] })
+    renderRecommendations()
+
+    expect(await screen.findAllByText('Livro recomendado')).toHaveLength(1)
   })
 
   it('não chama recomendações quando uma conta SEBO tenta acessar a rota', async () => {

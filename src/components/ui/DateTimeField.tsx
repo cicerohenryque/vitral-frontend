@@ -26,7 +26,7 @@ export function DateTimeField({ id, label, value, onChange }: Props) {
 
   return (
     <div className="vit-input-wrapper">
-      <span className="vit-input-label">{label}</span>
+      <label className="vit-input-label" htmlFor={id}>{label}</label>
       <div className="vit-datetime">
         <input
           id={id}
@@ -37,7 +37,7 @@ export function DateTimeField({ id, label, value, onChange }: Props) {
         />
         <select
           className="vit-input vit-datetime-part"
-          aria-label="Hora"
+          aria-label={`Hora de ${label.toLowerCase()}`}
           value={hour || '00'}
           disabled={!datePart}
           onChange={(event) => compose(datePart, event.target.value, minute)}
@@ -49,7 +49,7 @@ export function DateTimeField({ id, label, value, onChange }: Props) {
         <span className="vit-datetime-sep" aria-hidden="true">:</span>
         <select
           className="vit-input vit-datetime-part"
-          aria-label="Minuto"
+          aria-label={`Minuto de ${label.toLowerCase()}`}
           value={minute || '00'}
           disabled={!datePart}
           onChange={(event) => compose(datePart, hour, event.target.value)}

@@ -81,6 +81,7 @@
   font-family: var(--font-sans);
   font-size: 14px;
   background: var(--color-bg);
+  min-height: 44px;
 }
 
 .busca-filtro-btn {
@@ -95,6 +96,7 @@
   background: var(--color-yellow);
   margin-top: 4px;
   transition: background 0.15s;
+  min-height: 44px;
 }
 
 .busca-filtro-btn:hover { background: var(--color-yellow-hover); }
@@ -106,6 +108,14 @@
 }
 
 .busca-filtro-btn-ghost:hover { background: var(--color-beige); }
+
+.busca-filtro-erro {
+  margin: 0 0 8px;
+  color: var(--color-danger, #b3261e);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.4;
+}
 
 .busca-tabs {
   display: flex;
@@ -128,6 +138,7 @@
   color: var(--color-text-muted);
   cursor: pointer;
   border-radius: var(--radius-pill);
+  min-height: 44px;
   transition: color 0.15s, background 0.15s;
 }
 
@@ -136,6 +147,61 @@
   background: var(--color-accent-soft);
   font-weight: 600;
 }
+
+.busca-resultados-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: -6px 0 16px;
+  font-family: var(--font-sans);
+}
+
+.busca-resultados-toolbar p {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.busca-resultados-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.busca-resultados-toolbar select {
+  min-height: 40px;
+  padding: 8px 32px 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.busca-filtros-ativos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.busca-filtros-ativos button {
+  min-height: 36px;
+  padding: 7px 11px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.busca-filtros-ativos button:hover { border-color: var(--color-text-muted); }
+.busca-filtros-ativos .busca-limpar-ativos { background: transparent; }
 
 .busca-grid {
   display: grid;
@@ -149,6 +215,55 @@
   padding: 32px 0;
   text-align: center;
 }
+
+.busca-feedback {
+  padding: 36px 24px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  text-align: center;
+  font-family: var(--font-sans);
+}
+
+.busca-feedback strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 17px;
+}
+
+.busca-feedback p {
+  max-width: 520px;
+  margin: 0 auto 16px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.busca-feedback button {
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--color-yellow);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.busca-feedback .busca-feedback-secondary {
+  margin-left: 8px;
+  border-color: var(--color-border);
+  background: transparent;
+}
+
+.busca-feedback-error {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--color-danger, #b3261e) 35%, transparent);
+}
+
+.busca-feedback-error strong { color: var(--color-danger, #b3261e); }
+.busca-resultados-toolbar-sebos { justify-content: flex-start; }
 
 .busca-sebos-lista {
   display: flex;
@@ -165,6 +280,19 @@
   padding: 16px;
   align-items: flex-start;
   box-shadow: var(--shadow-sm);
+}
+
+.busca-sebo-skeleton {
+  min-height: 106px;
+  border-color: transparent;
+  background: linear-gradient(90deg, var(--color-surface) 25%, var(--color-beige) 50%, var(--color-surface) 75%);
+  background-size: 200% 100%;
+  animation: busca-shimmer 1.4s infinite;
+}
+
+@keyframes busca-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
 }
 
 .busca-sebo-foto {
@@ -252,9 +380,9 @@
   }
   .busca-filtros {
     position: static;
-    order: 2;
+    order: 1;
   }
-  .busca-resultados { order: 1; }
+  .busca-resultados { order: 2; }
 }
 
 @media (max-width: 520px) {
@@ -268,5 +396,20 @@
 
   .busca-tab {
     flex: 1;
+  }
+
+  .busca-resultados-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .busca-resultados-toolbar label,
+  .busca-resultados-toolbar select {
+    width: 100%;
+  }
+
+  .busca-feedback .busca-feedback-secondary {
+    display: block;
+    margin: 8px auto 0;
   }
 }

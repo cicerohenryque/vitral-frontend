@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import logo from '../assets/vitral-sebo-icon.svg'
 import { useAuth } from '../hooks/useAuth'
@@ -24,10 +24,16 @@ const SEARCH_ROUTES = new Set([
 export function GlobalNavigation() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
   const { isAuthenticated, isSebo, isAdmin, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const showSearch = SEARCH_ROUTES.has(location.pathname)
+
+  const closeMenu = useCallback(() => {
+    setMenuOpen(false)
+    menuButtonRef.current?.focus()
+  }, [])
 
   function handleSearch(event: React.FormEvent) {
     event.preventDefault()
@@ -41,7 +47,7 @@ export function GlobalNavigation() {
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMenuOpen(false)
+      if (event.key === 'Escape') closeMenu()
     }
     window.addEventListener('keydown', closeOnEscape)
 
@@ -49,7 +55,7 @@ export function GlobalNavigation() {
       document.body.style.overflow = previousOverflow
       window.removeEventListener('keydown', closeOnEscape)
     }
-  }, [menuOpen])
+  }, [menuOpen, closeMenu])
 
   function handleLogout() {
     logout()
@@ -60,16 +66,20 @@ export function GlobalNavigation() {
     <>
       <TopBar />
       <header className="global-navigation">
-      {menuOpen ? <SideMenu onClose={() => setMenuOpen(false)} /> : null}
+      {menuOpen ? <SideMenu onClose={closeMenu} /> : null}
       <div className="global-navigation-inner container">
         <div className="global-navigation-start">
           <button
+            ref={menuButtonRef}
             type="button"
             className="global-menu-button"
             aria-label="Abrir menu"
             aria-controls="main-side-menu"
             aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((open) => !open)}
+            onClick={() => {
+              if (menuOpen) closeMenu()
+              else setMenuOpen(true)
+            }}
           >
             <span aria-hidden="true" />
             <span aria-hidden="true" />
@@ -99,7 +109,7 @@ export function GlobalNavigation() {
         <div className="global-navigation-actions">
           {isAuthenticated ? (
             <>
-              <Link className="global-action" to={isAdmin ? '/admin/sebos' : isSebo ? '/painel/sebo' : '/painel/perfil'}>
+              <Link className="global-action" to={isAdmin ? '/admin' : isSebo ? '/painel/sebo' : '/painel/perfil'}>
                 <UserIcon size={22} />
                 <span>{isAdmin ? 'Administração' : isSebo ? 'Meu Sebo' : 'Meu Perfil'}</span>
               </Link>

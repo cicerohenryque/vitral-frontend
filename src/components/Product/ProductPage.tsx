@@ -49,7 +49,7 @@ export function ProductPage() {
         }
       })
       .catch((err) => {
-        if (active) setError(extractErrorMessage(err, 'Produto nao encontrado.'))
+        if (active) setError(extractErrorMessage(err, 'Não foi possível encontrar este produto. Volte à busca e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -88,10 +88,10 @@ export function ProductPage() {
     setActionMessage(null)
     setActionError(null)
     try {
-      const response = await cestaService.adicionar(selectedProductId)
-      setActionMessage(response.mensagem)
+      await cestaService.adicionar(selectedProductId)
+      setActionMessage('Produto adicionado à cesta com sucesso.')
     } catch (err) {
-      setActionError(extractErrorMessage(err, 'Nao foi possivel adicionar à cesta.'))
+      setActionError(extractErrorMessage(err, 'Não foi possível adicionar o produto à cesta. Tente novamente.'))
     } finally {
       setBusyAction(null)
     }
@@ -103,10 +103,10 @@ export function ProductPage() {
     setActionMessage(null)
     setActionError(null)
     try {
-      const response = await favoritoService.favoritar(selectedProductId ?? produto.id)
-      setActionMessage(response.mensagem)
+      await favoritoService.favoritar(selectedProductId ?? produto.id)
+      setActionMessage('Produto adicionado aos favoritos com sucesso.')
     } catch (err) {
-      setActionError(extractErrorMessage(err, 'Nao foi possivel favoritar o produto.'))
+      setActionError(extractErrorMessage(err, 'Não foi possível adicionar o produto aos favoritos. Tente novamente.'))
     } finally {
       setBusyAction(null)
     }
@@ -114,9 +114,9 @@ export function ProductPage() {
 
   if (invalidProductId) {
     return (
-      <StorePage title="Produto indisponivel" subtitle="Nao foi possivel carregar este item.">
+      <StorePage title="Produto indisponível" subtitle="Não foi possível carregar este item.">
         <StoreStatus
-          title="Produto invalido"
+          title="Link de produto inválido"
           description="Confira o link acessado e tente abrir o produto novamente pela busca."
           tone="error"
         />
@@ -143,9 +143,9 @@ export function ProductPage() {
 
   if (error || !produto) {
     return (
-      <StorePage title="Produto indisponivel" subtitle="Nao foi possivel carregar este item.">
+      <StorePage title="Produto indisponível" subtitle="Não foi possível carregar este item.">
         <StoreStatus
-          title="Produto nao encontrado"
+          title="Produto não encontrado"
           description={error ?? 'Não encontramos este produto no acervo.'}
           tone="error"
           action={<Link to="/busca">Voltar para busca</Link>}
@@ -157,7 +157,7 @@ export function ProductPage() {
   const publicationDate = formatDateBR(produto.dataPublicacao ?? produto.createdAt)
 
   return (
-    <StorePage title="Detalhes do produto" subtitle="Conheca o item antes de solicitar a reserva.">
+    <StorePage title="Detalhes do produto" subtitle="Conheça o item antes de solicitar a reserva.">
       <section className="product-detail">
         <div className="product-gallery">
           <div className="product-main-image">
@@ -178,32 +178,43 @@ export function ProductPage() {
         </div>
 
         <article className="product-information">
-          <span className="product-category">{produto.categoriaNome ?? produto.condicao}</span>
+          <div className="product-heading-meta">
+            <span className="product-category">{produto.categoriaNome ?? produto.condicao}</span>
+            <span className={`product-availability ${produto.ativo && Number(produto.estoque ?? 0) > 0 ? 'available' : 'unavailable'}`}>
+              {produto.ativo && Number(produto.estoque ?? 0) > 0 ? 'Disponível' : 'Indisponível'}
+            </span>
+          </div>
           <h2>{produto.titulo}</h2>
-          {publicationDate ? <p className="product-description">Publicado em: {publicationDate}</p> : null}
-          {produto.precoPromocional != null && Number(produto.precoPromocional) < Number(produto.preco) ? (
-            <p className="product-price">
-              <s style={{ opacity: 0.6, marginRight: 8, fontWeight: 400 }}>
-                R$ {Number(produto.preco).toFixed(2)}
-              </s>
-              R$ {Number(produto.precoPromocional).toFixed(2)}
-            </p>
-          ) : (
-            <p className="product-price">R$ {Number(produto.preco).toFixed(2)}</p>
-          )}
+          {produto.autor ? <p className="product-author">por {produto.autor}</p> : null}
+          {publicationDate ? <p className="product-publication">Publicado em: {publicationDate}</p> : null}
+          <div className="product-price-block">
+            <span className="product-price-label">Preço</span>
+            {produto.precoPromocional != null && Number(produto.precoPromocional) < Number(produto.preco) ? (
+              <div className="product-price-row">
+                <s className="product-price-old">R$ {Number(produto.preco).toFixed(2)}</s>
+                <p className="product-price">R$ {Number(produto.precoPromocional).toFixed(2)}</p>
+              </div>
+            ) : (
+              <p className="product-price">R$ {Number(produto.preco).toFixed(2)}</p>
+            )}
+          </div>
           <p className="product-description">
             {produto.descricao || 'Consulte o vendedor para combinar pagamento, entrega ou retirada.'}
           </p>
 
-          <dl className="product-metadata">
-            <div><dt>Estado</dt><dd>{produto.condicao}</dd></div>
-            <div><dt>Categoria</dt><dd>{produto.categoriaNome ?? 'Nao informada'}</dd></div>
-            {produto.bookGenre ? <div><dt>Gênero</dt><dd>{bookGenreLabel(produto.bookGenre) ?? produto.bookGenre}</dd></div> : null}
-            {produto.classico ? <div><dt>Curadoria</dt><dd>Clássico</dd></div> : null}
-            <div><dt>Autor</dt><dd>{produto.autor ?? 'Nao informado'}</dd></div>
-            <div><dt>Estoque</dt><dd>{produto.estoque ?? 0}</dd></div>
-            <div><dt>Disponibilidade</dt><dd>{produto.ativo && Number(produto.estoque ?? 0) > 0 ? 'Disponivel' : 'Indisponivel'}</dd></div>
-          </dl>
+          <section className="product-information-section" aria-labelledby="product-details-title">
+            <h3 id="product-details-title">Detalhes do item</h3>
+            <dl className="product-metadata">
+              <div><dt>Estado</dt><dd>{produto.condicao}</dd></div>
+              <div><dt>Categoria</dt><dd>{produto.categoriaNome ?? 'Não informada'}</dd></div>
+              {produto.bookGenre ? <div><dt>Gênero</dt><dd>{bookGenreLabel(produto.bookGenre) ?? produto.bookGenre}</dd></div> : null}
+              {produto.classico ? <div><dt>Curadoria</dt><dd>Clássico</dd></div> : null}
+              {produto.ano ? <div><dt>Ano</dt><dd>{produto.ano}</dd></div> : null}
+              <div><dt>Autor</dt><dd>{produto.autor ?? 'Não informado'}</dd></div>
+              <div><dt>Estoque</dt><dd>{produto.estoque ?? 0}</dd></div>
+              <div><dt>Disponibilidade</dt><dd>{produto.ativo && Number(produto.estoque ?? 0) > 0 ? 'Disponivel' : 'Indisponivel'}</dd></div>
+            </dl>
+          </section>
 
           <section className="product-sellers" aria-labelledby="product-sellers-title">
             <h3 id="product-sellers-title">Escolha o vendedor</h3>
@@ -283,9 +294,15 @@ export function ProductPage() {
           )}
 
           <Link className="product-seller" to={`/vendedor/${selectedSeller?.seboId ?? produto.seboId}`}>
-            <span>Vendido por</span>
-            <strong>{selectedSeller?.seboNome ?? sebo?.nome ?? `Sebo #${produto.seboId}`}</strong>
-            <small>Ver perfil do vendedor →</small>
+            <div className="product-seller-avatar">
+              {sebo?.fotoUrl ? <img src={sebo.fotoUrl} alt="" /> : <span>{(selectedSeller?.seboNome ?? sebo?.nome ?? 'S').slice(0, 2).toUpperCase()}</span>}
+            </div>
+            <div className="product-seller-copy">
+              <span>Vendido por</span>
+              <strong>{selectedSeller?.seboNome ?? sebo?.nome ?? `Sebo #${produto.seboId}`}</strong>
+              {sebo?.statusVerificacao ? <small>✓ Sebo verificado</small> : <small>Sebo verificado</small>}
+            </div>
+            <span className="product-seller-link">Ver perfil →</span>
           </Link>
         </article>
       </section>

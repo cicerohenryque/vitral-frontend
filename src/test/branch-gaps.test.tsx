@@ -93,7 +93,7 @@ describe('CartPage — branches adicionais', () => {
     expect(await screen.findByText(/3 itens na cesta/)).toBeInTheDocument()
   })
 
-  it('exibe "Autor nao informado" quando autor e null', async () => {
+  it('exibe "Autor não informado" quando autor e null', async () => {
     const item: CestaItem = {
       id: 1, produtoId: 8, titulo: 'Sem Autor', autor: null,
       preco: 10, quantidade: 1, subtotal: 10, estoqueDisponivel: 2,
@@ -101,7 +101,7 @@ describe('CartPage — branches adicionais', () => {
     }
     vi.spyOn(cestaService, 'listar').mockResolvedValue([item])
     renderPage(<CartPage />)
-    expect(await screen.findByText(/Autor nao informado/)).toBeInTheDocument()
+    expect(await screen.findByText(/Autor não informado/)).toBeInTheDocument()
   })
 
   it('exibe placeholder de imagem quando fotoUrl e null', async () => {
@@ -179,14 +179,14 @@ describe('ReservationsPage — branches adicionais', () => {
 
     expect(await screen.findByText('Pedido #22')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Cancelar pedido' }))
-    expect(await screen.findByText('Nao foi possivel cancelar o pedido.')).toBeInTheDocument()
+    expect(await screen.findByText('Não foi possível cancelar o pedido. Tente novamente.')).toBeInTheDocument()
   })
 
   it('mostra erro ao carregar reservas quando o backend falha', async () => {
     vi.spyOn(pedidoService, 'listarMeusPedidos').mockRejectedValue(new Error('offline'))
     renderPage(<ReservationsPage />)
-    expect(await screen.findByText('Erro ao carregar reservas')).toBeInTheDocument()
-    expect(screen.getByText('Nao foi possivel carregar suas reservas.')).toBeInTheDocument()
+    expect(await screen.findByText('Suas reservas não foram carregadas')).toBeInTheDocument()
+    expect(screen.getByText('Não foi possível carregar suas reservas. Atualize a página e tente novamente.')).toBeInTheDocument()
   })
 })
 
@@ -217,8 +217,8 @@ describe('SalesHistoryPage — branches adicionais', () => {
   it('mostra erro ao carregar historico quando o backend falha', async () => {
     vi.spyOn(pedidoService, 'listarVendas').mockRejectedValue(new Error('servidor fora'))
     renderPage(<SalesHistoryPage />)
-    expect(await screen.findByText('Erro ao carregar histórico')).toBeInTheDocument()
-    expect(screen.getByText('Nao foi possivel carregar o histórico de vendas.')).toBeInTheDocument()
+    expect(await screen.findByText('O histórico de vendas não foi carregado')).toBeInTheDocument()
+    expect(screen.getByText('Não foi possível carregar o histórico de vendas. Atualize a página e tente novamente.')).toBeInTheDocument()
   })
 })
 
@@ -228,8 +228,8 @@ describe('SaleConfirmationPage — branches adicionais', () => {
   it('mostra erro ao carregar pedido quando listarVendas falha', async () => {
     vi.spyOn(pedidoService, 'listarVendas').mockRejectedValue(new Error('erro de rede'))
     renderRoute('/vendas/11/confirmar', '/vendas/:orderId/confirmar', <SaleConfirmationPage />)
-    expect(await screen.findByText('Erro ao carregar pedido')).toBeInTheDocument()
-    expect(screen.getByText('Nao foi possivel carregar o pedido.')).toBeInTheDocument()
+    expect(await screen.findByText('O pedido não foi carregado')).toBeInTheDocument()
+    expect(screen.getByText('Não foi possível carregar o pedido. Atualize a página e tente novamente.')).toBeInTheDocument()
   })
 
   it('mostra erro ao recusar venda quando atualizarStatus falha', async () => {
@@ -240,7 +240,7 @@ describe('SaleConfirmationPage — branches adicionais', () => {
 
     expect(await screen.findByText('Recusar venda')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Recusar venda' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Nao foi possivel atualizar o pedido.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível atualizar o pedido. Tente novamente.')
   })
 
   it('exibe mensagem de cancelamento ao recusar venda com sucesso', async () => {
@@ -314,7 +314,7 @@ describe('MeuSeboPage — branches adicionais', () => {
     await userEvent.type(screen.getByLabelText('Cidade'), 'Fortaleza')
     await userEvent.type(screen.getByLabelText('UF'), 'CE')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
-    expect(await screen.findByText('Sebo cadastrado com sucesso!')).toBeInTheDocument()
+    expect(await screen.findByText('Sebo cadastrado com sucesso.')).toBeInTheDocument()
     expect(seboService.criar).toHaveBeenCalledWith(expect.objectContaining({ cnpj: '12345678000199', cep: '60123456', logradouro: 'Rua dos Livros', cidade: 'Fortaleza', uf: 'CE' }))
   })
 
@@ -350,7 +350,7 @@ describe('MeuSeboPage — branches adicionais', () => {
     await userEvent.type(screen.getByLabelText('Cidade'), 'Fortaleza')
     await userEvent.type(screen.getByLabelText('UF'), 'CE')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Erro ao salvar o sebo')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar os dados do sebo. Revise as informações e tente novamente.')
   })
 })
 
@@ -445,8 +445,8 @@ describe('SalesOrdersPage — branches adicionais', () => {
     const { SalesOrdersPage } = await import('../components/Sales/SalesOrdersPage')
     vi.spyOn(pedidoService, 'listarVendas').mockRejectedValue(new Error('servidor fora'))
     renderPage(<SalesOrdersPage />)
-    expect(await screen.findByText('Erro ao carregar compras')).toBeInTheDocument()
-    expect(screen.getByText('Nao foi possivel carregar as compras recebidas.')).toBeInTheDocument()
+    expect(await screen.findByText('As compras recebidas não foram carregadas')).toBeInTheDocument()
+    expect(screen.getByText('Não foi possível carregar as compras recebidas. Atualize a página e tente novamente.')).toBeInTheDocument()
   })
 
   it('exibe pedidos aguardando confirmacao com link para responder', async () => {

@@ -160,9 +160,9 @@ export function MeuSeboPage() {
         : await seboService.criar(payload)
       setExisting(saved)
       setSeboId(saved.id)
-      setSuccess(existing ? 'Sebo atualizado com sucesso!' : 'Sebo cadastrado com sucesso!')
+      setSuccess(existing ? 'Dados do sebo atualizados com sucesso.' : 'Sebo cadastrado com sucesso.')
     } catch (err) {
-      setError(extractErrorMessage(err, 'Erro ao salvar o sebo'))
+      setError(extractErrorMessage(err, 'Não foi possível salvar os dados do sebo. Revise as informações e tente novamente.'))
     } finally {
       setBusy(false)
     }
@@ -195,9 +195,9 @@ export function MeuSeboPage() {
         cnpjConsultadoEm: result.consultadoEm,
         mensagemConsultaCnpj: result.mensagem,
       } : current)
-      setSuccess('Consulta do CNPJ concluída.')
+      setSuccess('Consulta do CNPJ concluída. Confira os dados encontrados.')
     } catch (err) {
-      setError(extractErrorMessage(err, 'Não foi possível consultar o CNPJ.'))
+      setError(extractErrorMessage(err, 'Não foi possível consultar o CNPJ. Confira o número informado e tente novamente.'))
     } finally {
       setConsultingCnpj(false)
     }

@@ -39,7 +39,7 @@ export function SellerPage() {
         setTotalProducts(productPage.totalElements)
       })
       .catch((err) => {
-        if (active) setError(extractErrorMessage(err, 'Nao foi possivel carregar este sebo.'))
+        if (active) setError(extractErrorMessage(err, 'Não foi possível carregar este sebo. Volte à busca e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -52,7 +52,7 @@ export function SellerPage() {
 
   if (invalidSellerId) {
     return (
-      <StorePage title="Sebo indisponivel" subtitle="O identificador informado nao e valido.">
+      <StorePage title="Sebo indisponível" subtitle="O identificador informado não é válido.">
         <StoreStatus
           title="ID de sebo invalido"
           description="Confira o link acessado ou procure o sebo novamente pela busca."
@@ -64,7 +64,7 @@ export function SellerPage() {
   }
 
   return (
-    <StorePage title="Perfil do vendedor" subtitle="Conheca o sebo e os itens disponiveis.">
+    <StorePage title="Perfil do vendedor" subtitle="Conheça o sebo e os itens disponíveis.">
       {loading ? (
         <StoreStatus
           title="Carregando sebo"
@@ -74,7 +74,7 @@ export function SellerPage() {
       ) : null}
       {!loading && error ? (
         <StoreStatus
-          title="Nao foi possivel carregar este sebo"
+          title="Este sebo não foi carregado"
           description={error}
           tone="error"
           action={<Link to="/busca?tab=sebos">Buscar sebos</Link>}
@@ -83,14 +83,16 @@ export function SellerPage() {
       {seller ? (
         <>
           <section className="seller-profile">
-            <div className="seller-avatar">{seller.nome.slice(0, 2).toUpperCase()}</div>
+            <div className="seller-avatar">
+              {seller.fotoUrl ? <img src={seller.fotoUrl} alt={`Logo do ${seller.nome}`} /> : <span>{seller.nome.slice(0, 2).toUpperCase()}</span>}
+            </div>
             <div className="seller-copy">
-              <span>{seller.statusVerificacao === StatusVerificacao.VERIFICADO ? '✓ Sebo verificado' : 'Sebo cadastrado'}</span>
+              <div className="seller-status-row">
+                <span className="seller-status">{seller.statusVerificacao === StatusVerificacao.VERIFICADO ? '✓ Sebo verificado' : 'Sebo cadastrado'}</span>
+                <span className="seller-catalog-count">{totalProducts} {totalProducts === 1 ? 'item disponível' : 'itens disponíveis'}</span>
+              </div>
               <h2>{seller.nome}</h2>
-              {seller.descricao ? <p>{seller.descricao}</p> : null}
-              <dl>
-                <div><dt>Itens disponíveis</dt><dd>{totalProducts}</dd></div>
-              </dl>
+              {seller.descricao ? <p>{seller.descricao}</p> : <p className="seller-no-description">Este sebo ainda não adicionou uma descrição pública.</p>}
             </div>
             <div className="seller-actions">
               <Link to={`/busca?tab=produtos&seboId=${seller.id}`}>Ver produtos</Link>

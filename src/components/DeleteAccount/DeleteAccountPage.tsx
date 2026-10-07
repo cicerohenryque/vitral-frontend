@@ -32,7 +32,7 @@ export function DeleteAccountPage() {
       forceLogout()
       navigate('/auth')
     } catch (err) {
-      setError(extractErrorMessage(err, 'Nao foi possivel excluir sua conta.'))
+      setError(extractErrorMessage(err, 'Não foi possível excluir sua conta. Tente novamente ou entre em contato com o suporte.'))
     } finally {
       setBusy(false)
     }

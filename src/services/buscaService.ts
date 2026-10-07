@@ -13,6 +13,7 @@ export type BuscaProdutosParams = {
   precoMax?: number
   categoriaId?: number
   bookGenre?: BookGenre
+  sort?: string
 }
 
 export type BuscaSebosParams = {
@@ -21,6 +22,7 @@ export type BuscaSebosParams = {
   uf?: string
   lat?: number
   lng?: number
+  raioKm?: number
 }
 
 export const buscaService = {

@@ -43,8 +43,8 @@ describe('cobertura de branches restantes', () => {
     vi.spyOn(cestaService, 'listar').mockRejectedValue(new Error('falha de rede'))
     renderPage(<CartPage />)
 
-    expect(await screen.findByText('Erro ao carregar carrinho')).toBeInTheDocument()
-    expect(screen.getByText('Nao foi possivel carregar a cesta.')).toBeInTheDocument()
+    expect(await screen.findByText('Seu carrinho não foi carregado')).toBeInTheDocument()
+    expect(screen.getByText('Não foi possível carregar sua cesta. Atualize a página e tente novamente.')).toBeInTheDocument()
   })
 
   it('atualiza quantidade e exibe erro se a atualizacao falhar', async () => {
@@ -68,8 +68,8 @@ describe('cobertura de branches restantes', () => {
     const quantity = screen.getByRole('spinbutton', { name: /Qtd\./i })
     fireEvent.change(quantity, { target: { value: '2' } })
 
-    expect(await screen.findByText('Erro ao carregar carrinho')).toBeInTheDocument()
-    expect(screen.getByText('Nao foi possivel atualizar a quantidade.')).toBeInTheDocument()
+    expect(await screen.findByText('Seu carrinho não foi carregado')).toBeInTheDocument()
+    expect(screen.getByText('Não foi possível atualizar a quantidade. Tente novamente.')).toBeInTheDocument()
   })
 
   it('exibe carrinho vazio quando nao ha itens', async () => {
@@ -99,15 +99,15 @@ describe('cobertura de branches restantes', () => {
     expect(await screen.findByText('Livro Checkout')).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: 'Pagar e confirmar' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Nao foi possivel confirmar o pedido.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível confirmar o pedido. Confira os dados e tente novamente.')
   })
 
   it('mostra erro ao carregar categorias', async () => {
     vi.spyOn(categoriaService, 'listar').mockRejectedValue(new Error('falha'))
     renderPage(<CategoriesPage />)
 
-    expect(await screen.findByText('Erro ao carregar categorias')).toBeInTheDocument()
-    expect(screen.getByText('Nao foi possivel carregar as categorias.')).toBeInTheDocument()
+    expect(await screen.findByText('As categorias não foram carregadas')).toBeInTheDocument()
+    expect(screen.getByText('Não foi possível carregar as categorias. Atualize a página e tente novamente.')).toBeInTheDocument()
   })
 
   it('mostra erro ao carregar produtos da categoria selecionada', async () => {
@@ -115,8 +115,8 @@ describe('cobertura de branches restantes', () => {
     vi.spyOn(produtoService, 'listarPorCategoria').mockRejectedValue(new Error('falha categoria'))
     renderWithParams('/categorias?categoriaId=2', <CategoriesPage />)
 
-    expect(await screen.findByText('Erro ao carregar produtos')).toBeInTheDocument()
-    expect(screen.getByText('Nao foi possivel carregar os produtos da categoria.')).toBeInTheDocument()
+    expect(await screen.findByText('Os produtos não foram carregados')).toBeInTheDocument()
+    expect(screen.getByText('Não foi possível carregar os produtos desta categoria. Tente novamente.')).toBeInTheDocument()
   })
 
   it('mostra categoria sem produtos quando nenhuma opcao esta disponivel', async () => {
@@ -157,23 +157,23 @@ describe('cobertura de branches restantes', () => {
     expect(await screen.findByText('Livro Falha')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Remover' }))
 
-    expect(await screen.findByText('Nao foi possivel remover o item da cesta.')).toBeInTheDocument()
+    expect(await screen.findByText('Não foi possível remover o item da cesta. Tente novamente.')).toBeInTheDocument()
   })
 
   it('mostra erro ao carregar historico de pedidos', async () => {
     vi.spyOn(pedidoService, 'listarMeusPedidos').mockRejectedValue(new Error('falha'))
     renderPage(<HistoryPage />)
 
-    expect(await screen.findByText('Erro ao carregar histórico')).toBeInTheDocument()
-    expect(screen.getByText('Nao foi possivel carregar seu histórico.')).toBeInTheDocument()
+    expect(await screen.findByText('Seu histórico não foi carregado')).toBeInTheDocument()
+    expect(screen.getByText('Não foi possível carregar seu histórico. Atualize a página e tente novamente.')).toBeInTheDocument()
   })
 
   it('mostra erro ao carregar checkout', async () => {
     vi.spyOn(cestaService, 'listar').mockRejectedValue(new Error('falha checkout'))
     renderPage(<CheckoutPage />)
 
-    expect(await screen.findByText('Erro ao carregar carrinho')).toBeInTheDocument()
-    expect(screen.getByText(/Nao foi possivel carregar sua cesta/i)).toBeInTheDocument()
+    expect(await screen.findByText('Seu carrinho não foi carregado')).toBeInTheDocument()
+    expect(screen.getByText(/Não foi possível carregar sua cesta/i)).toBeInTheDocument()
   })
 
   it('mostra mensagem sem conversa inicial quando nao ha mensagens', async () => {
@@ -215,7 +215,7 @@ describe('cobertura de branches restantes', () => {
     await userEvent.type(screen.getByLabelText('Confirmação'), 'EXCLUIR')
     await userEvent.click(screen.getByRole('button', { name: 'Excluir conta' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Nao foi possivel excluir sua conta.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível excluir sua conta. Tente novamente ou entre em contato com o suporte.')
   })
 
   it('mostra erro e sem ofertas ativas quando nao ha resultados', async () => {
@@ -265,8 +265,8 @@ describe('cobertura de branches restantes', () => {
     expect(await screen.findByText('Pedido #11')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Cancelar pedido' }))
 
-    expect(await screen.findByText('Erro ao carregar histórico')).toBeInTheDocument()
-    expect(screen.getByText('Nao foi possivel cancelar o pedido.')).toBeInTheDocument()
+    expect(await screen.findByText('Seu histórico não foi carregado')).toBeInTheDocument()
+    expect(screen.getByText('Não foi possível cancelar o pedido. Tente novamente.')).toBeInTheDocument()
   })
 
   it('mostra historico de vendas vazio', async () => {
@@ -389,7 +389,7 @@ describe('cobertura de branches restantes', () => {
     await userEvent.clear(screen.getByLabelText('Código do sebo (opcional)'))
     await userEvent.clear(screen.getByLabelText('Preço mín. (R$)'))
     await userEvent.clear(screen.getByLabelText('Preço máx. (R$)'))
-    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar filtros' }))
 
     await waitFor(() => expect(buscarProdutosSpy).toHaveBeenLastCalledWith(expect.objectContaining({ condicao: undefined, seboId: undefined, precoMin: undefined, precoMax: undefined })))
   })
@@ -403,6 +403,75 @@ describe('cobertura de branches restantes', () => {
     expect(screen.getByLabelText('UF')).toHaveValue('PB')
   })
 
+  it('ordena sebos próximos e permite limitar o raio de descoberta', async () => {
+    vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
+    const buscarSebosSpy = vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: {
+        getCurrentPosition: (success: PositionCallback) => success({
+          coords: { latitude: -7.115, longitude: -34.8631 },
+        } as GeolocationPosition),
+      },
+    })
+
+    renderWithParams('/busca?tab=sebos', <BuscaPage />)
+    await userEvent.click(await screen.findByRole('button', { name: /Ordenar por proximidade/i }))
+
+    expect(await screen.findByLabelText('Distância máxima')).toHaveValue('25')
+    await waitFor(() => expect(buscarSebosSpy).toHaveBeenLastCalledWith(expect.objectContaining({
+      lat: -7.115,
+      lng: -34.8631,
+      raioKm: 25,
+    })))
+
+    await userEvent.selectOptions(screen.getByLabelText('Distância máxima'), '10')
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar filtros' }))
+    await waitFor(() => expect(buscarSebosSpy).toHaveBeenLastCalledWith(expect.objectContaining({
+      lat: -7.115,
+      lng: -34.8631,
+      raioKm: 10,
+    })))
+
+    await userEvent.click(screen.getByRole('button', { name: 'Limpar filtros' }))
+    expect(screen.queryByLabelText('Distância máxima')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Ordenar por proximidade/i })).toBeInTheDocument()
+    await waitFor(() => expect(buscarSebosSpy).toHaveBeenLastCalledWith(expect.objectContaining({
+      lat: undefined,
+      lng: undefined,
+      raioKm: undefined,
+    })))
+  })
+
+  it('orienta o usuário quando o acesso à localização é bloqueado', async () => {
+    vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
+    const buscarSebosSpy = vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: {
+        getCurrentPosition: (_success: PositionCallback, error: PositionErrorCallback) => error({
+          code: 1,
+          message: 'Permission denied',
+          PERMISSION_DENIED: 1,
+          POSITION_UNAVAILABLE: 2,
+          TIMEOUT: 3,
+        }),
+      },
+    })
+
+    renderWithParams('/busca?tab=sebos', <BuscaPage />)
+    await userEvent.click(await screen.findByRole('button', { name: /Ordenar por proximidade/i }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'A localização foi bloqueada. Autorize o acesso no navegador ou busque por cidade e UF.',
+    )
+    expect(screen.queryByLabelText('Distância máxima')).not.toBeInTheDocument()
+    expect(buscarSebosSpy).not.toHaveBeenCalledWith(expect.objectContaining({
+      lat: expect.any(Number),
+      lng: expect.any(Number),
+    }))
+  })
+
   it('aplica filtros de busca de produtos e limpa corretamente', async () => {
     const searchSpy = vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
     vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })
@@ -414,12 +483,49 @@ describe('cobertura de branches restantes', () => {
     await userEvent.type(screen.getByLabelText('Código do sebo (opcional)'), '7')
     await userEvent.type(screen.getByLabelText('Preço mín. (R$)'), '10')
     await userEvent.type(screen.getByLabelText('Preço máx. (R$)'), '50')
-    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar filtros' }))
 
     await waitFor(() => expect(searchSpy).toHaveBeenLastCalledWith(expect.objectContaining({ condicao: CondicaoProduto.NOVO, seboId: 7, precoMin: 10, precoMax: 50 })))
 
-    await userEvent.click(screen.getByRole('button', { name: 'Limpar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Limpar filtros' }))
     expect(await screen.findByText('Nenhum produto encontrado.')).toBeInTheDocument()
+  })
+
+  it('impede aplicar uma faixa de preço inválida', async () => {
+    const searchSpy = vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
+    vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })
+
+    renderWithParams('/busca?tab=produtos', <BuscaPage />)
+    await screen.findByText('Nenhum produto encontrado.')
+    await userEvent.type(screen.getByLabelText('Preço mín. (R$)'), '100')
+    await userEvent.type(screen.getByLabelText('Preço máx. (R$)'), '50')
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar filtros' }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent('O preço mínimo não pode ser maior que o preço máximo.')
+    expect(searchSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('ordena produtos e remove um filtro ativo sem alterar os demais', async () => {
+    const searchSpy = vi.spyOn(buscaService, 'buscarProdutos').mockResolvedValue({ ...emptyPage, content: [] })
+    vi.spyOn(buscaService, 'buscarSebos').mockResolvedValue({ ...emptyPage, content: [] })
+
+    renderWithParams('/busca?tab=produtos&condicao=NOVO&precoMin=10', <BuscaPage />)
+    await screen.findByText('Nenhum produto encontrado.')
+    await userEvent.selectOptions(screen.getByLabelText('Ordenar por'), 'preco,asc')
+
+    await waitFor(() => expect(searchSpy).toHaveBeenLastCalledWith(expect.objectContaining({
+      condicao: CondicaoProduto.NOVO,
+      precoMin: 10,
+      sort: 'preco,asc',
+    })))
+
+    await userEvent.click(screen.getByRole('button', { name: 'Remover filtro Condição: Novo' }))
+    await waitFor(() => expect(searchSpy).toHaveBeenLastCalledWith(expect.objectContaining({
+      condicao: undefined,
+      precoMin: 10,
+      sort: 'preco,asc',
+    })))
+    expect(screen.getByRole('button', { name: /Remover filtro A partir de R\$/ })).toBeInTheDocument()
   })
 
   it('aplica filtros de busc a de sebos e limpa corretamente', async () => {
@@ -466,7 +572,7 @@ describe('cobertura de branches restantes', () => {
     vi.spyOn(categoriaService, 'listar').mockResolvedValue({ ...emptyPage, content: [{ id: 2, nome: 'CDs', slug: 'cds', descricao: null }] })
 
     renderPage(<MeusProdutosPage />)
-    expect(await screen.findByRole('alert')).toHaveTextContent('Erro ao listar produtos')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível carregar seus produtos. Atualize a página e tente novamente.')
   })
 
   it('mostra erro ao remover produto com falha no backend', async () => {
@@ -482,7 +588,7 @@ describe('cobertura de branches restantes', () => {
     expect(await screen.findByText('Livro Remover')).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: /Remover/i }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Erro ao remover produto')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível excluir o produto. Tente novamente.')
   })
 
   it('nao remove produto quando usuario cancela a confirmacao', async () => {
@@ -513,7 +619,7 @@ describe('cobertura de branches restantes', () => {
     await userEvent.type(screen.getByLabelText('Preço (R$)'), '10')
     await userEvent.click(screen.getByRole('button', { name: /Adicionar produto/i }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Erro ao salvar produto')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar o produto. Revise os dados e tente novamente.')
   })
 
   it('carrega perfil do sebo existente usando seboId no auth store', async () => {
@@ -530,7 +636,7 @@ describe('cobertura de branches restantes', () => {
     await userEvent.type(screen.getByLabelText('Descrição'), 'Novo nome')
     await userEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
 
-    expect(await screen.findByText('Sebo atualizado com sucesso!')).toBeInTheDocument()
+    expect(await screen.findByText('Dados do sebo atualizados com sucesso.')).toBeInTheDocument()
     expect(seboService.atualizarMeu).toHaveBeenCalledWith(expect.objectContaining({ descricao: 'Novo nome' }))
   })
 
@@ -558,7 +664,7 @@ describe('cobertura de branches restantes', () => {
     await userEvent.type(screen.getByLabelText('Título'), 'Livro Editado')
     await userEvent.click(screen.getByRole('button', { name: 'Atualizar produto' }))
 
-    expect(await screen.findByText('Produto atualizado!')).toBeInTheDocument()
+    expect(await screen.findByText('Produto atualizado com sucesso.')).toBeInTheDocument()
     expect(produtoService.atualizar).toHaveBeenCalledWith(124, expect.objectContaining({ titulo: 'Livro Editado' }))
     await waitFor(() => expect(produtoService.listarPorSebo).toHaveBeenCalledTimes(2))
   })

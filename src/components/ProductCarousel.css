@@ -7,6 +7,25 @@
   font-family: var(--font-sans);
   line-height: 1.55;
 }
+.home-empty-state {
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+  margin: 22px 0 36px;
+}
+.home-empty-state .carousel-empty { margin: 0; }
+.home-empty-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  background: var(--color-yellow);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-weight: 700;
+}
+.home-empty-action:hover { background: var(--color-yellow-hover); }
 .carousel-heading {
   display: flex;
   align-items: baseline;

@@ -10,23 +10,42 @@ import { CondicaoProduto } from '../types/produto'
 import './BuscaPage.css'
 import { categoriaService } from '../services/categoriaService'
 import type { Categoria } from '../types/categoria'
-import { BOOK_GENRE_OPTIONS, getAllowedCategories, isBookCategory, type BookGenre } from '../constants/productCatalog'
+import { BOOK_GENRE_OPTIONS, bookGenreLabel, getAllowedCategories, isBookCategory, type BookGenre } from '../constants/productCatalog'
 
 type Tab = 'produtos' | 'sebos'
+type ProductFilterParam = 'condicao' | 'seboId' | 'precoMin' | 'precoMax' | 'categoriaId' | 'bookGenre'
+
+const PRODUCT_SORT_OPTIONS = [
+  { value: '', label: 'Ordenação padrão' },
+  { value: 'createdAt,desc', label: 'Mais recentes' },
+  { value: 'preco,asc', label: 'Menor preço' },
+  { value: 'preco,desc', label: 'Maior preço' },
+  { value: 'titulo,asc', label: 'Título: A–Z' },
+] as const
+const STORE_RADIUS_OPTIONS = new Set(['5', '10', '25', '50', '100'])
+function normalizeProductSort(value: string) {
+  return PRODUCT_SORT_OPTIONS.some((option) => option.value === value) ? value : ''
+}
+
+function normalizeStoreRadius(value: string) {
+  return value === '' || STORE_RADIUS_OPTIONS.has(value) ? value : '25'
+}
 
 export function BuscaPage() {
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const tab = (searchParams.get('tab') as Tab) ?? 'produtos'
-  const q = searchParams.get('q') ?? ''
+  const tab: Tab = searchParams.get('tab') === 'sebos' ? 'sebos' : 'produtos'
+  const q = (searchParams.get('q') ?? '').trim()
   const appliedCondicao = searchParams.get('condicao') ?? ''
   const appliedSeboId = searchParams.get('seboId') ?? ''
   const appliedPrecoMin = searchParams.get('precoMin') ?? ''
   const appliedPrecoMax = searchParams.get('precoMax') ?? ''
   const appliedCategoriaId = searchParams.get('categoriaId') ?? ''
   const appliedBookGenre = searchParams.get('bookGenre') ?? ''
+  const appliedSort = normalizeProductSort(searchParams.get('sort') ?? '')
   const appliedCidade = searchParams.get('cidade') ?? ''
   const appliedUf = searchParams.get('uf') ?? ''
+  const appliedRaioKm = normalizeStoreRadius(searchParams.get('raioKm') ?? '')
   const requestedPage = Number(searchParams.get('page') ?? '1')
   const currentPage = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage - 1 : 0
 
@@ -40,6 +59,8 @@ export function BuscaPage() {
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [cidade, setCidade] = useState(appliedCidade)
   const [uf, setUf] = useState(appliedUf)
+  const [raioKm, setRaioKm] = useState(appliedRaioKm || '25')
+  const [filterError, setFilterError] = useState<string | null>(null)
 
   const [proximidadeAtiva, setProximidadeAtiva] = useState(false)
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
@@ -56,6 +77,8 @@ export function BuscaPage() {
   const [totalSebos, setTotalSebos] = useState(0)
   const [totalPaginasProdutos, setTotalPaginasProdutos] = useState(0)
   const [totalPaginasSebos, setTotalPaginasSebos] = useState(0)
+  const [productRequestVersion, setProductRequestVersion] = useState(0)
+  const [storeRequestVersion, setStoreRequestVersion] = useState(0)
 
   useEffect(() => {
     // Keep the editable input aligned with browser navigation.
@@ -69,13 +92,16 @@ export function BuscaPage() {
     setBookGenre(appliedBookGenre)
     setCidade(appliedCidade)
     setUf(appliedUf)
-  }, [q, appliedCondicao, appliedSeboId, appliedPrecoMin, appliedPrecoMax, appliedCategoriaId, appliedBookGenre, appliedCidade, appliedUf])
+    setRaioKm(appliedRaioKm || '25')
+  }, [q, appliedCondicao, appliedSeboId, appliedPrecoMin, appliedPrecoMax, appliedCategoriaId, appliedBookGenre, appliedCidade, appliedUf, appliedRaioKm])
 
   useEffect(() => {
     categoriaService.listar().then((page) => setCategorias(getAllowedCategories(page.content))).catch(() => setCategorias([]))
   }, [])
 
   useEffect(() => {
+    if (tab !== 'produtos') return
+    let current = true
     const params = {
       q: q || undefined,
       seboId: appliedSeboId ? Number(appliedSeboId) : undefined,
@@ -84,6 +110,7 @@ export function BuscaPage() {
       precoMax: appliedPrecoMax ? Number(appliedPrecoMax) : undefined,
       categoriaId: appliedCategoriaId ? Number(appliedCategoriaId) : undefined,
       bookGenre: appliedBookGenre ? (appliedBookGenre as BookGenre) : undefined,
+      sort: appliedSort || undefined,
     }
 
     const request = currentPage === 0
@@ -91,27 +118,33 @@ export function BuscaPage() {
       : buscaService.buscarProdutos(params, currentPage)
     request
       .then((page) => {
+        if (!current) return
         setErrorProdutos(null)
         setProdutos(page.content)
         setTotalProdutos(page.totalElements)
         setTotalPaginasProdutos(page.totalPages)
       })
       .catch((err) => {
-        setErrorProdutos(extractErrorMessage(err, 'Nao foi possivel carregar os produtos.'))
+        if (!current) return
+        setErrorProdutos(extractErrorMessage(err, 'Não foi possível carregar os produtos. Ajuste a busca ou tente novamente.'))
         setProdutos([])
         setTotalProdutos(0)
         setTotalPaginasProdutos(0)
       })
-      .finally(() => setLoadingProdutos(false))
-  }, [q, appliedSeboId, appliedCondicao, appliedPrecoMin, appliedPrecoMax, appliedCategoriaId, appliedBookGenre, currentPage])
+      .finally(() => { if (current) setLoadingProdutos(false) })
+    return () => { current = false }
+  }, [tab, q, appliedSeboId, appliedCondicao, appliedPrecoMin, appliedPrecoMax, appliedCategoriaId, appliedBookGenre, appliedSort, currentPage, productRequestVersion])
 
   useEffect(() => {
+    if (tab !== 'sebos') return
+    let current = true
     const params = {
       q: q || undefined,
       cidade: appliedCidade || undefined,
       uf: appliedUf || undefined,
       lat: proximidadeAtiva && coords ? coords.lat : undefined,
       lng: proximidadeAtiva && coords ? coords.lng : undefined,
+      raioKm: proximidadeAtiva && coords && appliedRaioKm ? Number(appliedRaioKm) : undefined,
     }
 
     const request = currentPage === 0
@@ -119,23 +152,26 @@ export function BuscaPage() {
       : buscaService.buscarSebos(params, currentPage)
     request
       .then((page) => {
+        if (!current) return
         setErrorSebos(null)
         setSebos(page.content)
         setTotalSebos(page.totalElements)
         setTotalPaginasSebos(page.totalPages)
       })
       .catch((err) => {
-        setErrorSebos(extractErrorMessage(err, 'Nao foi possivel carregar os sebos.'))
+        if (!current) return
+        setErrorSebos(extractErrorMessage(err, 'Não foi possível carregar os sebos. Ajuste a busca ou tente novamente.'))
         setSebos([])
         setTotalSebos(0)
         setTotalPaginasSebos(0)
       })
-      .finally(() => setLoadingSebos(false))
-  }, [q, appliedCidade, appliedUf, currentPage, proximidadeAtiva, coords])
+      .finally(() => { if (current) setLoadingSebos(false) })
+    return () => { current = false }
+  }, [tab, q, appliedCidade, appliedUf, appliedRaioKm, currentPage, proximidadeAtiva, coords, storeRequestVersion])
 
   function ativarProximidade() {
     if (!('geolocation' in navigator)) {
-      setGeoError('Seu navegador nao suporta geolocalizacao.')
+      setGeoError('Seu navegador não oferece localização. Use os filtros para buscar por região.')
       return
     }
     setGeoLoading(true)
@@ -148,11 +184,17 @@ export function BuscaPage() {
         setLoadingSebos(true)
         setErrorSebos(null)
         const next = new URLSearchParams(searchParams)
+        next.set('raioKm', normalizeStoreRadius(raioKm) || '25')
         next.delete('page')
         setSearchParams(next)
       },
-      () => {
-        setGeoError('Nao foi possivel obter sua localizacao. Verifique a permissao do navegador.')
+      (error) => {
+        const message = error.code === error.PERMISSION_DENIED
+          ? 'A localização foi bloqueada. Autorize o acesso no navegador ou busque por cidade e UF.'
+          : error.code === error.TIMEOUT
+            ? 'A localização demorou para responder. Tente novamente ou busque por cidade e UF.'
+            : 'Sua localização não está disponível agora. Tente novamente ou busque por cidade e UF.'
+        setGeoError(message)
         setGeoLoading(false)
       },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 5 * 60 * 1000 },
@@ -165,6 +207,7 @@ export function BuscaPage() {
     setLoadingSebos(true)
     setErrorSebos(null)
     const next = new URLSearchParams(searchParams)
+    next.delete('raioKm')
     next.delete('page')
     setSearchParams(next)
   }
@@ -196,11 +239,46 @@ export function BuscaPage() {
     const next = new URLSearchParams(searchParams)
     next.set('tab', t)
     next.delete('page')
+    if (t === 'produtos') setLoadingProdutos(true)
+    else setLoadingSebos(true)
+    setSearchParams(next)
+  }
+
+  function tentarNovamente() {
+    if (tab === 'produtos') {
+      setLoadingProdutos(true)
+      setErrorProdutos(null)
+      setProductRequestVersion((version) => version + 1)
+    } else {
+      setLoadingSebos(true)
+      setErrorSebos(null)
+      setStoreRequestVersion((version) => version + 1)
+    }
+  }
+
+  function limparTermo() {
+    const next = new URLSearchParams(searchParams)
+    next.delete('q')
+    next.delete('page')
+    setInputQ('')
+    if (tab === 'produtos') setLoadingProdutos(true)
+    else setLoadingSebos(true)
     setSearchParams(next)
   }
 
   function aplicarFiltros(e: React.FormEvent) {
     e.preventDefault()
+    const min = precoMin === '' ? null : Number(precoMin)
+    const max = precoMax === '' ? null : Number(precoMax)
+    if (tab === 'produtos' && ((min !== null && min < 0) || (max !== null && max < 0))) {
+      setFilterError('Informe preços iguais ou maiores que zero.')
+      return
+    }
+    if (tab === 'produtos' && min !== null && max !== null && min > max) {
+      setFilterError('O preço mínimo não pode ser maior que o preço máximo.')
+      return
+    }
+    setFilterError(null)
     const next = new URLSearchParams(searchParams)
     next.delete('page')
     if (tab === 'produtos') {
@@ -224,6 +302,8 @@ export function BuscaPage() {
       else next.delete('cidade')
       if (uf.trim()) next.set('uf', uf.trim().toUpperCase())
       else next.delete('uf')
+      if (proximidadeAtiva && raioKm) next.set('raioKm', raioKm)
+      else next.delete('raioKm')
       if (next.toString() === searchParams.toString()) return
       setLoadingSebos(true)
       setErrorSebos(null)
@@ -245,11 +325,57 @@ export function BuscaPage() {
     setBookGenre('')
     setCidade('')
     setUf('')
+    setRaioKm('25')
+    setProximidadeAtiva(false)
+    setCoords(null)
+    setGeoError(null)
+    setFilterError(null)
     setLoadingProdutos(true)
     setLoadingSebos(true)
     setErrorProdutos(null)
     setErrorSebos(null)
   }
+
+  function removerFiltro(param: ProductFilterParam) {
+    const next = new URLSearchParams(searchParams)
+    next.delete(param)
+    if (param === 'categoriaId') next.delete('bookGenre')
+    next.delete('page')
+    setFilterError(null)
+    setLoadingProdutos(true)
+    setErrorProdutos(null)
+    setSearchParams(next)
+  }
+
+  function alterarOrdenacao(sort: string) {
+    const next = new URLSearchParams(searchParams)
+    const normalizedSort = normalizeProductSort(sort)
+    if (normalizedSort) next.set('sort', normalizedSort)
+    else next.delete('sort')
+    next.delete('page')
+    setLoadingProdutos(true)
+    setErrorProdutos(null)
+    setSearchParams(next)
+  }
+
+  const activeProductFilters = [
+    appliedCategoriaId ? {
+      param: 'categoriaId',
+      label: `Categoria: ${categorias.find((item) => item.id === Number(appliedCategoriaId))?.nome ?? appliedCategoriaId}`,
+    } : null,
+    appliedBookGenre ? {
+      param: 'bookGenre',
+      label: `Gênero: ${bookGenreLabel(appliedBookGenre as BookGenre) ?? appliedBookGenre}`,
+    } : null,
+    appliedCondicao ? {
+      param: 'condicao',
+      label: `Condição: ${appliedCondicao === CondicaoProduto.NOVO ? 'Novo' : appliedCondicao === CondicaoProduto.SEMINOVO ? 'Seminovo' : 'Usado'}`,
+    } : null,
+    appliedSeboId ? { param: 'seboId', label: `Sebo: ${appliedSeboId}` } : null,
+    appliedPrecoMin ? { param: 'precoMin', label: `A partir de R$ ${Number(appliedPrecoMin).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` } : null,
+    appliedPrecoMax ? { param: 'precoMax', label: `Até R$ ${Number(appliedPrecoMax).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` } : null,
+  ].filter((filter): filter is { param: ProductFilterParam; label: string } => filter !== null)
+  const hasStoreFilters = Boolean(appliedCidade || appliedUf || proximidadeAtiva)
 
   function mudarPagina(page: number) {
     const next = new URLSearchParams(searchParams)
@@ -268,19 +394,19 @@ export function BuscaPage() {
           <input
             type="search"
             aria-label="Pesquisar produtos ou sebos"
-            placeholder="O que você está procurando?"
+            placeholder={tab === 'produtos' ? 'Busque por título ou autor' : 'Busque pelo nome do sebo'}
             value={inputQ}
             onChange={(e) => setInputQ(e.target.value)}
           />
           <button type="submit">Buscar</button>
         </form>
 
-        {q ? <p className="busca-termo">Resultados para: <strong>"{q}"</strong></p> : null}
+        {q ? <p className="busca-termo">Resultados para: <strong>“{q}”</strong></p> : null}
 
         <div className="busca-layout">
           <aside className="busca-filtros">
             <form onSubmit={aplicarFiltros}>
-              <h3>Filtros</h3>
+              <h3>Filtrar resultados</h3>
               {tab === 'produtos' ? (
                 <>
                   <label className="busca-filtro-label">
@@ -361,8 +487,21 @@ export function BuscaPage() {
                         📍 Ordenado por proximidade — cancelar
                       </button>
                     )}
-                    {geoError ? <p className="busca-proximidade-erro">{geoError}</p> : null}
+                    {geoError ? <p className="busca-proximidade-erro" role="alert">{geoError}</p> : null}
                   </div>
+                  {proximidadeAtiva ? (
+                    <label className="busca-filtro-label">
+                      Distância máxima
+                      <select value={raioKm} onChange={(e) => setRaioKm(e.target.value)}>
+                        <option value="">Sem limite</option>
+                        <option value="5">Até 5 km</option>
+                        <option value="10">Até 10 km</option>
+                        <option value="25">Até 25 km</option>
+                        <option value="50">Até 50 km</option>
+                        <option value="100">Até 100 km</option>
+                      </select>
+                    </label>
+                  ) : null}
                   <label className="busca-filtro-label">
                     Cidade
                     <input value={cidade} onChange={(e) => setCidade(e.target.value)} placeholder="ex: Fortaleza" />
@@ -373,9 +512,10 @@ export function BuscaPage() {
                   </label>
                 </>
               )}
-              <button type="submit" className="busca-filtro-btn">Aplicar</button>
+              {filterError ? <p className="busca-filtro-erro" role="alert">{filterError}</p> : null}
+              <button type="submit" className="busca-filtro-btn">Aplicar filtros</button>
               <button type="button" className="busca-filtro-btn busca-filtro-btn-ghost" onClick={limparFiltros}>
-                Limpar
+                Limpar filtros
               </button>
             </form>
           </aside>
@@ -403,8 +543,43 @@ export function BuscaPage() {
             </div>
 
             {tab === 'produtos' ? (
+              <>
+                <div className="busca-resultados-toolbar">
+                  <p role="status" aria-live="polite">{loadingProdutos ? 'Buscando produtos...' : `${totalProdutos} ${totalProdutos === 1 ? 'produto encontrado' : 'produtos encontrados'}`}</p>
+                  <label>
+                    Ordenar por
+                    <select value={appliedSort} onChange={(event) => alterarOrdenacao(event.target.value)}>
+                      {PRODUCT_SORT_OPTIONS.map((option) => (
+                        <option key={option.value || 'relevancia'} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                {activeProductFilters.length > 0 ? (
+                  <div className="busca-filtros-ativos" aria-label="Filtros ativos">
+                    {activeProductFilters.map((filter) => (
+                      <button
+                        key={filter.param}
+                        type="button"
+                        onClick={() => removerFiltro(filter.param)}
+                        aria-label={`Remover filtro ${filter.label}`}
+                      >
+                        {filter.label} <span aria-hidden="true">×</span>
+                      </button>
+                    ))}
+                    <button type="button" className="busca-limpar-ativos" onClick={limparFiltros}>Limpar todos</button>
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+
+            {tab === 'produtos' ? (
               errorProdutos ? (
-                <div className="flash error" role="alert">{errorProdutos}</div>
+                <div className="busca-feedback busca-feedback-error" role="alert">
+                  <strong>Os produtos não foram carregados</strong>
+                  <p>{errorProdutos}</p>
+                  <button type="button" onClick={tentarNovamente}>Tentar novamente</button>
+                </div>
               ) : loadingProdutos ? (
                 <div className="busca-grid">
                   {Array.from({ length: 8 }).map((_, i) => (
@@ -412,7 +587,12 @@ export function BuscaPage() {
                   ))}
                 </div>
               ) : produtos.length === 0 ? (
-                <p className="busca-empty">Nenhum produto encontrado.</p>
+                <div className="busca-feedback">
+                  <strong>Nenhum produto encontrado.</strong>
+                  <p>{q || activeProductFilters.length > 0 ? 'Tente usar outro termo ou remover alguns filtros.' : 'Ainda não há produtos disponíveis para exibir.'}</p>
+                  {activeProductFilters.length > 0 ? <button type="button" onClick={limparFiltros}>Remover filtros</button> : null}
+                  {q ? <button type="button" className="busca-feedback-secondary" onClick={limparTermo}>Limpar busca</button> : null}
+                </div>
               ) : (
                 <div className="busca-grid">
                   {produtos.map((p) => (
@@ -420,33 +600,51 @@ export function BuscaPage() {
                   ))}
                 </div>
               )
-            ) : errorSebos ? (
-              <div className="flash error" role="alert">{errorSebos}</div>
-            ) : loadingSebos ? (
-              <p className="busca-empty">Carregando sebos...</p>
-            ) : sebos.length === 0 ? (
-              <p className="busca-empty">Nenhum sebo encontrado.</p>
             ) : (
-              <div className="busca-sebos-lista">
-                {sebos.map((s) => (
-                  <Link key={s.id} className="busca-sebo-card" to={`/vendedor/${s.id}`}>
-                    {s.fotoUrl ? (
-                      <img src={s.fotoUrl} alt={s.nome} className="busca-sebo-foto" />
-                    ) : (
-                      <div className="busca-sebo-foto busca-sebo-foto-placeholder">S</div>
-                    )}
-                    <div className="busca-sebo-info">
-                      <h3>{s.nome}</h3>
-                      {s.descricao ? <p className="busca-sebo-desc">{s.descricao}</p> : null}
-                      {s.cidade || s.uf ? <p className="busca-sebo-tel">{[s.cidade, s.uf].filter(Boolean).join(' - ')}</p> : null}
-                      {s.telefone ? <p className="busca-sebo-tel">{s.telefone}</p> : null}
-                      {proximidadeAtiva && s.distanciaKm != null ? (
-                        <p className="busca-sebo-distancia">📍 {formatarDistancia(s.distanciaKm)} de você</p>
-                      ) : null}
-                    </div>
-                  </Link>
-                ))}
-              </div>
+              <>
+                <div className="busca-resultados-toolbar busca-resultados-toolbar-sebos">
+                  <p role="status" aria-live="polite">{loadingSebos ? 'Buscando sebos...' : `${totalSebos} ${totalSebos === 1 ? 'sebo encontrado' : 'sebos encontrados'}`}</p>
+                </div>
+                {errorSebos ? (
+                  <div className="busca-feedback busca-feedback-error" role="alert">
+                    <strong>Os sebos não foram carregados</strong>
+                    <p>{errorSebos}</p>
+                    <button type="button" onClick={tentarNovamente}>Tentar novamente</button>
+                  </div>
+                ) : loadingSebos ? (
+                  <div className="busca-sebos-lista" aria-hidden="true">
+                    {Array.from({ length: 4 }).map((_, index) => <div key={index} className="busca-sebo-card busca-sebo-skeleton" />)}
+                  </div>
+                ) : sebos.length === 0 ? (
+                  <div className="busca-feedback">
+                    <strong>Nenhum sebo encontrado.</strong>
+                    <p>{q || hasStoreFilters ? 'Tente usar outro termo ou ampliar a região da busca.' : 'Ainda não há sebos disponíveis para exibir.'}</p>
+                    {hasStoreFilters ? <button type="button" onClick={limparFiltros}>Remover filtros</button> : null}
+                    {q ? <button type="button" className="busca-feedback-secondary" onClick={limparTermo}>Limpar busca</button> : null}
+                  </div>
+                ) : (
+                  <div className="busca-sebos-lista">
+                    {sebos.map((s) => (
+                      <Link key={s.id} className="busca-sebo-card" to={`/vendedor/${s.id}`}>
+                        {s.fotoUrl ? (
+                          <img src={s.fotoUrl} alt={s.nome} className="busca-sebo-foto" />
+                        ) : (
+                          <div className="busca-sebo-foto busca-sebo-foto-placeholder" aria-hidden="true">S</div>
+                        )}
+                        <div className="busca-sebo-info">
+                          <h3>{s.nome}</h3>
+                          {s.descricao ? <p className="busca-sebo-desc">{s.descricao}</p> : null}
+                          {s.cidade || s.uf ? <p className="busca-sebo-tel">{[s.cidade, s.uf].filter(Boolean).join(' - ')}</p> : null}
+                          {s.telefone ? <p className="busca-sebo-tel">{s.telefone}</p> : null}
+                          {proximidadeAtiva && s.distanciaKm != null ? (
+                            <p className="busca-sebo-distancia">📍 {formatarDistancia(s.distanciaKm)} de você</p>
+                          ) : null}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
             {tab === 'produtos' && !loadingProdutos && !errorProdutos ? (
               <Pagination

@@ -17,13 +17,14 @@ export function RecomendacoesPage() {
   const [clearing, setClearing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let active = true
     recomendacaoService.listar(page, 20)
       .then((result) => {
         if (!active) return
-        setProducts(result.content)
+        setProducts(Array.from(new Map(result.content.map((product) => [product.id, product])).values()))
         setTotalPages(result.totalPages)
         setError(null)
       })
@@ -31,27 +32,27 @@ export function RecomendacoesPage() {
         if (!active) return
         setProducts([])
         setTotalPages(0)
-        setError(extractErrorMessage(err, 'Não foi possível carregar suas recomendações.'))
+        setError(extractErrorMessage(err, 'Não foi possível carregar suas recomendações. Atualize a página e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
       })
     return () => { active = false }
-  }, [page])
+  }, [page, reloadKey])
 
   async function clearHistory() {
-    if (!window.confirm('Deseja limpar os dados usados para personalizar suas recomendações?')) return
+    if (!window.confirm('Deseja limpar o histórico usado nas suas recomendações? As sugestões atuais serão removidas e esta ação não poderá ser desfeita.')) return
     setClearing(true)
     setError(null)
     setSuccess(null)
     try {
-      const response = await recomendacaoService.limparHistorico()
-      setProducts([])
-      setTotalPages(0)
+      await recomendacaoService.limparHistorico()
       setPage(0)
-      setSuccess(response.mensagem)
+      setSuccess('Histórico de recomendações limpo com sucesso.')
+      setLoading(true)
+      setReloadKey((key) => key + 1)
     } catch (err) {
-      setError(extractErrorMessage(err, 'Não foi possível limpar o histórico de recomendações.'))
+      setError(extractErrorMessage(err, 'Não foi possível limpar o histórico de recomendações. Tente novamente.'))
     } finally {
       setClearing(false)
     }
@@ -60,6 +61,12 @@ export function RecomendacoesPage() {
   function changePage(nextPage: number) {
     setLoading(true)
     setPage(nextPage)
+  }
+
+  function retry() {
+    setError(null)
+    setLoading(true)
+    setReloadKey((key) => key + 1)
   }
 
   return (
@@ -73,11 +80,12 @@ export function RecomendacoesPage() {
       {loading ? (
         <StoreStatus title="Carregando recomendações" description="Preparando sugestões para você." busy />
       ) : error ? (
-        <StoreStatus title="Erro ao carregar recomendações" description={error} tone="error" />
+        <StoreStatus title="Suas recomendações não foram carregadas" description={error} tone="error"
+          action={<Button type="button" onClick={retry}>Tentar novamente</Button>} />
       ) : products.length === 0 ? (
         <StoreStatus
-          title="Ainda não há recomendações"
-          description="Pesquise, visualize ou favorite produtos para receber sugestões personalizadas."
+          title="Nenhum produto disponível para recomendar"
+          description="Novos itens aparecerão aqui quando estiverem disponíveis no acervo."
           action={<Link to="/busca">Explorar o acervo</Link>}
         />
       ) : (

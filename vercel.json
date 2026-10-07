@@ -1,5 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "**": false,
+      "development": true,
+      "sprint*/**": true,
+      "feature/**": true,
+      "fix/**": true,
+      "hotfix/**": true
+    }
+  },
   "rewrites": [
     {
       "source": "/api/v1/uploads/:path*",

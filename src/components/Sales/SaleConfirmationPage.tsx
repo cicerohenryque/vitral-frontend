@@ -26,7 +26,7 @@ export function SaleConfirmationPage() {
         setPedido(page.content.find((item) => item.id === numericOrderId) ?? null)
       })
       .catch((err) => {
-        if (active) setError(extractErrorMessage(err, 'Nao foi possivel carregar o pedido.'))
+        if (active) setError(extractErrorMessage(err, 'Não foi possível carregar o pedido. Atualize a página e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -47,7 +47,7 @@ export function SaleConfirmationPage() {
       setPedido(atualizado)
       setSuccess(status === StatusPedido.CONFIRMADO ? 'Pedido confirmado com sucesso.' : 'Pedido cancelado com sucesso.')
     } catch (err) {
-      setError(extractErrorMessage(err, 'Nao foi possivel atualizar o pedido.'))
+      setError(extractErrorMessage(err, 'Não foi possível atualizar o pedido. Tente novamente.'))
     } finally {
       setBusy(null)
     }
@@ -71,7 +71,7 @@ export function SaleConfirmationPage() {
       {loading ? (
         <StoreStatus title="Carregando pedido" description="Buscando os dados da venda." busy />
       ) : error && !pedido ? (
-        <StoreStatus title="Erro ao carregar pedido" description={error} tone="error" />
+        <StoreStatus title="O pedido não foi carregado" description={error} tone="error" />
       ) : !pedido ? (
         <StoreStatus
           title="Pedido não encontrado"

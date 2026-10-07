@@ -36,7 +36,7 @@ export function CheckoutPage() {
         setError(null)
       })
       .catch((err) => {
-        if (active) setError(extractErrorMessage(err, 'Nao foi possivel carregar sua cesta.'))
+        if (active) setError(extractErrorMessage(err, 'Não foi possível carregar sua cesta. Atualize a página e tente novamente.'))
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -61,7 +61,7 @@ export function CheckoutPage() {
     } catch (err) {
       const incompleteProfile = extractProfileIncompleteError(err)
       if (incompleteProfile) setProfileIssue(incompleteProfile)
-      else setError(extractErrorMessage(err, 'Nao foi possivel confirmar o pedido.'))
+      else setError(extractErrorMessage(err, 'Não foi possível confirmar o pedido. Confira os dados e tente novamente.'))
     } finally {
       setBusy(false)
     }
@@ -80,7 +80,7 @@ export function CheckoutPage() {
         />
       ) : error && items.length === 0 ? (
         <StoreStatus
-          title="Erro ao carregar carrinho"
+          title="Seu carrinho não foi carregado"
           description={error}
           tone="error"
           action={<Link to="/carrinho">Voltar para o carrinho</Link>}
@@ -156,7 +156,7 @@ export function CheckoutPage() {
                 </Link>
                 <div className="store-list-copy">
                   <h2>{item.titulo}</h2>
-                  <p>{item.autor ?? 'Autor nao informado'} · {item.condicao} · Qtd. {item.quantidade}</p>
+                  <p>{item.autor ?? 'Autor não informado'} · {item.condicao} · Qtd. {item.quantidade}</p>
                   <strong className="store-list-price">R$ {Number(item.subtotal).toFixed(2)}</strong>
                 </div>
               </article>
