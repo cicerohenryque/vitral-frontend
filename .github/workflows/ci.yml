@@ -13,6 +13,8 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+      - name: Use npm version from packageManager
+        run: npm install -g "$(node -p "require('./package.json').packageManager")"
       - run: npm ci
       - run: npm test -- --run
       - run: npm run lint
