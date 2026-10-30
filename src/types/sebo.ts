@@ -22,8 +22,13 @@ export type ConsultaCnpjResponse = {
   mensagem: string | null
 }
 
+export const TipoCatalogo = { SEBO: 'SEBO', VENDEDOR_INDEPENDENTE: 'VENDEDOR_INDEPENDENTE' } as const
+export type TipoCatalogo = typeof TipoCatalogo[keyof typeof TipoCatalogo]
+
 export type SeboRequest = {
-  cnpj: string
+  tipoCatalogo?: TipoCatalogo
+  cnpj?: string
+  cpf?: string
   descricao?: string
   telefone?: string
   fotoUrl?: string
@@ -58,6 +63,7 @@ export type Sebo = {
   dataCriacao?: string | null
   ultimaAtividade?: string | null
   distanciaKm?: number | null
+  tipoCatalogo?: TipoCatalogo
 }
 
 export const TipoDocumentoSebo = {

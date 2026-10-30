@@ -541,7 +541,7 @@ describe('cobertura de branches restantes', () => {
     useAuthStore.setState({ token: null, account: null, seboId: null })
     renderPage(<MeuSeboPage />)
 
-    expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Cadastrar perfil de venda')).toBeInTheDocument()
   })
 
   it('carrega perfil do sebo com falha de busca por conta e mostra o formulário de cadastro', async () => {
@@ -549,7 +549,7 @@ describe('cobertura de branches restantes', () => {
     vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('erro ao carregar'))
 
     renderPage(<MeuSeboPage />)
-    expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Cadastrar perfil de venda')).toBeInTheDocument()
     expect(seboService.buscarMeu).toHaveBeenCalled()
   })
 
@@ -629,14 +629,14 @@ describe('cobertura de branches restantes', () => {
     vi.spyOn(seboService, 'atualizarMeu').mockResolvedValue({ ...existingSebo, descricao: 'Novo nome' })
 
     renderPage(<MeuSeboPage />)
-    expect(await screen.findByText('Editar perfil do sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Editar perfil do catálogo')).toBeInTheDocument()
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
 
     await userEvent.clear(screen.getByLabelText('Descrição'))
     await userEvent.type(screen.getByLabelText('Descrição'), 'Novo nome')
     await userEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
 
-    expect(await screen.findByText('Dados do sebo atualizados com sucesso.')).toBeInTheDocument()
+    expect(await screen.findByText('Dados do catálogo atualizados com sucesso.')).toBeInTheDocument()
     expect(seboService.atualizarMeu).toHaveBeenCalledWith(expect.objectContaining({ descricao: 'Novo nome' }))
   })
 

@@ -240,7 +240,7 @@ export function MeusProdutosPage() {
   }
 
   if (verification && verification !== StatusVerificacao.VERIFICADO) {
-    return <div className="page"><main className="container form-page"><StoreStatus title="Sebo ainda não verificado" description="Cadastro de produtos e vendas serão liberados após a aprovação dos documentos." tone={verification === StatusVerificacao.REJEITADO ? 'error' : 'neutral'} action={<Link to="/painel/sebo/documentos">Gerenciar documentos</Link>} /></main></div>
+    return <div className="page"><main className="container form-page"><StoreStatus title="Perfil de venda ainda não verificado" description="Cadastro de produtos e vendas serão liberados após a aprovação dos documentos." tone={verification === StatusVerificacao.REJEITADO ? 'error' : 'neutral'} action={<Link to="/painel/sebo/documentos">Gerenciar documentos</Link>} /></main></div>
   }
 
   return (

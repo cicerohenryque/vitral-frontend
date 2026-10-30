@@ -112,7 +112,7 @@ export function GlobalNavigation() {
             <>
               <Link className="global-action" to={isAdmin ? '/admin' : isSebo ? '/painel/sebo' : '/painel/perfil'}>
                 <UserIcon size={22} />
-                <span>{isAdmin ? 'Administração' : isSebo ? 'Meu Sebo' : 'Meu Perfil'}</span>
+                <span>{isAdmin ? 'Administração' : isSebo ? 'Meu catálogo' : 'Meu Perfil'}</span>
               </Link>
               <button type="button" className="global-action" onClick={handleLogout}>Sair</button>
             </>

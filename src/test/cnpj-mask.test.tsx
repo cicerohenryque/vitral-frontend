@@ -30,7 +30,7 @@ describe('mascara de CNPJ no cadastro do sebo', () => {
     vi.spyOn(pedidoService, 'buscarFaturamentoMensal').mockResolvedValue([])
 
     render(<MemoryRouter><MeuSeboPage /></MemoryRouter>)
-    expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Cadastrar perfil de venda')).toBeInTheDocument()
 
     await userEvent.type(screen.getByLabelText('CNPJ'), '11222333000181')
 

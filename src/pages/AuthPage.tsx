@@ -205,7 +205,7 @@ export function AuthPage() {
                   checked={regType === AccountType.SEBO}
                   onChange={() => setRegType(AccountType.SEBO)}
                 />
-                <span>Sou um sebo</span>
+                <span>Quero vender no Vitral</span>
               </label>
             </div>
             <Button type="submit" disabled={regBusy}>

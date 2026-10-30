@@ -194,7 +194,7 @@ describe('componentes pequenos e interações', () => {
         <SideMenu onClose={close} />
       </MemoryRouter>,
     )
-    expect(screen.getByRole('link', { name: 'Meu Sebo' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Meu catálogo' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Carrinho' })).not.toBeInTheDocument()
   })
 

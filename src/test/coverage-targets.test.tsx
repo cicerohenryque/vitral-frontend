@@ -198,7 +198,7 @@ describe('cobertura focada no painel admin de verificação', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Aprovar' }))
     expect(review).toHaveBeenCalledWith(3, StatusVerificacao.VERIFICADO, undefined)
-    expect(await screen.findByRole('status')).toHaveTextContent('Sebo aprovado com sucesso.')
+    expect(await screen.findByRole('status')).toHaveTextContent('Vendedor aprovado com sucesso.')
   })
 
   it('exige motivo na rejeição e envia motivo no body via service', async () => {
@@ -210,7 +210,7 @@ describe('cobertura focada no painel admin de verificação', () => {
     renderPage(<AdminSeboVerificationPage />)
 
     await userEvent.click(await screen.findByRole('button', { name: 'Rejeitar' }))
-    expect(screen.getByRole('alert')).toHaveTextContent('Informe o motivo da rejeição para orientar o responsável pelo sebo.')
+    expect(screen.getByRole('alert')).toHaveTextContent('Informe o motivo da rejeição para orientar o responsável pelo catálogo.')
     expect(review).not.toHaveBeenCalled()
 
     await userEvent.click(screen.getByRole('button', { name: 'Rejeitar' }))
@@ -220,7 +220,7 @@ describe('cobertura focada no painel admin de verificação', () => {
   it('mostra estado vazio e erros do painel admin', async () => {
     vi.spyOn(seboService, 'listarPendentes').mockResolvedValueOnce(page([])).mockRejectedValueOnce(new Error('offline'))
     const first = renderPage(<AdminSeboVerificationPage />)
-    expect(await screen.findByText('Nenhum sebo pendente')).toBeInTheDocument()
+    expect(await screen.findByText('Nenhum vendedor pendente')).toBeInTheDocument()
     first.unmount()
 
     renderPage(<AdminSeboVerificationPage />)
@@ -319,7 +319,7 @@ describe('cobertura focada em minhas ofertas', () => {
 
     renderPage(<MinhasOfertasPage />)
 
-    expect(await screen.findByText('Sebo ainda não verificado')).toBeInTheDocument()
+    expect(await screen.findByText('Perfil de venda ainda não verificado')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Gerenciar documentos' })).toHaveAttribute('href', '/painel/sebo/documentos')
   })
 

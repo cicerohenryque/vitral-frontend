@@ -65,7 +65,7 @@ export function SeboDocumentsPage() {
   }
 
   return (
-    <StorePage title="Documentos do sebo" subtitle="Envie os documentos necessários para a verificação.">
+    <StorePage title="Documentos de verificação" subtitle="Envie os documentos necessários para validar seu perfil de venda.">
       <p className="flash">O envio de um novo documento retorna a verificação do sebo para PENDENTE.</p>
       {error ? <div className="flash error" role="alert">{error}</div> : null}
       {success ? <div className="flash success" role="status">{success}</div> : null}

@@ -9,6 +9,7 @@ import { extractErrorMessage } from '../../services/api'
 import type { Produto } from '../../types/produto'
 import type { Sebo } from '../../types/sebo'
 import { StatusVerificacao } from '../../types/sebo'
+import { TipoCatalogo } from '../../types/sebo'
 import { useAuth } from '../../hooks/useAuth'
 import './SellerPage.css'
 
@@ -54,10 +55,10 @@ export function SellerPage() {
 
   if (invalidSellerId) {
     return (
-      <StorePage title="Sebo indisponível" subtitle="O identificador informado não é válido.">
+      <StorePage title="Catálogo indisponível" subtitle="O identificador informado não é válido.">
         <StoreStatus
-          title="ID de sebo invalido"
-          description="Confira o link acessado ou procure o sebo novamente pela busca."
+          title="Identificador de catálogo inválido"
+          description="Confira o link acessado ou procure o vendedor novamente pela busca."
           tone="error"
           action={<Link to="/busca?tab=sebos">Buscar sebos</Link>}
         />
@@ -66,17 +67,17 @@ export function SellerPage() {
   }
 
   return (
-    <StorePage title="Perfil do vendedor" subtitle="Conheça o sebo e os itens disponíveis.">
+    <StorePage title="Perfil do vendedor" subtitle="Conheça o catálogo e os itens disponíveis.">
       {loading ? (
         <StoreStatus
-          title="Carregando sebo"
+          title="Carregando vendedor"
           description="Buscando o perfil público e os produtos disponíveis."
           busy
         />
       ) : null}
       {!loading && error ? (
         <StoreStatus
-          title="Este sebo não foi carregado"
+          title="Este vendedor não foi carregado"
           description={error}
           tone="error"
           action={<Link to="/busca?tab=sebos">Buscar sebos</Link>}
@@ -90,11 +91,11 @@ export function SellerPage() {
             </div>
             <div className="seller-copy">
               <div className="seller-status-row">
-                <span className="seller-status">{seller.statusVerificacao === StatusVerificacao.VERIFICADO ? '✓ Sebo verificado' : 'Sebo cadastrado'}</span>
+                <span className="seller-status">{seller.statusVerificacao === StatusVerificacao.VERIFICADO ? `✓ ${seller.tipoCatalogo === TipoCatalogo.VENDEDOR_INDEPENDENTE ? 'Vendedor independente' : 'Sebo'} verificado` : 'Vendedor cadastrado'}</span>
                 <span className="seller-catalog-count">{totalProducts} {totalProducts === 1 ? 'item disponível' : 'itens disponíveis'}</span>
               </div>
               <h2>{seller.nome}</h2>
-              {seller.descricao ? <p>{seller.descricao}</p> : <p className="seller-no-description">Este sebo ainda não adicionou uma descrição pública.</p>}
+              {seller.descricao ? <p>{seller.descricao}</p> : <p className="seller-no-description">Este vendedor ainda não adicionou uma descrição pública.</p>}
             </div>
             <div className="seller-actions">
               <Link to={`/busca?tab=produtos&seboId=${seller.id}`}>Ver produtos</Link>
@@ -115,7 +116,7 @@ export function SellerPage() {
             {products.length === 0 ? (
               <StoreStatus
                 title="Nenhum produto cadastrado"
-                description="Este sebo ainda não possui produtos publicados."
+                description="Este vendedor ainda não possui produtos publicados."
                 action={<Link to="/busca">Voltar para busca</Link>}
               />
             ) : (

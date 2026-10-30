@@ -4,7 +4,7 @@ import { Button } from '../components/ui/Button'
 import { Pagination } from '../components/ui/Pagination'
 import { extractErrorMessage } from '../services/api'
 import { seboService } from '../services/seboService'
-import { StatusVerificacao, type AuditoriaSebo, type DocumentoSebo, type Sebo } from '../types/sebo'
+import { StatusVerificacao, TipoCatalogo, type AuditoriaSebo, type DocumentoSebo, type Sebo } from '../types/sebo'
 import { documentLabels, formatBytes } from '../utils/documentSebo'
 import { abrirDocumentoAutenticado } from '../utils/documentoAutenticado'
 import './StockMovementsPage.css'
@@ -54,19 +54,19 @@ export function AdminSeboVerificationPage() {
 
   async function review(item: Sebo, status: StatusVerificacao) {
     if (!confirm(status === StatusVerificacao.VERIFICADO
-      ? `Deseja aprovar o sebo "${item.nome}"? O cadastro será liberado para publicar produtos e ofertas.`
-      : `Deseja rejeitar o sebo "${item.nome}"? O cadastro permanecerá bloqueado até o envio de novos documentos.`)) return
+      ? `Deseja aprovar o vendedor "${item.nome}"? O catálogo será liberado para publicar produtos e ofertas.`
+      : `Deseja rejeitar o vendedor "${item.nome}"? O cadastro permanecerá bloqueado até o envio de novos documentos.`)) return
     let motivo: string | undefined
     if (status === StatusVerificacao.REJEITADO) {
       motivo = prompt('Informe o motivo obrigatório da rejeição:')?.trim()
       if (!motivo) {
-        setError('Informe o motivo da rejeição para orientar o responsável pelo sebo.')
+        setError('Informe o motivo da rejeição para orientar o responsável pelo catálogo.')
         return
       }
     }
     try {
       await seboService.atualizarVerificacao(item.id, status, motivo)
-      setSuccess(`Sebo ${status === StatusVerificacao.VERIFICADO ? 'aprovado' : 'rejeitado'} com sucesso.`)
+      setSuccess(`Vendedor ${status === StatusVerificacao.VERIFICADO ? 'aprovado' : 'rejeitado'} com sucesso.`)
       load()
     } catch (e) {
       setError(extractErrorMessage(e, 'Não foi possível concluir a análise do sebo. Tente novamente.'))
@@ -82,19 +82,19 @@ export function AdminSeboVerificationPage() {
   }
 
   return (
-    <StorePage title="Verificação de sebos" subtitle="Analise documentos e aprove ou rejeite cadastros pendentes.">
+    <StorePage title="Verificação de vendedores" subtitle="Analise documentos de sebos e vendedores independentes.">
       {error ? <div className="flash error" role="alert">{error}</div> : null}
       {success ? <div className="flash success" role="status">{success}</div> : null}
       {loading ? (
-        <StoreStatus title="Carregando pendentes" description="Consultando sebos em análise." busy />
+        <StoreStatus title="Carregando pendentes" description="Consultando vendedores em análise." busy />
       ) : items.length === 0 ? (
-        <StoreStatus title="Nenhum sebo pendente" description="Não há cadastros aguardando análise." />
+        <StoreStatus title="Nenhum vendedor pendente" description="Não há cadastros aguardando análise." />
       ) : (
         <div className="admin-sebo-list">
           {items.map((item) => (
             <article className="auth-card" key={item.id}>
               <h2>{item.nome}</h2>
-              <p>{item.email} · {cnpj(item.cnpj)}</p>
+              <p>{item.email} · {item.tipoCatalogo === TipoCatalogo.VENDEDOR_INDEPENDENTE ? 'Vendedor independente · CPF protegido' : cnpj(item.cnpj)}</p>
               <p>{item.descricao || 'Sem descrição'} · {item.telefone || 'Sem telefone'}</p>
               <div className="form-actions">
                 <Button type="button" variant="ghost" onClick={() => details(item.id)}>Ver documentos e auditoria</Button>

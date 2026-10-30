@@ -47,7 +47,7 @@ export function DeleteAccountPage() {
           <p>Seus dados pessoais serão anonimizados e você perderá o acesso ao Vitral.</p>
           <ul>
             <li>Favoritos, cesta e informações pessoais serão removidos.</li>
-            {isSebo ? <li>Produtos, perfil do sebo e dados vinculados ao sebo serão excluídos.</li> : null}
+            {isSebo ? <li>Produtos, perfil de venda e dados vinculados ao catálogo serão excluídos.</li> : null}
             <li>Pedidos, movimentações de estoque e registros financeiros serão preservados para integridade e auditoria.</li>
           </ul>
         </div>

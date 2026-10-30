@@ -85,7 +85,7 @@ export function SideMenu({ onClose }: Props) {
             ) : isSebo ? (
               <>
                 <li>
-                  <Link to="/painel/sebo" onClick={onClose}>Meu Sebo</Link>
+                  <Link to="/painel/sebo" onClick={onClose}>Meu catálogo</Link>
                 </li>
                 <li>
                   <Link to="/painel/produtos" onClick={onClose}>Meus Produtos</Link>
@@ -93,7 +93,7 @@ export function SideMenu({ onClose }: Props) {
                 <li>
                   <Link to="/painel/ofertas" onClick={onClose}>Minhas Ofertas</Link>
                 </li>
-                <li><Link to="/painel/sebo/documentos" onClick={onClose}>Documentos do sebo</Link></li>
+                <li><Link to="/painel/sebo/documentos" onClick={onClose}>Documentos de verificação</Link></li>
                 <li><Link to="/painel/sugestoes-catalogo" onClick={onClose}>Produtos informados por usuários</Link></li>
               </>
             ) : (

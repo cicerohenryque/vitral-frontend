@@ -307,14 +307,14 @@ describe('MeuSeboPage — branches adicionais', () => {
     vi.spyOn(seboService, 'criar').mockResolvedValue(novoSebo)
 
     renderPage(<MeuSeboPage />)
-    expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Cadastrar perfil de venda')).toBeInTheDocument()
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.type(screen.getByLabelText('CEP'), '60123456')
     await userEvent.type(screen.getByLabelText('Endereço/logradouro'), 'Rua dos Livros')
     await userEvent.type(screen.getByLabelText('Cidade'), 'Fortaleza')
     await userEvent.type(screen.getByLabelText('UF'), 'CE')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
-    expect(await screen.findByText('Sebo cadastrado com sucesso.')).toBeInTheDocument()
+    expect(await screen.findByText('Catálogo cadastrado com sucesso.')).toBeInTheDocument()
     expect(seboService.criar).toHaveBeenCalledWith(expect.objectContaining({ cnpj: '12345678000199', cep: '60123456', logradouro: 'Rua dos Livros', cidade: 'Fortaleza', uf: 'CE' }))
   })
 
@@ -325,7 +325,7 @@ describe('MeuSeboPage — branches adicionais', () => {
     vi.spyOn(seboService, 'criar').mockResolvedValue(novoSebo)
 
     renderPage(<MeuSeboPage />)
-    expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Cadastrar perfil de venda')).toBeInTheDocument()
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.type(screen.getByLabelText('Descrição'), 'x')
     await userEvent.type(screen.getByLabelText('Telefone'), '99')
@@ -343,14 +343,14 @@ describe('MeuSeboPage — branches adicionais', () => {
     vi.spyOn(seboService, 'criar').mockRejectedValue(new Error('falha ao salvar'))
 
     renderPage(<MeuSeboPage />)
-    expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Cadastrar perfil de venda')).toBeInTheDocument()
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.type(screen.getByLabelText('CEP'), '60123456')
     await userEvent.type(screen.getByLabelText('Endereço/logradouro'), 'Rua dos Livros')
     await userEvent.type(screen.getByLabelText('Cidade'), 'Fortaleza')
     await userEvent.type(screen.getByLabelText('UF'), 'CE')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar os dados do sebo. Revise as informações e tente novamente.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar os dados do catálogo. Revise as informações e tente novamente.')
   })
 })
 
@@ -361,14 +361,14 @@ describe('MeuSeboPage — branch sem account e sem seboId', () => {
     useAuthStore.setState({ token: null, account: null, seboId: null })
     vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('Sebo nao encontrado'))
     renderPage(<MeuSeboPage />)
-    expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Cadastrar perfil de venda')).toBeInTheDocument()
   })
 
   it('exibe estado de loading antes de completar a busca', () => {
     useAuthStore.setState({ token: 'jwt', account: { id: 1, name: 'Rute', username: 'rute', email: 'rute@teste.com', type: AccountType.SEBO }, seboId: null })
     vi.spyOn(seboService, 'buscarMeu').mockReturnValue(new Promise(() => {}))
     renderPage(<MeuSeboPage />)
-    expect(screen.getByText('Carregando perfil do sebo')).toBeInTheDocument()
+    expect(screen.getByText('Carregando perfil do catálogo')).toBeInTheDocument()
   })
 
   it('popula o formulario com dados do sebo existente via seboId', async () => {
@@ -387,7 +387,7 @@ describe('MeuSeboPage — branch sem account e sem seboId', () => {
     vi.spyOn(seboService, 'buscarMeu').mockResolvedValue(sebolNullFields as never)
 
     renderPage(<MeuSeboPage />)
-    expect(await screen.findByText('Editar perfil do sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Editar perfil do catálogo')).toBeInTheDocument()
     const inputs = screen.getAllByRole('textbox')
     inputs.forEach(input => {
       expect((input as HTMLInputElement).value).toBe('')

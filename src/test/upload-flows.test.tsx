@@ -83,9 +83,9 @@ describe('fluxos de upload de imagem', () => {
     vi.spyOn(seboService, 'criar').mockResolvedValue(savedSebo)
 
     renderPage(<MeuSeboPage />)
-    expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Cadastrar perfil de venda')).toBeInTheDocument()
     const file = new File(['imagem'], 'sebo.webp', { type: 'image/webp' })
-    await userEvent.upload(screen.getByLabelText('Foto do sebo'), file)
+    await userEvent.upload(screen.getByLabelText('Foto do catálogo'), file)
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.type(screen.getByLabelText('CEP'), '60123456')
     await userEvent.type(screen.getByLabelText('Endereço/logradouro'), 'Rua dos Livros')

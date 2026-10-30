@@ -58,7 +58,7 @@ describe('paginas principais', () => {
     expect(screen.getByText('As senhas não coincidem. Digite a mesma senha nos dois campos.')).toBeInTheDocument()
     await userEvent.clear(screen.getByLabelText('Confirme sua senha:'))
     await userEvent.type(screen.getByLabelText('Confirme sua senha:'), '12345678')
-    await userEvent.click(screen.getByLabelText('Sou um sebo'))
+    await userEvent.click(screen.getByLabelText('Quero vender no Vitral'))
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
     expect(await screen.findByText('Conta criada com sucesso. Enviamos um link de confirmação para seu e-mail.')).toBeInTheDocument()
     expect(authService.register).toHaveBeenCalledWith(expect.objectContaining({ type: AccountType.SEBO }))
@@ -186,7 +186,7 @@ describe('paginas principais', () => {
     vi.spyOn(seboService, 'buscarMeu').mockRejectedValue(new Error('Sebo nao encontrado'))
 
     renderAt('/meu-sebo', <MeuSeboPage />)
-    expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Cadastrar perfil de venda')).toBeInTheDocument()
     expect(screen.queryByLabelText('Modalidade de operação')).not.toBeInTheDocument()
 
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
@@ -197,7 +197,7 @@ describe('paginas principais', () => {
     await userEvent.type(screen.getByLabelText('UF'), 'ce')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
 
-    expect(await screen.findByText('Sebo cadastrado com sucesso.')).toBeInTheDocument()
+    expect(await screen.findByText('Catálogo cadastrado com sucesso.')).toBeInTheDocument()
     expect(criarSpy).toHaveBeenCalledWith(expect.objectContaining({
       descricao: 'Livros virtuais',
       cep: '60123456',
@@ -306,13 +306,13 @@ describe('paginas principais', () => {
 
     renderAt('/meu-sebo', <MeuSeboPage />)
     await waitFor(() => expect(buscarMeuSpy).toHaveBeenCalled())
-    expect(await screen.findByText('Editar perfil do sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Editar perfil do catálogo')).toBeInTheDocument()
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.clear(screen.getByLabelText('Descrição'))
     await userEvent.type(screen.getByLabelText('Descrição'), 'Novo sebo')
     await userEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
 
-    expect(await screen.findByText('Dados do sebo atualizados com sucesso.')).toBeInTheDocument()
+    expect(await screen.findByText('Dados do catálogo atualizados com sucesso.')).toBeInTheDocument()
     expect(seboService.atualizarMeu).toHaveBeenCalledWith(expect.objectContaining({ descricao: 'Novo sebo' }))
   })
 
@@ -322,7 +322,7 @@ describe('paginas principais', () => {
     vi.spyOn(seboService, 'criar').mockRejectedValue(new Error('falha'))
 
     renderAt('/meu-sebo', <MeuSeboPage />)
-    expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Cadastrar perfil de venda')).toBeInTheDocument()
     await userEvent.type(screen.getByLabelText('CNPJ'), '12345678000199')
     await userEvent.type(screen.getByLabelText('Descrição'), 'Livros virtuais')
     await userEvent.type(screen.getByLabelText('CEP'), '60123456')
@@ -331,7 +331,7 @@ describe('paginas principais', () => {
     await userEvent.type(screen.getByLabelText('UF'), 'CE')
     await userEvent.click(screen.getByRole('button', { name: 'Cadastrar' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar os dados do sebo. Revise as informações e tente novamente.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar os dados do catálogo. Revise as informações e tente novamente.')
   })
 
   it('carrega home com produtos e apresenta falha da busca', async () => {

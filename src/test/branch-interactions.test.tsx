@@ -66,12 +66,12 @@ describe('ramos alternativos e interacoes', () => {
 
   it('trata vendedor invalido, erro e catalogo vazio', async () => {
     const invalid = renderRoute('/vendedor/x', '/vendedor/:sellerId', <SellerPage />)
-    expect(screen.getByText('ID de sebo invalido')).toBeInTheDocument()
+    expect(screen.getByText('Identificador de catálogo inválido')).toBeInTheDocument()
     invalid.unmount()
     vi.spyOn(seboService, 'buscarPorId').mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(sebo)
     vi.spyOn(produtoService, 'listarPorSebo').mockResolvedValue(emptyPage)
     const failed = renderRoute('/vendedor/3', '/vendedor/:sellerId', <SellerPage />)
-    expect(await screen.findByText('Este sebo não foi carregado')).toBeInTheDocument()
+    expect(await screen.findByText('Este vendedor não foi carregado')).toBeInTheDocument()
     failed.unmount()
     renderRoute('/vendedor/3', '/vendedor/:sellerId', <SellerPage />)
     expect(await screen.findByText('Nenhum produto cadastrado')).toBeInTheDocument()

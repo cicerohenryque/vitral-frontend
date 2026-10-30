@@ -110,7 +110,7 @@ describe('autopreenchimento de endereco pelo CEP (ViaCEP)', () => {
     const fetchSpy = mockFetchOk(RESPOSTA_VIACEP)
 
     render(<MemoryRouter><MeuSeboPage /></MemoryRouter>)
-    expect(await screen.findByText('Cadastrar perfil do sebo')).toBeInTheDocument()
+    expect(await screen.findByText('Cadastrar perfil de venda')).toBeInTheDocument()
 
     await userEvent.type(screen.getByLabelText('CEP'), '58400550')
 

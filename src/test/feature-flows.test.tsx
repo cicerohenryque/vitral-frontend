@@ -241,7 +241,7 @@ describe('funcionalidades principais do front', () => {
 
     authenticate(AccountType.SEBO, 3)
     const seboRender = renderRoute('/', '/', <GlobalNavigation />)
-    expect(screen.getByRole('link', { name: 'Meu Sebo' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Meu catálogo' })).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Abrir menu' }))
     expect(screen.queryByRole('link', { name: 'Favoritos' })).not.toBeInTheDocument()
     seboRender.unmount()

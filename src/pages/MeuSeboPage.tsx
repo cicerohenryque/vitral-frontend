@@ -8,14 +8,16 @@ import { pedidoService } from '../services/pedidoService'
 import { cepService } from '../services/cepService'
 import { extractErrorMessage } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
-import { StatusConsultaCnpj, StatusVerificacao, type Sebo, type SeboRequest } from '../types/sebo'
+import { StatusConsultaCnpj, StatusVerificacao, TipoCatalogo, type Sebo, type SeboRequest } from '../types/sebo'
 import type { FaturamentoMensal } from '../types/pedido'
 import { daysSince, formatDateBR, formatDateTimeBR } from '../utils/date'
 import { onlyDigits } from '../utils/personalData'
 import './FormPage.css'
 
 const EMPTY: SeboRequest = {
+  tipoCatalogo: TipoCatalogo.SEBO,
   cnpj: '',
+  cpf: '',
   descricao: '',
   telefone: '',
   fotoUrl: '',
@@ -35,11 +37,16 @@ function formatCnpj(value: string) {
     .replace(/^(\d{2})\.(\d{3})\.(\d{3})\/(\d{4})(\d)/, '$1.$2.$3/$4-$5')
 }
 
+function formatCpf(value: string) {
+  const digits = value.replace(/\D/g, '').slice(0, 11)
+  return digits.replace(/^(\d{3})(\d)/, '$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/^(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4')
+}
+
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
 const formatBRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 
 export function MeuSeboPage() {
-  const { setSeboId } = useAuth()
+  const { setSeboId, account } = useAuth()
   const [form, setForm] = useState<SeboRequest>(EMPTY)
   const [existing, setExisting] = useState<Sebo | null>(null)
   const [loading, setLoading] = useState(true)
@@ -63,7 +70,10 @@ export function MeuSeboPage() {
         setExisting(sebo)
         setSeboId(sebo.id)
         setForm({
+          // Respostas de versões anteriores não possuem tipoCatalogo e sempre representam sebos.
+          tipoCatalogo: sebo.tipoCatalogo ?? TipoCatalogo.SEBO,
           cnpj: sebo.cnpj ?? '',
+          cpf: account?.cpf ?? '',
           descricao: sebo.descricao ?? '',
           telefone: sebo.telefone ?? '',
           fotoUrl: sebo.fotoUrl ?? '',
@@ -86,7 +96,7 @@ export function MeuSeboPage() {
     return () => {
       active = false
     }
-  }, [setSeboId])
+  }, [setSeboId, account?.cpf])
 
   useEffect(() => {
     let active = true
@@ -143,15 +153,21 @@ export function MeuSeboPage() {
     e.preventDefault()
     setError(null)
     setSuccess(null)
-    if (!/^\d{14}$/.test(form.cnpj)) {
+    const independente = form.tipoCatalogo === TipoCatalogo.VENDEDOR_INDEPENDENTE
+    if (!independente && !/^\d{14}$/.test(form.cnpj ?? '')) {
       setError('O CNPJ deve conter exatamente 14 números.')
+      return
+    }
+    if (independente && !/^\d{11}$/.test(form.cpf ?? '')) {
+      setError('O CPF deve conter exatamente 11 números.')
       return
     }
     setBusy(true)
     try {
       const payload: SeboRequest = {
         ...form,
-        cnpj: form.cnpj.replace(/\D/g, ''),
+        cnpj: independente ? undefined : form.cnpj?.replace(/\D/g, ''),
+        cpf: independente ? form.cpf?.replace(/\D/g, '') : undefined,
         cep: form.cep?.replace(/\D/g, ''),
         uf: form.uf?.toUpperCase(),
       }
@@ -160,9 +176,9 @@ export function MeuSeboPage() {
         : await seboService.criar(payload)
       setExisting(saved)
       setSeboId(saved.id)
-      setSuccess(existing ? 'Dados do sebo atualizados com sucesso.' : 'Sebo cadastrado com sucesso.')
+      setSuccess(existing ? 'Dados do catálogo atualizados com sucesso.' : 'Catálogo cadastrado com sucesso.')
     } catch (err) {
-      setError(extractErrorMessage(err, 'Não foi possível salvar os dados do sebo. Revise as informações e tente novamente.'))
+      setError(extractErrorMessage(err, 'Não foi possível salvar os dados do catálogo. Revise as informações e tente novamente.'))
     } finally {
       setBusy(false)
     }
@@ -208,8 +224,8 @@ export function MeuSeboPage() {
       <div className="page">
         <main className="container form-page">
           <StoreStatus
-            title="Carregando perfil do sebo"
-            description="Buscando os dados do sebo vinculados à sua conta."
+            title="Carregando perfil do catálogo"
+            description="Buscando os dados do catálogo vinculado à sua conta."
             busy
           />
         </main>
@@ -220,13 +236,13 @@ export function MeuSeboPage() {
   return (
     <div className="page">
       <main className="container form-page">
-        <h1 className="form-page-title">{existing ? 'Editar perfil do sebo' : 'Cadastrar perfil do sebo'}</h1>
+        <h1 className="form-page-title">{existing ? 'Editar perfil do catálogo' : 'Cadastrar perfil de venda'}</h1>
         {existing ? (
           <div className={`verification-status verification-${(existing.statusVerificacao ?? StatusVerificacao.PENDENTE).toLowerCase()}`} role="status">
             {existing.statusVerificacao === StatusVerificacao.VERIFICADO ? (
-              <><strong>✓ Sebo verificado</strong><span>Seu sebo está habilitado para vender no Vitral.</span></>
+              <><strong>✓ Perfil verificado</strong><span>Seu catálogo está habilitado para vender no Vitral.</span></>
             ) : existing.statusVerificacao === StatusVerificacao.REJEITADO ? (
-              <><strong>Verificação recusada</strong><span>{existing.motivoRejeicao ? `Motivo: ${existing.motivoRejeicao}` : 'Revise o CNPJ e os documentos cadastrados antes de solicitar uma nova análise.'}</span></>
+              <><strong>Verificação recusada</strong><span>{existing.motivoRejeicao ? `Motivo: ${existing.motivoRejeicao}` : 'Revise o documento e os arquivos cadastrados antes de solicitar uma nova análise.'}</span></>
             ) : (
               <><strong>Cadastro em análise</strong><span>As ações comerciais serão liberadas após a verificação.</span></>
             )}
@@ -239,9 +255,9 @@ export function MeuSeboPage() {
               <p className={`seller-activity seller-activity-${activityTone}`}><strong>Última atividade:</strong> {activityText}</p>
             </>
           ) : null}
-          {existing?.confirmado ? <p><strong>✓ Sebo confirmado:</strong> este cadastro já passou pela verificação e foi validado.</p> : null}
+          {existing?.confirmado ? <p><strong>✓ Perfil confirmado:</strong> este cadastro já passou pela verificação e foi validado.</p> : null}
         </section>
-        {existing ? (
+        {existing && existing.tipoCatalogo !== TipoCatalogo.VENDEDOR_INDEPENDENTE ? (
           <section className={`cnpj-consultation cnpj-${(existing.statusConsultaCnpj ?? StatusConsultaCnpj.NAO_CONSULTADO).toLowerCase()}`} aria-labelledby="cnpj-consultation-title">
             <div>
               <h2 id="cnpj-consultation-title">Consulta automática do CNPJ</h2>
@@ -261,11 +277,19 @@ export function MeuSeboPage() {
         {error ? <div className="flash error" role="alert">{error}</div> : null}
         {success ? <div className="flash success" role="status">{success}</div> : null}
         <form className="form-grid" onSubmit={handleSubmit}>
-          <Input id="cnpj" label="CNPJ" required inputMode="numeric" maxLength={18}
-            value={formatCnpj(form.cnpj)}
-            onChange={(e) => update('cnpj', e.target.value.replace(/\D/g, '').slice(0, 14))}
-            pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}"
-            title="Informe os 14 números do CNPJ" />
+          <label><span>Tipo de vendedor</span><select value={form.tipoCatalogo ?? TipoCatalogo.SEBO} onChange={(e) => update('tipoCatalogo', e.target.value as typeof form.tipoCatalogo)}><option value={TipoCatalogo.SEBO}>Sebo</option><option value={TipoCatalogo.VENDEDOR_INDEPENDENTE}>Vendedor independente</option></select></label>
+          {form.tipoCatalogo === TipoCatalogo.VENDEDOR_INDEPENDENTE ? (
+            <Input id="cpf" label="CPF do responsável" required inputMode="numeric" maxLength={14}
+              value={formatCpf(form.cpf ?? '')}
+              onChange={(e) => update('cpf', e.target.value.replace(/\D/g, '').slice(0, 11))}
+              title="Informe os 11 números do CPF" />
+          ) : (
+            <Input id="cnpj" label="CNPJ" required inputMode="numeric" maxLength={18}
+              value={formatCnpj(form.cnpj ?? '')}
+              onChange={(e) => update('cnpj', e.target.value.replace(/\D/g, '').slice(0, 14))}
+              pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}"
+              title="Informe os 14 números do CNPJ" />
+          )}
           <Input id="descricao" label="Descrição"
             value={form.descricao ?? ''} onChange={(e) => update('descricao', e.target.value)} />
           <Input id="telefone" label="Telefone"
@@ -289,7 +313,7 @@ export function MeuSeboPage() {
             value={form.horarioFuncionamento ?? ''} onChange={(e) => update('horarioFuncionamento', e.target.value)} />
           <ImageUploadField
             id="fotoUrl"
-            label="Foto do sebo"
+            label="Foto do catálogo"
             value={form.fotoUrl}
             onChange={(url) => update('fotoUrl', url)}
           />
@@ -304,7 +328,7 @@ export function MeuSeboPage() {
           <div className="billing-heading">
             <div>
               <h2 id="billing-title">Faturamento mensal</h2>
-              <p>Acompanhe as vendas confirmadas do seu sebo.</p>
+              <p>Acompanhe as vendas confirmadas do seu catálogo.</p>
             </div>
             <label>
               Ano
