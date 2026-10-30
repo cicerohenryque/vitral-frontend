@@ -19,6 +19,7 @@ const SEARCH_ROUTES = new Set([
   '/anuncios',
   '/painel/ofertas',
   '/recomendacoes',
+  '/painel/sugestoes-catalogo',
 ])
 
 export function GlobalNavigation() {

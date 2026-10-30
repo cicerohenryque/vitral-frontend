@@ -1,0 +1,14 @@
+.catalog-suggestion-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; padding:26px; margin-bottom:42px; border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-surface); }
+.catalog-suggestion-form h2,.suggestion-wide { grid-column:1/-1; }
+.catalog-suggestion-form label { display:grid; gap:7px; font-family:var(--font-sans); font-weight:700; }
+.catalog-suggestion-form select,.catalog-suggestion-form textarea { width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); color:var(--color-text); font:inherit; }
+.suggestion-list h2 { margin-bottom:18px; }
+.suggestion-card { display:flex; flex-wrap:wrap; justify-content:space-between; gap:24px; padding:22px; margin-bottom:14px; border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-surface); }
+.suggestion-card h3 { margin:10px 0 5px; }.suggestion-card p { margin:4px 0; }.suggestion-card small { color:var(--color-text-muted); }
+.suggestion-status { display:inline-flex; padding:5px 9px; border-radius:var(--radius-pill); font:700 12px var(--font-sans); background:var(--color-surface-muted); }.suggestion-status.aprovada { background:var(--color-accent-soft); color:var(--color-accent); }.suggestion-status.rejeitada { color:var(--color-danger); }
+.suggestion-actions { display:flex; flex-direction:column; align-items:stretch; gap:8px; min-width:175px; }.suggestion-actions a { padding:10px; text-align:center; color:var(--color-text); font-weight:700; }
+.suggestion-review { flex-basis:100%; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; padding-top:20px; border-top:1px solid var(--color-border); }
+.suggestion-review h4,.suggestion-review-actions { grid-column:1/-1; }.suggestion-review h4 { margin:0; }
+.suggestion-review label { display:grid; gap:7px; font-family:var(--font-sans); font-weight:700; }.suggestion-review select { width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); color:var(--color-text); font:inherit; }
+.suggestion-review-actions { display:flex; gap:10px; }
+@media(max-width:700px){.catalog-suggestion-form,.suggestion-review{grid-template-columns:1fr;padding:18px}.catalog-suggestion-form h2,.suggestion-wide,.suggestion-review h4,.suggestion-review-actions{grid-column:auto}.suggestion-card{flex-direction:column}.suggestion-actions{min-width:0}}

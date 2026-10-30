@@ -43,6 +43,7 @@ const RecomendacoesPage = lazyPage(() => import('./pages/RecomendacoesPage'), 'R
 const SeboDocumentsPage = lazyPage(() => import('./pages/SeboDocumentsPage'), 'SeboDocumentsPage')
 const AdminSeboVerificationPage = lazyPage(() => import('./pages/AdminSeboVerificationPage'), 'AdminSeboVerificationPage')
 const AdminPage = lazyPage(() => import('./pages/AdminPage'), 'AdminPage')
+const SugestoesCatalogoPage = lazyPage(() => import('./pages/SugestoesCatalogoPage'), 'SugestoesCatalogoPage')
 
 function App() {
   return (
@@ -95,6 +96,7 @@ function App() {
         <Route path="/painel/sebo/documentos" element={<ProtectedRoute requireRole={AccountType.SEBO}><SeboDocumentsPage /></ProtectedRoute>} />
         <Route path="/admin/sebos" element={<ProtectedRoute requireRole={AccountType.ADMIN}><AdminSeboVerificationPage /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute requireRole={AccountType.ADMIN}><AdminPage /></ProtectedRoute>} />
+        <Route path="/painel/sugestoes-catalogo" element={<ProtectedRoute><SugestoesCatalogoPage /></ProtectedRoute>} />
 
         <Route
           path="/conta"

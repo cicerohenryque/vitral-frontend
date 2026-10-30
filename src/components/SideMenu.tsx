@@ -15,6 +15,7 @@ const publicItems = [
 ]
 
 const userItems = [
+  { label: 'Informar produto de um sebo', to: '/painel/sugestoes-catalogo' },
   { label: 'Recomendados para você', to: '/recomendacoes' },
   { label: 'Carrinho', to: '/carrinho' },
   { label: 'Favoritos', to: '/favoritos' },
@@ -93,6 +94,7 @@ export function SideMenu({ onClose }: Props) {
                   <Link to="/painel/ofertas" onClick={onClose}>Minhas Ofertas</Link>
                 </li>
                 <li><Link to="/painel/sebo/documentos" onClick={onClose}>Documentos do sebo</Link></li>
+                <li><Link to="/painel/sugestoes-catalogo" onClick={onClose}>Produtos informados por usuários</Link></li>
               </>
             ) : (
               <li>
@@ -100,7 +102,7 @@ export function SideMenu({ onClose }: Props) {
               </li>
             )}
 
-            {isAuthenticated && !isSebo
+            {isAuthenticated && !isSebo && !isAdmin
               ? userItems.map((item) => (
                 <li key={item.label}>
                   <Link to={item.to} onClick={onClose}>

@@ -9,9 +9,11 @@ import { extractErrorMessage } from '../../services/api'
 import type { Produto } from '../../types/produto'
 import type { Sebo } from '../../types/sebo'
 import { StatusVerificacao } from '../../types/sebo'
+import { useAuth } from '../../hooks/useAuth'
 import './SellerPage.css'
 
 export function SellerPage() {
+  const { isUsuario } = useAuth()
   const { sellerId } = useParams()
   const numericSellerId = Number(sellerId)
   const invalidSellerId = !Number.isFinite(numericSellerId)
@@ -99,6 +101,7 @@ export function SellerPage() {
               <Link to={`/mensagens?destinatarioId=${seller.accountId}&nome=${encodeURIComponent(seller.nome)}`}>
                 Enviar mensagem
               </Link>
+              {isUsuario ? <Link to={`/painel/sugestoes-catalogo?seboId=${seller.id}`}>Informar produto deste sebo</Link> : null}
             </div>
           </section>
 
